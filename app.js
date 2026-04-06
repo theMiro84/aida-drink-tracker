@@ -1,15 +1,17 @@
 // --- Konfiguration ---
 const CONFIG = {
     DAILY_GOAL: 26.67,
-    CURRENCY: '€'
+    CURRENCY: '€',
+    // NEU ZIEL 1: Eindeutiger Schlüssel für den localStorage
+    STORAGE_KEY: 'aida_drink_tracker_v1' 
 };
 
 // --- App State (Zustand) ---
 let state = {
-    currentTotal: 0
+    currentTotal: 0,
+    consumedDrinks: [] 
 };
 
-// NEU ZIEL 3: Zentrales Objekt für DOM-Referenzen
 const elements = {};
 
 // --- Beispieldaten ---
@@ -23,7 +25,39 @@ const drinksData = [
 
 const favorites = drinksData.slice(0, 4);
 
-// --- Hilfsfunktionen ---
+// --- NEU ZIEL 3: Persistenz-Hilfsfunktionen ---
+function loadState() {
+    try {
+        const savedData = localStorage.getItem(CONFIG.STORAGE_KEY);
+        if (savedData) {
+            const parsedData = JSON.parse(savedData);
+            
+            // Defensive Prüfung: Ist es wirklich ein Array?
+            if (Array.isArray(parsedData.consumedDrinks)) {
+                state.consumedDrinks = parsedData.consumedDrinks;
+                // Summe sauber aus den geladenen Einträgen ableiten
+                state.currentTotal = state.consumedDrinks.reduce((sum, item) => sum + item.price, 0);
+            }
+        }
+    } catch (error) {
+        console.error("Fehler beim Laden der lokalen Daten, starte mit leerem State:", error);
+        // Fallback: State bleibt bei den Standardwerten (0 und [])
+    }
+}
+
+function saveState() {
+    try {
+        // Wir speichern nur das Array. Die Summe leiten wir beim Laden neu ab.
+        const dataToSave = {
+            consumedDrinks: state.consumedDrinks
+        };
+        localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(dataToSave));
+    } catch (error) {
+        console.error("Fehler beim Speichern der Daten:", error);
+    }
+}
+
+// --- Hilfsfunktionen (Formatierung) ---
 function formatCurrency(amount) {
     return `${amount.toFixed(2).replace('.', ',')} ${CONFIG.CURRENCY}`;
 }
@@ -46,7 +80,9 @@ function getCategoryIcon(category) {
 
 // --- Hauptfunktionen ---
 function init() {
-    // NEU ZIEL 3: Einmaliges Sammeln der DOM-Elemente beim Start
+    // NEU ZIEL 2: State direkt beim Start der App laden
+    loadState();
+
     elements.favGrid = document.getElementById('fav-grid');
     elements.drinkList = document.getElementById('drink-list');
     elements.totalAmount = document.getElementById('total-amount');
@@ -58,12 +94,17 @@ function init() {
     updateUI();
 }
 
-// NEU ZIEL 2: Nimmt nun das gesamte Getränke-Objekt entgegen
 function addDrink(drink) {
-    state.currentTotal += drink.price;
+    state.consumedDrinks.push({
+        id: drink.id,
+        price: drink.price,
+        timestamp: new Date().toISOString()
+    });
     
-    // Vorbereitung für später:
-    // z.B. state.history.push({ id: drink.id, time: new Date() })
+    state.currentTotal = state.consumedDrinks.reduce((sum, item) => sum + item.price, 0);
+    
+    // NEU ZIEL 1: Den neuen Zustand sofort speichern
+    saveState();
     
     updateUI();
 }
