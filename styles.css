@@ -1,0 +1,107 @@
+:root {
+    --bg-color: #f2f2f7;
+    --card-bg: #ffffff;
+    --text-main: #000000;
+    --text-sub: #8e8e93;
+    --accent: #007aff;
+    --red: #ff3b30;
+    --yellow: #ffcc00;
+    --green: #34c759;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-color);
+    margin: 0;
+    color: var(--text-main);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.app-header {
+    background: var(--card-bg);
+    padding: 20px;
+    border-bottom: 1px solid #d1d1d6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.status-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.light {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    box-shadow: inset 0 0 4px rgba(0,0,0,0.2);
+}
+
+.light-red { background-color: var(--red); }
+.light-yellow { background-color: var(--yellow); }
+.light-green { background-color: var(--green); }
+
+.totals { display: flex; flex-direction: column; }
+#total-amount { font-size: 1.4rem; font-weight: 700; }
+
+main { padding: 16px; }
+
+h2 { font-size: 0.9rem; text-transform: uppercase; color: var(--text-sub); margin-bottom: 8px; margin-left: 4px; }
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+button.fav-btn {
+    background: var(--card-bg);
+    border: none;
+    border-radius: 12px;
+    padding: 16px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    cursor: pointer;
+}
+
+.list {
+    background: var(--card-bg);
+    border-radius: 12px;
+    list-style: none;
+    padding: 0;
+    overflow: hidden;
+}
+
+.list-item {
+    padding: 14px 16px;
+    border-bottom: 1px solid #f2f2f7;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.list-item:last-child { border-bottom: none; }
+
+.drink-info { display: flex; flex-direction: column; }
+.drink-name { font-weight: 500; }
+.drink-price { font-size: 0.85rem; color: var(--text-sub); }
+
+.add-btn {
+    background: var(--bg-color);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
