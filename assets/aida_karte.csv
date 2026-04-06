@@ -1,0 +1,232 @@
+﻿Name;Typ;Preis NEU;Alkoholfrei;AI;F
+APPLE CRUMBLE;Alkoholfrei;5,5;Ja;Ja;Ja
+AQUARIUM;Alkoholfrei;7,5;Ja;Ja;Ja
+BANANA SPLIT;Alkoholfrei;6,5;Ja;Ja;Ja
+CHERRY BOMB;Alkoholfrei;7,5;Ja;Ja;Ja
+COCO CHOCO LOCO;Alkoholfrei;5,5;Ja;Ja;Ja
+ERDBEER COLADA;Alkoholfrei;7,5;Ja;Ja;Ja
+IPANEMA;Alkoholfrei;7,5;Ja;Ja;Ja
+PALM BEACH;Alkoholfrei;6,5;Ja;Ja;Ja
+SUNRISE;Alkoholfrei;6,5;Ja;Ja;Ja
+JEVER FUN 0,33 l;Alkoholfreis Bier;4,6;Ja;Ja;
+SCHÖFFERHOFER GRAPEFRUIT ALKOHOLFREI;Alkoholfreis Bier;4,6;Ja;Ja;
+SCHÖFFERHOFER WEIZEN 0,5 l;Alkoholfreis Bier;5,5;Ja;Ja;
+OUZO 12 4 cl;Anises;4,9;;;
+SAMBUCA MOLINARI 4 cl;Anises;4,9;;;
+APEROL 4 cl;Aperitifs;4,9;;Ja;
+CAMPARI 4 cl;Aperitifs;5,7;;Ja;
+LILLET BLANC 5 cl;Aperitifs;4,9;;Ja;
+MARTINI BIANCO 5 cl;Aperitifs;4,9;;;
+MARTINI ROSSO 5 cl;Aperitifs;4,9;;;
+NOILLY PRAT ORIGINAL DRY 5 cl;Aperitifs;5,7;;;
+JUBILAEUMS AKVAVIT Dänemark 4 cl;Aquavit;4,9;;;
+LINIE AQUAVIT Norwegen 4 cl;Aquavit;4,9;;;
+MALTESER AQUAVIT Deutschland 4 cl;Aquavit;4,9;;;
+COSMOPOLITAN;Barklassiker;7,9;;Ja;
+ESPRESSO MARTINI;Barklassiker;8,2;;Ja;
+LONG ISLAND ICED TEA;Barklassiker;11,9;;Ja;
+MARGARITA;Barklassiker;8,2;;Ja;
+MARGARITA alkoholfrei;Barklassiker;7,9;Ja;Ja;
+NEGRONI;Barklassiker;10,2;;Ja;
+WHISKY SOUR;Barklassiker;8,2;;Ja;
+WHISKY SOUR alkoholfrei;Barklassiker;7,9;Ja;Ja;
+RADEBERGER PILSNER 0,3 l;Bier vom Fass;4;;Ja;
+RADEBERGER PILSNER 0,5 l;Bier vom Fass;5,5;;Ja;
+AVERNA4 cl;Bitter;4,9;;;
+FERNET-BRANCA 4 cl;Bitter;4,9;;;
+JÄGERMEISTER 4 cl;Bitter;4,9;;;
+RAMAZZOTTI 4 cl;Bitter;4,9;;;
+CARDENAL MENDOZA Spanien 4 cl;Brandy;6,7;;;
+OSBORNE VETERANO Spanien 4 cl;Brandy;4,9;;;
+J. M. GOBILLARD & FILS Brut Rosé 0,1 l;Champagner;9,6;;;
+J. M. GOBILLARD & FILS Brut Rosé 0,75 l;Champagner;64,9;;;
+J. M. GOBILLARD & FILS Brut Tradition 0,1 l;Champagner;9,6;;;
+J. M. GOBILLARD & FILS Brut Tradition 0,75 l;Champagner;59,9;;;
+JACQUART Brut Rosé 0,1 l;Champagner;12,6;;;
+JACQUART Brut Rosé 0,75 l;Champagner;89,9;;;
+JACQUART Millésimé Cuvée Alpha 0,75 l;Champagner;149;;;
+CHARITEA MINT Flasche 0,33 l;Charitea;3,9;Ja;;
+AIDA HONEY MULE;Cocktail;10,2;;Ja;
+AIDA HONEY MULE alkoholfrei;Cocktail;8,9;Ja;Ja;
+AIDA ICEBREAKER;Cocktail;10,2;;Ja;
+AIDA MAI TAI;Cocktail;10,2;;Ja;
+CAIPIRINHA;Cocktail;9,2;;Ja;
+CAIPIRINHA alkoholfrei;Cocktail;8,9;Ja;Ja;
+COCONUT MAI TAI;Cocktail;10,2;;Ja;
+COCONUT MAI TAI alkoholfrei;Cocktail;8,9;Ja;Ja;
+DARK & STORMY;Cocktail;9,2;;Ja;
+DEEP PURPLE MAGIC SOUR;Cocktail;11,2;;Ja;
+MOJITO;Cocktail;9,2;;Ja;
+MOJITO alkoholfrei;Cocktail;8,9;Ja;Ja;
+ORIGINAL PAT O’BRIEN’S HURRICANE;Cocktail;10,2;;Ja;
+PIÑA COLADA;Cocktail;9,9;;Ja;
+SEX ON THE BEACH;Cocktail;9,2;;Ja;
+SWIMMING POOL;Cocktail;10,2;;Ja;
+WHITE BASIL;Cocktail;8,2;;Ja;
+ACHWASACHWAS;Cocktail Kids & Teens;5,5;Ja;Ja;Ja
+ALWINE;Cocktail Kids & Teens;5,5;Ja;Ja;Ja
+DODO;Cocktail Kids & Teens;5,5;Ja;Ja;Ja
+ITZI;Cocktail Kids & Teens;5,5;Ja;Ja;Ja
+MARTELL VS 4 cl;Cognac;6,7;;;
+MARTELL VSOP 4 cl;Cognac;7,7;;;
+RED BULL Dose 0,25 l;Energy Drink;3,9;Ja;Ja;
+CORONA 0,355 l;Flaschenbier;4,8;;Ja;
+HEINEKEN;Flaschenbier;4,6;;Ja;
+RADEBERGER PILSNER 0,33 l;Flaschenbier;4;;Ja;
+SALITOS 0,33 l;Flaschenbier;4,6;;Ja;
+SCHÖFFERHOFER GRAPEFRUIT 0,33l;Flaschenbier;4,6;;Ja;
+SCHÖFFERHOFER HEFEWEIZEN 0,5 l;Flaschenbier;5,5;;Ja;
+KARAMELL. MACADAMIA oder VANILLE;Flavors;0,5;Ja;;
+AIDA DEEP & PURPLE GIN Deutschland 4 cl;Gin;7,7;;;
+AIDA GIN Deutschland 4 cl;Gin;6,7;;;
+BOMBAY SAPPHIRE GIN 4 cl;Gin;6,7;;Ja;
+HENDRICK’S GIN 4 cl;Gin;6,7;;;
+MONKEY 47 SCHWARZWALD DRY GIN Deutschland 4 cl;Gin;7,7;;;
+THE BOTANIST ISLAY GIN 4 cl;Gin;6,7;;;
+UNDONE NO. 2 LONDON DRY JUNIPER 4 cl alkoholfrei;Gin;5,5;Ja;Ja;
+AIDA GUILTY PLEASURE;Gin Tonic;11,2;;Ja;
+DEEP & PURPLE G & T;Gin Tonic;11,6;;Ja;
+GARDEN & TONIC;Gin Tonic;10,2;;Ja;
+ITALIAN G & T;Gin Tonic;12;;Ja;
+NONINO IL PROSECCO Italien 4 cl;Grappa;6,7;;;
+NONINO LO CHARDONNAY Italien 4 cl;Grappa;6,7;;;
+HEISSE SCHOKOLADE;Heisse Schokolade;2,9;Ja;Ja;Ja
+AIDA ICED TEA;Ice Tea;5,5;Ja;Ja;Ja
+CAPPUCCINO;Kaffee;4,1;Ja;Ja;Ja
+DOPPELTER ESPRESSO;Kaffee;3,6;Ja;Ja;Ja
+ENTKOFFEINIERTER KAFFEE;Kaffee;2,9;Ja;Ja;Ja
+ESPRESSO;Kaffee;2,2;Ja;Ja;Ja
+ESPRESSO MACCHIATO;Kaffee;2,9;Ja;Ja;Ja
+KAFFEE;Kaffee;2,9;Ja;Ja;Ja
+LATTE MACCHIATO;Kaffee;4,1;Ja;Ja;Ja
+MILCHKAFFEE;Kaffee;4,1;Ja;Ja;Ja
+KAKAO (Nur für Kinder);Kakao;1,5;Ja;Ja;Ja
+KOMBUCHA ORIGINAL Flasche 0,33 l;Kombucha;3,9;Ja;;
+KOMBUCHA SAUERKIRSCHE MINZE Flasche 0,33 l;Kombucha;3,9;Ja;;
+HELBING KÜMMEL 4 cl;Kümmel;4,9;;;
+LEMON TONIC WATER Flasche 0,2 l;Lemon. Ginger. Tonic & Co;3,9;Ja;Ja;
+MEDITERRANEAN TONIC Flasche 0,2 l;Lemon. Ginger. Tonic & Co;3,9;Ja;Ja;
+MEXICAN LIME SODA Flasche 0,2 l;Lemon. Ginger. Tonic & Co;3,9;Ja;Ja;
+PINK GRAPEFRUIT SODA Flasche 0,2 l;Lemon. Ginger. Tonic & Co;3,9;Ja;Ja;
+PREMIUM GINGER ALE Flasche 0,2 l;Lemon. Ginger. Tonic & Co;3,9;Ja;Ja;
+PREMIUM GINGER BEER Flasche 0,2 l;Lemon. Ginger. Tonic & Co;3,9;Ja;Ja;
+PREMIUM INDIAN TONIC WATER Flasche 0,2 l;Lemon. Ginger. Tonic & Co;3,9;Ja;Ja;
+PREMIUM WILD BERRY Flasche 0,2 l;Lemon. Ginger. Tonic & Co;3,9;Ja;Ja;
+RASPBERRY & ORANGE BLOSSOM SODA Flasche 0,2 l;Lemon. Ginger. Tonic & Co;3,9;Ja;Ja;
+BAILEYS Irland 4 cl;Likör;4,9;;;
+DOM BÉNÉDICTINE Frankreich 4 cl;Likör;4,9;;;
+HERZOG PISTAZIENLIKÖR Österreich 4 cl;Likör;4,9;;;
+MALIBU Barbados 4 cl;Likör;4,9;;;
+MOZART BLACK Österreich 4 cl;Likör;4,9;;;
+MOZART WHITE CHOCOLATE Österreich 4 cl;Likör;4,9;;;
+RAMAZZOTTI LIMONCELLO Italien 4 cl |;Likör;4,9;;;
+ST. GERMAIN HOLUNDERBLÜTENLIKÖR Frankreich 4 cl |;Likör;4,9;;;
+AIDA LEMONADE;Limonade;5,5;Ja;Ja;Ja
+BLUTORANGE Flasche 0,33 l;Limonade;3,9;Ja;Ja;
+HIMBEER CASSIS LIGHT Flasche 0,33 l;Limonade;3,9;Ja;Ja;
+HOLUNDERBLÜTE Flasche 0,33 l;Limonade;3,9;Ja;Ja;
+INGWER Flasche 0,33 l;Limonade;3,9;Ja;Ja;
+MARACUJA ORANGE LIGHT Flasche 0,33 l;Limonade;3,9;Ja;Ja;
+CAMPARI ORANGE;Longdrink;8,3;;Ja;
+CAMPARI SODA;Longdrink;8,3;;Ja;
+CUBA LIBRE;Longdrink;7,9;;Ja;
+CUBA LIBRE alkoholfrei;Longdrink;7,9;;Ja;
+GIN TONIC;Longdrink;10,6;;Ja;
+RUM COLA;Longdrink;8,3;;Ja;
+VODKA CRANBERRY;Longdrink;8,3;;Ja;
+VODKA RED BULL;Longdrink;9,6;;Ja;
+WHISKEY COLA;Longdrink;9,3;;Ja;
+BANANEN-MILCHSHAKE;Milchshake;5,5;Ja;Ja;Ja
+ERDBEER-MILCHSHAKE;Milchshake;5,5;Ja;Ja;Ja
+SCHOKOLADEN-MILCHSHAKE;Milchshake;5,5;Ja;Ja;Ja
+VANILLE-MILCHSHAKE;Milchshake;5,5;Ja;Ja;Ja
+ALTE KIRSCHE 2 cl;Obstbrand;4,9;;;
+ALTE ZWETSCHGE 2 cl;Obstbrand;4,9;;;
+ALTER APFEL 2 cl;Obstbrand;4,9;;;
+WILLIAMS BIRNE 2 cl;Obstbrand;4,9;;;
+WALD HIMBEERGEIST 2 cl;Obstgeist;4,9;;;
+GRAHAM’S LATE BOTTLED VINTAGE PORT 5 cl;PORT;5,9;;;
+BACARDÍ GOLD 4 cl;Rum;4,9;;;
+BACARDI RON 8 AÑOS Puerto Rico 4 cl;Rum;5,7;;;
+BACARDÍ SUPERIOR 4 cl;Rum;5,7;;Ja;
+DON PAPA BAROKO Philippinen4 cl;Rum;7,7;;;
+MOUNT GAY ECLIPSE 4 cl;Rum;5,7;;;
+RON SANTA TERESA 1796 Venezuela 4 cl;Rum;7,7;;;
+UNDONE NO. 1 JAMAICAN DARK CANE 4 cl alkoholfrei;Rum;5,5;Ja;Ja;
+ANANAS 0,2 l;Säfte. Nektar & Schorlen;2,6;Ja;Ja;Ja
+APFEL 0,2 l;Säfte. Nektar & Schorlen;2,6;Ja;Ja;Ja
+BANANE 0,2 l;Säfte. Nektar & Schorlen;2,6;Ja;Ja;Ja
+CRANBERRY 0,2 l;Säfte. Nektar & Schorlen;2,6;Ja;Ja;Ja
+KIRSCHE 0,2 l;Säfte. Nektar & Schorlen;2,6;Ja;Ja;Ja
+MANGO 0,2 l;Säfte. Nektar & Schorlen;2,6;Ja;Ja;Ja
+MARACUJA 0,2 l;Säfte. Nektar & Schorlen;2,6;Ja;Ja;Ja
+ORANGE 0,2 l;Säfte. Nektar & Schorlen;2,6;Ja;Ja;Ja
+BROGSITTER B•ICED Demi Sec 0,1 l;Schaumwein;5,9;;Ja;
+BROGSITTER B•ICED Demi Sec 0,75 l;Schaumwein;34,9;;Ja;
+BROGSITTER B•ICED ROSÉ Demi Sec 0,1 l;Schaumwein;5,9;;Ja;
+BROGSITTER B•ICED ROSÉ Demi Sec 0,75 l;Schaumwein;34,9;;Ja;
+BROGSITTER PRESTIGE BRUT EDITION AIDA 0,1 l;Schaumwein;4,9;;Ja;
+BROGSITTER PRESTIGE BRUT EDITION AIDA 0,75 l;Schaumwein;27,9;;Ja;
+BROGSITTER PRESTIGE ROSÉ EDITION AIDA trocken 0,1 l;Schaumwein;4,9;;Ja;
+BROGSITTER PRESTIGE ROSÉ EDITION AIDA trocken 0,75 l;Schaumwein;27,9;;Ja;
+PROSECCO Extra Dry 0,1 l;Schaumwein;4,9;;Ja;
+PROSECCO Extra Dry 0,75 l;Schaumwein;27,9;;Ja;
+SEKT / PROSECCO auf Eis 0,15 l;Schaumwein;6,6;;Ja;
+SANDEMAN MEDIUM DRY 5 cl;Sherry;4,9;;;
+SANDEMAN MEDIUM SWEET 5 cl;Sherry;4,9;;;
+TIO PEPE PALOMINO FINO 5 cl;Sherry;4,9;;;
+AIDA HOT LIPS;Shot;4,9;;Ja;
+B-52;Shot;4,9;;Ja;
+HELLFIRE;Shot;4,9;;Ja;
+COCA-COLA 0,2 l;Softdrink;2,6;Ja;Ja;Ja
+COCA-COLA ZERO 0,2 l;Softdrink;2,6;Ja;Ja;Ja
+FANTA 0,2 l;Softdrink;2,6;Ja;Ja;Ja
+SPRITE 0,2 l;Softdrink;2,6;Ja;Ja;Ja
+AIDA SPRIZZ;Sprizz;8,2;;Ja;
+AIDA SPRIZZ alkoholfrei;Sprizz;7,9;Ja;Ja;Ja
+APERITIVO SPRIZZ alkoholfrei;Sprizz;8,9;Ja;Ja;Ja
+APEROL SPRIZZ;Sprizz;9,2;;Ja;
+HUGO;Sprizz;8,2;;Ja;
+HUGO alkoholfrei;Sprizz;7,9;Ja;Ja;Ja
+LILLET BERRY;Sprizz;9,2;;Ja;
+LILLET BERRY alkoholfrei;Sprizz;8,9;Ja;Ja;Ja
+ASSAM SPECIAL BROKEN;Tee;3,4;Ja;Ja;Ja
+BIO DARJEELING GRÜN;Tee;3,4;Ja;Ja;Ja
+BIO FRÜCHTE NATUR;Tee;3,4;Ja;Ja;Ja
+EARL GREY;Tee;3,4;Ja;Ja;Ja
+PFEFFERMINZE;Tee;3,4;Ja;Ja;Ja
+TEA SPA MAGICA;Tee;3,4;Ja;Ja;Ja
+OLMECA SILVER 4 cl;Tequila;6,7;;;
+PATRÓN REPOSADO Mexiko 4 cl;Tequila;7,7;;;
+PATRÓN SILVER Mexiko 4 cl;Tequila;6,7;;;
+ABSOLUT VODKA Schweden 4 cl;Vodka;5,7;;Ja;
+AIDA VODKA Deutschland 4 cl;Vodka;5,7;;;
+GREY GOOSE ALTIUS 4 cl;Vodka;9,5;;;
+GREY GOOSE Frankreich 4 cl;Vodka;6,7;;;
+MINERALWASSER Flasche 0,25 l;Wasser;2,6;Ja;;
+MINERALWASSER Flasche 0,75 l;Wasser;6,9;Ja;;
+SODAWASSER 0,2 l;Wasser;2;Ja;Ja;Ja
+BARDOLINO CHIARETTO 0,2 l;Wein - ROSÉ;8;;Ja;
+BARDOLINO CHIARETTO 0,75 l;Wein - ROSÉ;27,9;;Ja;
+BROGSITTER EDITION AIDA 0,2 l;Wein - ROSÉ;8;;Ja;
+BROGSITTER EDITION AIDA 0,75 l;Wein - ROSÉ;27,9;;Ja;
+BROGSITTER EDITION AIDA 0,2 l;Wein - ROT;8;;Ja;
+BROGSITTER EDITION AIDA 0,75 l;Wein - ROT;27,9;;Ja;
+CABERNET SAUVIGNON 0,2 l;Wein - ROT;10;;Ja;
+CABERNET SAUVIGNON 0,75 l;Wein - ROT;34,9;;Ja;
+PRIMITIVO 0,2 l;Wein - ROT;8;;Ja;
+PRIMITIVO 0,75 l;Wein - ROT;27,9;;Ja;
+BIO-RIESLING 0,2 l;Wein - WEISS;8;;Ja;
+BIO-RIESLING 0,75 l;Wein - WEISS;27,9;;Ja;
+BROGSITTER EDITION AIDA 0,2 l;Wein - WEISS;8;;Ja;
+BROGSITTER EDITION AIDA 0,75 l;Wein - WEISS;27,9;;Ja;
+PINOT GRIGIO IGT 0,2 l;Wein - WEISS;8;;Ja;
+PINOT GRIGIO IGT 0,75 l;Wein - WEISS;27,9;;Ja;
+ABERFELDY 12 YEARS Schottland 4 cl;WHISK[E]Y;5,7;;;
+BUFFALO TRACE Kentucky. USA 4 cl;WHISK[E]Y;5,7;;Ja;
+CHIVAS REGAL 12 YEARS Schottland 4 cl;WHISK[E]Y;5,7;;;
+JACK DANIEL’S Tennessee. USA 4 cl;WHISK[E]Y;6,7;;Ja;
+JAMESON Irland 4 cl;WHISK[E]Y;5,7;;;
+MAKER’S MARK Kentucky. USA 4 cl;WHISK[E]Y;5,7;;;
+THE GLENLIVET MASTER DISTILLER’S RESERVE 4 cl;WHISK[E]Y;7,7;;;
+UNDONE NO. 3 AMERICAN BLEND 4 cl alkoholfrei;WHISK[E]Y;5,5;Ja;Ja;
