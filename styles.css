@@ -64,11 +64,21 @@ body {
     line-height: 1.1;
 }
 
+/* --- Styling für Tag-Anzeige --- */
+.day-label {
+    font-size: 0.75rem;
+    color: var(--accent-blue);
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
 /* --- Header Actions (Undo Button) --- */
 .header-actions {
     display: flex;
     align-items: center;
-    gap: 12px; /* NEU: Etwas Abstand zwischen Undo und Reset */
+    gap: 12px;
 }
 
 .icon-btn {

@@ -1,14 +1,21 @@
-// --- Konfiguration ---
 const CONFIG = {
     DAILY_GOAL: 26.67,
     CURRENCY: '€',
     STORAGE_KEY: 'aida_drink_tracker_v1' 
 };
 
-// --- App State (Zustand) ---
+function createNewDay(dayNumber) {
+    return {
+        day: dayNumber,
+        date: new Date().toISOString(),
+        drinks: [],
+        total: 0
+    };
+}
+
 let state = {
-    currentTotal: 0,
-    consumedDrinks: [] 
+    currentDay: createNewDay(1),
+    archive: [] 
 };
 
 const elements = {};
@@ -23,13 +30,10 @@ const drinksData = [
 
 const favorites = drinksData.slice(0, 4);
 
-// --- NEU: Zentrale Summenberechnung ---
 function calculateTotal(drinks) {
-    // Wenn kein Array übergeben wird, ist die Summe 0
     if (!Array.isArray(drinks)) return 0;
     
     return drinks.reduce((sum, item) => {
-        // Sicherstellen, dass der Preis eine gültige Zahl ist
         const price = Number(item.price);
         if (isNaN(price)) return sum; 
         
@@ -37,42 +41,45 @@ function calculateTotal(drinks) {
     }, 0);
 }
 
-// --- Persistenz-Hilfsfunktionen (abgesichert) ---
 function loadState() {
     try {
         const savedData = localStorage.getItem(CONFIG.STORAGE_KEY);
         if (savedData) {
             const parsedData = JSON.parse(savedData);
             
-            if (Array.isArray(parsedData.consumedDrinks)) {
+            state.archive = Array.isArray(parsedData.archive) ? parsedData.archive : [];
+            
+            if (parsedData.currentDay) {
+                state.currentDay = parsedData.currentDay;
+                state.currentDay.total = calculateTotal(state.currentDay.drinks);
+            } else if (parsedData.consumedDrinks) {
+                const oldDayNumber = parsedData.dayCounter || 1;
+                state.currentDay = createNewDay(oldDayNumber);
+                
                 const validDrinks = parsedData.consumedDrinks.filter(item => {
-                    return item 
-                        && typeof item.id === 'string' 
-                        && typeof item.price === 'number' 
-                        && !isNaN(item.price);
+                    return item && typeof item.id === 'string' && typeof item.price === 'number' && !isNaN(item.price);
                 });
                 
-                state.consumedDrinks = validDrinks;
-                state.currentTotal = calculateTotal(state.consumedDrinks);
+                state.currentDay.drinks = validDrinks;
+                state.currentDay.total = calculateTotal(state.currentDay.drinks);
                 
-                if (validDrinks.length !== parsedData.consumedDrinks.length) {
-                    saveState();
-                }
-            } else {
-                throw new Error("Gespeicherte Datenstruktur ist kein Array");
+                saveState();
             }
         }
     } catch (error) {
         console.warn("Defekte lokale Daten gefunden, starte sauber neu:", error);
-        state.consumedDrinks = [];
-        state.currentTotal = 0;
+        state.currentDay = createNewDay(1);
+        state.archive = [];
         saveState(); 
     }
 }
 
 function saveState() {
     try {
-        const dataToSave = { consumedDrinks: state.consumedDrinks };
+        const dataToSave = { 
+            currentDay: state.currentDay,
+            archive: state.archive
+        };
         localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(dataToSave));
     } catch (error) {
         console.error("Fehler beim Speichern der Daten:", error);
@@ -111,8 +118,10 @@ function init() {
     elements.undoBtn = document.getElementById('undo-btn');
     elements.undoBtn.addEventListener('click', undoLastDrink);
 
-    elements.resetBtn = document.getElementById('reset-btn');
-    elements.resetBtn.addEventListener('click', resetDay);
+    elements.nextDayBtn = document.getElementById('next-day-btn');
+    elements.nextDayBtn.addEventListener('click', startNewDay);
+
+    elements.dayLabel = document.getElementById('day-label');
 
     elements.historyList = document.getElementById('history-list');
 
@@ -121,39 +130,43 @@ function init() {
     updateUI();
 }
 
-// --- Modifizierte Hauptfunktionen ---
 function addDrink(drink) {
-    state.consumedDrinks.push({
+    state.currentDay.drinks.push({
         id: drink.id,
         name: drink.name, 
         price: drink.price,
         timestamp: new Date().toISOString()
     });
     
-    state.currentTotal = calculateTotal(state.consumedDrinks);
+    state.currentDay.total = calculateTotal(state.currentDay.drinks);
     saveState();
     updateUI();
 }
 
 function undoLastDrink() {
-    if (state.consumedDrinks.length === 0) return;
+    if (state.currentDay.drinks.length === 0) return;
     
-    state.consumedDrinks.pop();
-    
-    state.currentTotal = calculateTotal(state.consumedDrinks);
+    state.currentDay.drinks.pop();
+    state.currentDay.total = calculateTotal(state.currentDay.drinks);
     
     saveState();
     updateUI();
 }
 
-function resetDay() {
-    if (state.consumedDrinks.length === 0) return;
+// NEU: Tag abschließen und ins Archiv schieben
+function startNewDay() {
+    if (state.currentDay.drinks.length === 0) {
+        alert("Dieser Tag enthält noch keine Getränke.");
+        return;
+    }
     
-    const userConfirmed = confirm("Möchtest du wirklich einen neuen Tag starten?\nDie bisherigen Getränke von heute werden gelöscht.");
+    const userConfirmed = confirm(`Möchtest du Tag ${state.currentDay.day} wirklich abschließen?\nEin neuer, leerer Tag wird gestartet.`);
     
     if (userConfirmed) {
-        state.consumedDrinks = [];
-        state.currentTotal = 0; 
+
+        state.archive.push(JSON.parse(JSON.stringify(state.currentDay)));
+
+        state.currentDay = createNewDay(state.currentDay.day + 1);
         
         saveState();
         updateUI();
@@ -209,12 +222,12 @@ function renderDrinkList() {
 function renderHistory() {
     elements.historyList.innerHTML = '';
    
-    if (state.consumedDrinks.length === 0) {
+    if (state.currentDay.drinks.length === 0) {
         elements.historyList.innerHTML = '<li class="history-empty">Noch keine Getränke erfasst.</li>';
         return;
     }
 
-    const recentDrinks = state.consumedDrinks.slice(-3).reverse();
+    const recentDrinks = state.currentDay.drinks.slice(-3).reverse();
 
     recentDrinks.forEach((entry, index) => {
         const li = document.createElement('li');
@@ -246,28 +259,32 @@ function renderHistory() {
 }
 
 function updateUI() {
-    elements.totalAmount.textContent = formatCurrency(state.currentTotal);
 
-    let percentage = (state.currentTotal / CONFIG.DAILY_GOAL) * 100;
+    if (elements.dayLabel) {
+        elements.dayLabel.textContent = `Tag ${state.currentDay.day}`;
+    }
+    
+    elements.totalAmount.textContent = formatCurrency(state.currentDay.total);
+
+    let percentage = (state.currentDay.total / CONFIG.DAILY_GOAL) * 100; 
     if (percentage > 100) percentage = 100;
     elements.progressBar.style.width = `${percentage}%`;
 
     elements.statusLight.classList.remove('light-red', 'light-yellow', 'light-green');
     
-    if (state.currentTotal === 0) {
+    if (state.currentDay.total === 0) { 
         elements.statusLight.classList.add('light-red');
         elements.progressBar.style.backgroundColor = 'var(--system-red)';
-    } else if (state.currentTotal < CONFIG.DAILY_GOAL) {
+    } else if (state.currentDay.total < CONFIG.DAILY_GOAL) {
         elements.statusLight.classList.add('light-yellow');
         elements.progressBar.style.backgroundColor = 'var(--system-yellow)';
     } else {
         elements.statusLight.classList.add('light-green');
         elements.progressBar.style.backgroundColor = 'var(--system-green)';
     }
-
-    elements.undoBtn.disabled = (state.consumedDrinks.length === 0);
-    elements.resetBtn.disabled = (state.consumedDrinks.length === 0);
-
+    
+    elements.undoBtn.disabled = (state.currentDay.drinks.length === 0); 
+    
     renderHistory();
 }
 

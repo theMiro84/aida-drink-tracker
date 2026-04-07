@@ -12,13 +12,14 @@
             <div class="status-container">
                 <div id="status-light" class="light light-red"></div>
                 <div class="totals">
+                    <span id="day-label" class="day-label">Tag 1</span>
                     <span id="total-amount">0,00 €</span>
                     <small>Ziel: 26,67 €</small>
                 </div>
             </div>
             <div class="header-actions">
                 <button id="undo-btn" class="icon-btn" aria-label="Rückgängig" disabled>↩</button>
-                <button id="reset-btn" class="icon-btn" aria-label="Neuer Tag" disabled>🔄</button>
+                <button id="next-day-btn" class="icon-btn" aria-label="Tag abschließen">📅</button>
             </div>
         </div>
         
@@ -32,7 +33,7 @@
             <ul id="history-list" class="history-list">
                 </ul>
         </section>
-        
+
         <section class="favorites">
             <h2>Favoriten</h2>
             <div id="fav-grid" class="grid">
