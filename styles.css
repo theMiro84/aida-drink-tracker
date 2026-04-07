@@ -276,3 +276,63 @@ button.fav-btn small {
 .add-btn:active {
     background: #e5e5ea;
 }
+
+/* --- Hilfsklassen --- */
+.hidden {
+    display: none !important;
+}
+
+/* --- Reiseübersicht --- */
+.grand-total-box {
+    background: var(--card-bg);
+    border-radius: 14px;
+    padding: 24px;
+    text-align: center;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.grand-total-box .label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-sub);
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.grand-total-box .amount {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.overview-day {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.overview-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.overview-total {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.overview-count {
+    font-size: 0.75rem;
+    color: var(--text-sub);
+    margin-top: 2px;
+}
+
+.grand-total-box .count-sub {
+    display: block;
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: var(--text-sub);
+}

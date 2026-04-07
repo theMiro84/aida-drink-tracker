@@ -20,6 +20,7 @@
             <div class="header-actions">
                 <button id="undo-btn" class="icon-btn" aria-label="Rückgängig" disabled>↩</button>
                 <button id="next-day-btn" class="icon-btn" aria-label="Tag abschließen">📅</button>
+                <button id="overview-btn" class="icon-btn" aria-label="Übersicht">📊</button>
             </div>
         </div>
         
@@ -28,24 +29,35 @@
         </div>
     </header>
 
-    <main>
+<main>
+    <div id="view-today">
         <section class="history-container">
-            <ul id="history-list" class="history-list">
-                </ul>
+            <ul id="history-list" class="history-list"></ul>
         </section>
 
         <section class="favorites">
             <h2>Favoriten</h2>
-            <div id="fav-grid" class="grid">
-                </div>
+            <div id="fav-grid" class="grid"></div>
         </section>
 
         <section class="drink-list-container">
             <h2>Alle Getränke</h2>
-            <ul id="drink-list" class="list">
-                </ul>
+            <ul id="drink-list" class="list"></ul>
         </section>
-    </main>
+    </div>
+
+    <div id="view-overview" class="hidden">
+        <section class="overview-container">
+            <div class="grand-total-box">
+                <span class="label">Reise-Gesamtsumme</span>
+                <span id="grand-total-amount" class="amount">0,00 €</span>
+                <small id="grand-total-count" class="count-sub">0 Getränke erfasst</small>
+            </div>
+            <h2>Tagesverlauf</h2>
+            <ul id="overview-list" class="list"></ul>
+        </section>
+    </div>
+</main>
 
     <script src="app.js"></script>
 </body>
