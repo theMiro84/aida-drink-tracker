@@ -64,6 +64,36 @@ body {
     line-height: 1.1;
 }
 
+/* --- Header Actions (Undo Button) --- */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px; /* NEU: Etwas Abstand zwischen Undo und Reset */
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    color: var(--accent-blue);
+    cursor: pointer;
+    padding: 4px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s ease;
+}
+
+.icon-btn:active {
+    opacity: 0.5;
+}
+
+.icon-btn:disabled {
+    color: var(--text-sub);
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
 /* --- Progress Bar --- */
 .progress-container {
     margin-top: 16px;

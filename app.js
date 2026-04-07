@@ -80,7 +80,6 @@ function getCategoryIcon(category) {
 
 // --- Hauptfunktionen ---
 function init() {
-    // NEU ZIEL 2: State direkt beim Start der App laden
     loadState();
 
     elements.favGrid = document.getElementById('fav-grid');
@@ -88,11 +87,18 @@ function init() {
     elements.totalAmount = document.getElementById('total-amount');
     elements.statusLight = document.getElementById('status-light');
     elements.progressBar = document.getElementById('progress-bar');
+    
+    elements.undoBtn = document.getElementById('undo-btn');
+    elements.undoBtn.addEventListener('click', undoLastDrink);
+
+    elements.resetBtn = document.getElementById('reset-btn');
+    elements.resetBtn.addEventListener('click', resetDay);
 
     renderFavorites();
     renderDrinkList();
     updateUI();
 }
+
 
 function addDrink(drink) {
     state.consumedDrinks.push({
@@ -107,6 +113,41 @@ function addDrink(drink) {
     saveState();
     
     updateUI();
+}
+
+// NEU: Letztes Getränk entfernen
+function undoLastDrink() {
+    // Sicherheitsprüfung: Nichts tun, wenn die Liste leer ist
+    if (state.consumedDrinks.length === 0) return;
+    
+    // pop() entfernt das letzte Element aus dem Array
+    state.consumedDrinks.pop();
+    
+    // Summe neu berechnen
+    state.currentTotal = state.consumedDrinks.reduce((sum, item) => sum + item.price, 0);
+    
+    // Speichern und UI aktualisieren
+    saveState();
+    updateUI();
+}
+
+// NEU: Kompletten Tag zurücksetzen
+function resetDay() {
+    // Wenn nichts da ist, müssen wir nichts tun
+    if (state.consumedDrinks.length === 0) return;
+    
+    // Sicherheitsabfrage, da die Daten (noch) komplett verloren gehen
+    const userConfirmed = confirm("Möchtest du wirklich einen neuen Tag starten?\nDie bisherigen Getränke von heute werden gelöscht.");
+    
+    if (userConfirmed) {
+        // State leeren
+        state.consumedDrinks = [];
+        state.currentTotal = 0;
+        
+        // Speichern und Ansicht aktualisieren
+        saveState();
+        updateUI();
+    }
 }
 
 // --- Render-Funktionen ---
@@ -181,6 +222,11 @@ function updateUI() {
         elements.statusLight.classList.add('light-green');
         elements.progressBar.style.backgroundColor = 'var(--system-green)';
     }
+
+    // NEU: Undo-Button deaktivieren, wenn keine Getränke gespeichert sind
+    elements.undoBtn.disabled = (state.consumedDrinks.length === 0);
+    // NEU: Reset-Button ebenfalls deaktivieren, wenn alles leer ist
+    elements.resetBtn.disabled = (state.consumedDrinks.length === 0);
 }
 
 // Start der App
