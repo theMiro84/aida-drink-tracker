@@ -114,6 +114,8 @@ function init() {
     elements.resetBtn = document.getElementById('reset-btn');
     elements.resetBtn.addEventListener('click', resetDay);
 
+    elements.historyList = document.getElementById('history-list');
+
     renderFavorites();
     renderDrinkList();
     updateUI();
@@ -123,12 +125,12 @@ function init() {
 function addDrink(drink) {
     state.consumedDrinks.push({
         id: drink.id,
+        name: drink.name, 
         price: drink.price,
         timestamp: new Date().toISOString()
     });
     
     state.currentTotal = calculateTotal(state.consumedDrinks);
-    
     saveState();
     updateUI();
 }
@@ -196,18 +198,54 @@ function renderDrinkList() {
         const addBtn = document.createElement('button');
         addBtn.className = 'add-btn';
         addBtn.textContent = '+';
-        // NEU ZIEL 1 & 2: Sauberes Event-Binding + Übergabe des Objekts
         addBtn.addEventListener('click', () => addDrink(drink));
         
-        // Elemente zur Liste hinzufügen
         li.appendChild(infoDiv);
         li.appendChild(addBtn);
         elements.drinkList.appendChild(li);
     });
 }
 
+function renderHistory() {
+    elements.historyList.innerHTML = '';
+   
+    if (state.consumedDrinks.length === 0) {
+        elements.historyList.innerHTML = '<li class="history-empty">Noch keine Getränke erfasst.</li>';
+        return;
+    }
+
+    const recentDrinks = state.consumedDrinks.slice(-3).reverse();
+
+    recentDrinks.forEach((entry, index) => {
+        const li = document.createElement('li');
+        li.className = 'history-item';
+        
+        const displayName = entry.name || 'Unbekanntes Getränk';
+        const displayPrice = (typeof entry.price === 'number' && !isNaN(entry.price)) 
+            ? formatCurrency(entry.price) 
+            : '0,00 €';
+        
+        if (index === 0) {
+            li.classList.add('newest');
+            li.innerHTML = `
+                <div class="history-item-main">
+                    <small class="undo-hint">Zuletzt hinzugefügt</small>
+                    <span>${displayName}</span>
+                </div>
+                <span>${displayPrice}</span>
+            `;
+        } else {
+            li.innerHTML = `
+                <span>${displayName}</span>
+                <span>${displayPrice}</span>
+            `;
+        }
+        
+        elements.historyList.appendChild(li);
+    });
+}
+
 function updateUI() {
-    // NEU ZIEL 3: Zugriff über das elements-Objekt (kein getElementById mehr nötig)
     elements.totalAmount.textContent = formatCurrency(state.currentTotal);
 
     let percentage = (state.currentTotal / CONFIG.DAILY_GOAL) * 100;
@@ -227,11 +265,10 @@ function updateUI() {
         elements.progressBar.style.backgroundColor = 'var(--system-green)';
     }
 
-    // NEU: Undo-Button deaktivieren, wenn keine Getränke gespeichert sind
     elements.undoBtn.disabled = (state.consumedDrinks.length === 0);
-    // NEU: Reset-Button ebenfalls deaktivieren, wenn alles leer ist
     elements.resetBtn.disabled = (state.consumedDrinks.length === 0);
+
+    renderHistory();
 }
 
-// Start der App
 init();
