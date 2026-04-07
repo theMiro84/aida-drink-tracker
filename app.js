@@ -2,7 +2,6 @@
 const CONFIG = {
     DAILY_GOAL: 26.67,
     CURRENCY: '€',
-    // NEU ZIEL 1: Eindeutiger Schlüssel für den localStorage
     STORAGE_KEY: 'aida_drink_tracker_v1' 
 };
 
@@ -14,7 +13,6 @@ let state = {
 
 const elements = {};
 
-// --- Beispieldaten ---
 const drinksData = [
     { id: 'd1', name: "APEROL SPRIZZ", category: "Sprizz", price: 9.20, isNonAlcoholic: false, isAI: true },
     { id: 'd2', name: "RADEBERGER 0,5 l", category: "Bier vom Fass", price: 5.50, isNonAlcoholic: false, isAI: true },
@@ -25,39 +23,62 @@ const drinksData = [
 
 const favorites = drinksData.slice(0, 4);
 
-// --- NEU ZIEL 3: Persistenz-Hilfsfunktionen ---
+// --- NEU: Zentrale Summenberechnung ---
+function calculateTotal(drinks) {
+    // Wenn kein Array übergeben wird, ist die Summe 0
+    if (!Array.isArray(drinks)) return 0;
+    
+    return drinks.reduce((sum, item) => {
+        // Sicherstellen, dass der Preis eine gültige Zahl ist
+        const price = Number(item.price);
+        if (isNaN(price)) return sum; 
+        
+        return sum + price;
+    }, 0);
+}
+
+// --- Persistenz-Hilfsfunktionen (abgesichert) ---
 function loadState() {
     try {
         const savedData = localStorage.getItem(CONFIG.STORAGE_KEY);
         if (savedData) {
             const parsedData = JSON.parse(savedData);
             
-            // Defensive Prüfung: Ist es wirklich ein Array?
             if (Array.isArray(parsedData.consumedDrinks)) {
-                state.consumedDrinks = parsedData.consumedDrinks;
-                // Summe sauber aus den geladenen Einträgen ableiten
-                state.currentTotal = state.consumedDrinks.reduce((sum, item) => sum + item.price, 0);
+                const validDrinks = parsedData.consumedDrinks.filter(item => {
+                    return item 
+                        && typeof item.id === 'string' 
+                        && typeof item.price === 'number' 
+                        && !isNaN(item.price);
+                });
+                
+                state.consumedDrinks = validDrinks;
+                state.currentTotal = calculateTotal(state.consumedDrinks);
+                
+                if (validDrinks.length !== parsedData.consumedDrinks.length) {
+                    saveState();
+                }
+            } else {
+                throw new Error("Gespeicherte Datenstruktur ist kein Array");
             }
         }
     } catch (error) {
-        console.error("Fehler beim Laden der lokalen Daten, starte mit leerem State:", error);
-        // Fallback: State bleibt bei den Standardwerten (0 und [])
+        console.warn("Defekte lokale Daten gefunden, starte sauber neu:", error);
+        state.consumedDrinks = [];
+        state.currentTotal = 0;
+        saveState(); 
     }
 }
 
 function saveState() {
     try {
-        // Wir speichern nur das Array. Die Summe leiten wir beim Laden neu ab.
-        const dataToSave = {
-            consumedDrinks: state.consumedDrinks
-        };
+        const dataToSave = { consumedDrinks: state.consumedDrinks };
         localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(dataToSave));
     } catch (error) {
         console.error("Fehler beim Speichern der Daten:", error);
     }
 }
 
-// --- Hilfsfunktionen (Formatierung) ---
 function formatCurrency(amount) {
     return `${amount.toFixed(2).replace('.', ',')} ${CONFIG.CURRENCY}`;
 }
@@ -78,7 +99,6 @@ function getCategoryIcon(category) {
     return icons[category] || '🥃';
 }
 
-// --- Hauptfunktionen ---
 function init() {
     loadState();
 
@@ -99,7 +119,7 @@ function init() {
     updateUI();
 }
 
-
+// --- Modifizierte Hauptfunktionen ---
 function addDrink(drink) {
     state.consumedDrinks.push({
         id: drink.id,
@@ -107,50 +127,37 @@ function addDrink(drink) {
         timestamp: new Date().toISOString()
     });
     
-    state.currentTotal = state.consumedDrinks.reduce((sum, item) => sum + item.price, 0);
+    state.currentTotal = calculateTotal(state.consumedDrinks);
     
-    // NEU ZIEL 1: Den neuen Zustand sofort speichern
     saveState();
-    
     updateUI();
 }
 
-// NEU: Letztes Getränk entfernen
 function undoLastDrink() {
-    // Sicherheitsprüfung: Nichts tun, wenn die Liste leer ist
     if (state.consumedDrinks.length === 0) return;
     
-    // pop() entfernt das letzte Element aus dem Array
     state.consumedDrinks.pop();
     
-    // Summe neu berechnen
-    state.currentTotal = state.consumedDrinks.reduce((sum, item) => sum + item.price, 0);
+    state.currentTotal = calculateTotal(state.consumedDrinks);
     
-    // Speichern und UI aktualisieren
     saveState();
     updateUI();
 }
 
-// NEU: Kompletten Tag zurücksetzen
 function resetDay() {
-    // Wenn nichts da ist, müssen wir nichts tun
     if (state.consumedDrinks.length === 0) return;
     
-    // Sicherheitsabfrage, da die Daten (noch) komplett verloren gehen
     const userConfirmed = confirm("Möchtest du wirklich einen neuen Tag starten?\nDie bisherigen Getränke von heute werden gelöscht.");
     
     if (userConfirmed) {
-        // State leeren
         state.consumedDrinks = [];
-        state.currentTotal = 0;
+        state.currentTotal = 0; 
         
-        // Speichern und Ansicht aktualisieren
         saveState();
         updateUI();
     }
 }
 
-// --- Render-Funktionen ---
 function renderFavorites() {
     elements.favGrid.innerHTML = ''; 
     
@@ -163,7 +170,6 @@ function renderFavorites() {
             <small>${formatCurrency(drink.price)}</small>
         `;
         
-        // NEU ZIEL 1 & 2: Sauberes Event-Binding + Übergabe des Objekts
         btn.addEventListener('click', () => addDrink(drink));
         
         elements.favGrid.appendChild(btn);
@@ -177,8 +183,6 @@ function renderDrinkList() {
         const li = document.createElement('li');
         li.className = 'list-item';
         
-        // NEU ZIEL 1: Um Event-Listener nutzen zu können, bauen wir die 
-        // HTML-Elemente für das Info-Div und den Button getrennt voneinander auf.
         const infoDiv = document.createElement('div');
         infoDiv.className = 'drink-info';
         infoDiv.innerHTML = `
