@@ -1,64 +1,81 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AIDA Drink Tracker</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
     <header class="app-header">
-        <div class="header-top">
-            <div class="status-container">
-                <div id="status-light" class="light light-red"></div>
-                <div class="totals">
-                    <span id="day-label" class="day-label">Tag 1</span>
-                    <span id="total-amount">0,00 €</span>
-                    <small>Ziel: 26,67 €</small>
-                </div>
-            </div>
-            <div class="header-actions">
-                <button id="undo-btn" class="icon-btn" aria-label="Rückgängig" disabled>↩</button>
-                <button id="next-day-btn" class="icon-btn" aria-label="Tag abschließen">📅</button>
-                <button id="overview-btn" class="icon-btn" aria-label="Übersicht">📊</button>
-            </div>
+      <div class="header-top">
+        <div class="status-container">
+          <div id="status-light" class="light light-red"></div>
+          <div class="totals">
+            <span id="day-label" class="day-label">Tag 1</span>
+            <span id="total-amount">0,00 €</span>
+            <small>Ziel: 26,67 €</small>
+          </div>
         </div>
-        
-        <div class="progress-container">
-            <div id="progress-bar" class="progress-fill"></div>
+        <div class="header-actions">
+          <button
+            id="undo-btn"
+            class="icon-btn"
+            aria-label="Rückgängig"
+            disabled
+          >
+            ↩
+          </button>
+          <button
+            id="next-day-btn"
+            class="icon-btn"
+            aria-label="Tag abschließen"
+          >
+            📅
+          </button>
+          <button id="overview-btn" class="icon-btn" aria-label="Übersicht">
+            📊
+          </button>
         </div>
+      </div>
+
+      <div class="progress-container">
+        <div id="progress-bar" class="progress-fill"></div>
+      </div>
     </header>
 
-<main>
-    <div id="view-today">
+    <main>
+      <div id="view-today">
         <section class="history-container">
-            <ul id="history-list" class="history-list"></ul>
+          <ul id="history-list" class="history-list"></ul>
         </section>
 
         <section class="favorites">
-            <h2>Favoriten</h2>
-            <div id="fav-grid" class="grid"></div>
+          <h2>Favoriten</h2>
+          <div id="fav-grid" class="grid"></div>
         </section>
 
         <section class="drink-list-container">
-            <h2>Alle Getränke</h2>
-            <ul id="drink-list" class="list"></ul>
+          <h2>Alle Getränke</h2>
+          <ul id="drink-list" class="list"></ul>
         </section>
-    </div>
+      </div>
 
-    <div id="view-overview" class="hidden">
+      <div id="view-overview" class="hidden">
         <section class="overview-container">
-            <div class="grand-total-box">
-                <span class="label">Reise-Gesamtsumme</span>
-                <span id="grand-total-amount" class="amount">0,00 €</span>
-                <small id="grand-total-count" class="count-sub">0 Getränke erfasst</small>
-            </div>
-            <h2>Tagesverlauf</h2>
-            <ul id="overview-list" class="list"></ul>
+          <div class="grand-total-box">
+            <span class="label">Reise-Gesamtsumme</span>
+            <span id="grand-total-amount" class="amount">0,00 €</span>
+            <small id="grand-total-count" class="count-sub"
+              >0 Getränke erfasst</small
+            >
+          </div>
+          <h2>Tagesverlauf</h2>
+          <ul id="overview-list" class="list"></ul>
         </section>
-    </div>
-</main>
+      </div>
+    </main>
 
     <script src="app.js"></script>
-</body>
+  </body>
 </html>

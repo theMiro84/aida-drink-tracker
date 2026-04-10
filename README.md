@@ -1,71 +1,189 @@
 # AIDA Drink Tracker
 
-Kleine offline-fähige Browser-App zur Erfassung des täglichen Getränkekonsums auf einer 9-tägigen Reise.
+Kleine mobile Web-App bzw. perspektivisch PWA zur Erfassung des täglichen Getränkekonsums auf Reisen mit Getränkepaket.
 
-## Ziel des Projekts
+Die App ist zunächst für eine konkrete Test- und Produktionsphase mit festen Standardwerten ausgelegt, wird aber technisch so weiterentwickelt, dass später individuelle Reisen, Reisedauern, Paketpreise und Nutzerprofile sauber unterstützt werden können.
 
-Die App soll pro Teilnehmer den Getränkekonsum pro Tag zählen, mit einer hinterlegten Preistabelle bewerten und sichtbar machen, ob der rechnerische Tagesanteil des All-Inclusive-Getränkepakets bereits erreicht wurde.
+## Projektziel
 
-Grundlage für die erste Version:
-- Paketpreis: 240 Euro für 9 Tage
-- Tagesziel: 26,67 Euro pro Tag
-- Zählweise: Getränke werden mit +1 erfasst
-- Teilnehmer: bis zu 4 Personen
-- Bedienung: jedes Mitglied verwendet sein eigenes Smartphone
-- Datenaustausch: manuelles Zusammenführen am Abend oder nach einigen Tagen
-- Namen: Kürzel und Avatare statt Klarnamen
-- Einsatz: zunächst für eine einzelne Reise
+Die App soll pro Nutzer den Getränkekonsum pro Tag zählen, mit echten Getränkedaten aus einer CSV bewerten und sichtbar machen, ob der rechnerische Tagesanteil des Getränkepakets bereits erreicht wurde.
 
-## Geplanter Funktionsumfang
+Im Fokus stehen:
+- schnelle mobile Erfassung mit wenigen Taps
+- klare Tagesübersicht
+- nachvollziehbare Summen und Fortschritte
+- einfache lokale Nutzung auf dem eigenen Smartphone
+- späterer Datenaustausch zwischen mehreren Teilnehmern
 
-### Version 1
+## Aktueller Stand
 
-- Getränkeliste aus CSV laden oder in App-Daten überführen
-- Getränke nach Name, Kategorie und Preis verwalten
-- Kennzeichnung, in welchem All-Inclusive-Modell ein Getränk enthalten ist
-- Tageserfassung pro Teilnehmer
-- Bis zu vier Favoriten-Getränke für schnelles Tippen
-- Summenberechnung pro Tag
-- Ampelanzeige für den Tagesfortschritt
-- Progressbalken als zusätzliche visuelle Anzeige zum Tagesziel
-- Lokale Datenspeicherung direkt im Browser
-- Mobile Nutzung auf iPhone und Android
-- Default-Icon pro Getränkekategorie
+Die bestehende Version 1 kann bereits:
+- Getränke hinzufügen
+- Getränke reduzieren
+- neue Tage starten
 
-### Version 2
+Damit ist eine erste lokale Basis zum täglichen Tracking vorhanden.
 
-- Übersichtsseite mit Gesamtsummen
-- Vergleich zwischen Teilnehmern
-- Export und Import von Datenständen
-- Individuelle Paketpreise pro Teilnehmer oder pro Reiseabschnitt, falls Getränkepakete an Bord nachgebucht oder geändert werden
-- Einfache Vergleichs- und Rankinglogik
-- Erste Scores und Awards zur spielerischen Motivation
+Noch nicht vollständig umgesetzt sind derzeit:
+- echte Anbindung der CSV-Datenquelle
+- saubere Mehrnutzer-Struktur
+- Datenaustausch zwischen Geräten
+- konsolidierte Weiterentwicklung aller Screens nach dem verbindlichen Designsystem
 
-### Spätere Versionen
+## Testphase und spätere Live-Nutzung
 
-- Unterstützung weiterer Reisen mit anderen Paketpreisen und Teilnehmern
-- Erweiterte Gamification mit mehreren Scores, Awards, Sammelzielen und Tages-/Reise-Challenges
-- Hochladen von Getränkebildern oder Erlebnisbildern im Stil eines kleinen Panini-Sammelalbums
-- Freigabe ausgewählter Bilder an andere Teilnehmer
-- Bildoptimierung vor dem Speichern oder Teilen, z. B. kleinere Auflösung, Komprimierung und begrenzte Dateigröße
-- Einfache Synchronisierung von Bild- und Getränkedaten zwischen Teilnehmern
+### Test- und erste Produktionsphase
+
+Für die aktuelle Testphase und die erste konkrete Nutzung bleiben diese festen Standardwerte erhalten:
+- Reisedauer: 9 Tage
+- Paketpreis: 240 Euro
+- daraus resultierendes Tagesziel: 26,67 Euro
+
+Diese festen Werte bleiben zunächst bewusst erhalten, damit die erste produktive Nutzung einfach und stabil bleibt.
+
+### Späterer Live-Betrieb
+
+Für den späteren finalen Live-Betrieb soll die App beim ersten Start bzw. beim Anlegen eines Profils zusätzliche Grunddaten erfassen:
+- Kürzel oder Nutzername
+- Avatar oder Profilkennzeichnung
+- Reisedauer
+- Paketpreis der Reise
+
+Aus diesen Angaben soll die App dann das persönliche Tagesziel automatisch berechnen.
+
+Perspektivisch soll außerdem möglich werden:
+- neue Reisen anlegen
+- Reisen getrennt verwalten
+- je Reise eigene Dauer, Preise und Statistiken speichern
+
+## Produktlogik
+
+Die App basiert auf folgenden Grundannahmen:
+- Getränkedaten liegen als UTF-8-CSV mit Semikolon vor
+- die CSV enthält mindestens Name, Kategorie, Preis und Paket-/Modellinformationen
+- Getränke werden per +1 erfasst
+- jeder Teilnehmer nutzt sein eigenes Smartphone
+- statt Klarnamen werden bevorzugt Kürzel und Avatare verwendet
+- Datenaustausch erfolgt zunächst manuell und einfach nachvollziehbar
+
+## Produktbereiche
+
+Die App besteht mindestens aus diesen Kernbereichen:
+- Tagesansicht / Tag
+- Dashboard
+- Historie
+
+Diese Bereiche sollen als zusammenhängendes mobiles System wirken, nicht wie getrennte Einzelseiten.
+
+## Nächste Entwicklungsschritte
+
+Die Weiterentwicklung erfolgt bewusst in kleinen, kontrollierten Schritten.
+
+### 1. Codebasis konsolidieren
+- bestehende HTML-, CSS- und JS-Struktur analysieren
+- funktionierende Logik erhalten
+- wiederkehrende UI-Bausteine vereinheitlichen
+- Tagesansicht, Dashboard und Historie zu einem konsistenten System zusammenführen
+
+### 2. Designsystem verbindlich anwenden
+- DESIGN.md als primäre Designquelle nutzen
+- Farben, Surfaces, Typografie, Komponentenstil, Abstände und Navigation konsistent übernehmen
+- wiederkehrende Elemente wie Header, KPI-Karten, Suchfeld, Kategorien, Listen, Summary-Blöcke und Bottom Navigation angleichen
+
+### 3. Datenmodell stabilisieren
+- aktuelles Datenmodell dokumentieren
+- prüfen, ob es Tageswechsel, Undo, CSV-Anbindung, Profil, Reise, Export und spätere Synchronisierung sauber tragen kann
+- falls nötig, kleine nachvollziehbare Refaktorierungen vornehmen
+
+### 4. CSV-Datenquelle anbinden
+- echte Getränkedaten aus CSV einlesen
+- harte Testdaten schrittweise ersetzen
+- Namen, Kategorien, Preise und Paketinformationen aus der CSV speisen
+
+### 5. Nutzerprofil vorbereiten
+- lokales Profilmodell mit Kürzel, Avatar und Nutzer-ID vorbereiten
+- Onboarding für spätere Versionen mit Reisedauer und Paketpreis mitdenken
+- in der Testphase weiterhin mit den festen Standardwerten 9 Tage / 240 Euro arbeiten
+
+### 6. Mehrere Nutzer und Datenaustausch vorbereiten
+- Daten pro Nutzer logisch trennen
+- JSON-Export der Statistikdaten vorbereiten
+- QR-Code-basierten Austausch als einfache Offline-/Low-Tech-Option mitdenken
+- optionale spätere Server-Synchronisierung nur als spätere Ausbaustufe vorsehen
+
+## Priorisierung
+
+Für dieses Projekt gilt folgende Reihenfolge:
+1. lokale Stabilität
+2. Korrekturmechanismen wie Undo oder Reset
+3. sauberes Tagesmodell
+4. CSV-Anbindung
+5. Mehrbenutzerfähigkeit
+6. Datenaustausch / Synchronisierung
+7. erst danach Vergleich, Gamification oder Medienfunktionen
 
 ## Technische Richtung
 
-Die erste Version soll bewusst einfach bleiben:
+Die App soll bewusst einfach und wartbar bleiben:
+- HTML, CSS und Vanilla JavaScript
+- mobile-first
+- Progressive Enhancement
+- perspektivisch PWA
+- lokale Speicherung zunächst einfach und robust
+- später optional IndexedDB und Service Worker, falls für den tatsächlichen Entwicklungsstand sinnvoll
 
-- HTML, CSS und JavaScript ohne Framework
-- Progressive Web App (PWA)
-- Lokale Speicherung mit IndexedDB
-- Offline-Unterstützung mit Service Worker
-- Statische Bereitstellung über normalen Webspace
+Wichtige Architekturidee:
+Das Datenmodell soll schon jetzt so vorbereitet werden, dass später nicht nur ein einzelner Reisetag, sondern Reisen, Tage, Nutzerprofile und Exporte logisch abgebildet werden können, ohne die aktuelle App unnötig zu verkomplizieren.
 
-Für spätere Versionen zusätzlich mitdenken:
-- Datenmodell so aufbauen, dass pro Teilnehmer eigene Paketpreise und Paketänderungen gespeichert werden können
-- Medienverwaltung nur mit reduzierter Dateigröße und begrenzter Auflösung
-- Datenaustausch zunächst manuell, später optional teilautomatisiert
+## Geplantes Datenmodell
+
+Das Datenmodell soll perspektivisch folgende Bereiche sauber tragen:
+- Reisen
+- Reisedauer pro Reise
+- Paketpreis pro Reise
+- berechnetes Tagesziel
+- Tage innerhalb einer Reise
+- Getränkelog pro Tag
+- Nutzerprofil mit Kürzel und Avatar
+- später mehrere Nutzer
+- Export- und Importdaten für Statistikabgleich
+
+Für die aktuelle Testphase können weiterhin feste Startwerte verwendet werden, solange die Struktur später erweiterbar bleibt.
+
+## Designprinzipien
+
+Die Oberfläche soll:
+- reduziert
+- klar
+- modern
+- ruhig
+- gut mobil bedienbar
+- mit großen Touch-Flächen
+- gut lesbar
+- sachlich und hochwertig
+
+Die App soll eher wie ein hochwertiger nautischer Concierge wirken als wie ein Standard-Finanztracker.
+
+Vermeiden:
+- generische KI-Optik
+- unnötige Effekte
+- überladene Dashboards
+- unnötig komplexe Layouts ohne klaren Nutzen
+
+## Refactoring-Regeln
+
+Bei der Weiterentwicklung gilt:
+- nicht blind neu generieren
+- zuerst alle bereitgestellten Dateien analysieren
+- DESIGN.md als primäre Designquelle behandeln
+- vorhandene funktionierende Logik, Inhalte, IDs und Hooks möglichst erhalten
+- inkrementell refaktorieren, nicht destruktiv
+- JavaScript nur dann stärker umbauen, wenn Struktur- oder Datenmodelländerungen es erfordern
+- auf Semantik, Accessibility, Responsive Design und Wartbarkeit achten
 
 ## Projektstruktur
+
+Die konkrete Struktur kann sich im Refactoring noch verändern. Der aktuelle oder geplante Aufbau orientiert sich an einer einfachen statischen Web-App, z. B.:
 
 ```text
 .
@@ -80,34 +198,21 @@ Für spätere Versionen zusätzlich mitdenken:
 └── README.md
 ```
 
-## Designprinzipien
+Wenn mehrere Screens oder ausgelagerte Module im Refactoring sinnvoll werden, kann diese Struktur später angepasst werden.
 
-Die Oberfläche soll sich an reduziertem, klarem, mobilem App-Design orientieren:
-- ruhige, aufgeräumte Oberfläche
-- große Touch-Flächen
-- einfache Erfassung mit wenigen Taps
-- gut lesbare Summen und Statusanzeigen
-- klare Trennung zwischen heute, Verlauf und Übersicht
-- visuelle Statusanzeigen durch Ampel und Progressbalken
-- sinnvolle Icons statt unnötiger visueller Überladung
+## Spätere Ausbaustufen
 
-## Erweiterte Produktideen
+Nach den Kernfunktionen sind unter anderem denkbar:
+- Vergleichsansichten zwischen Teilnehmern
+- Reiseübersicht und Gesamtauswertung
+- Favoriten und Häufigkeitsauswertung
+- JSON-Export und Import
+- QR-Code-basierter Datenaustausch
+- optionale einfache Server-Synchronisierung
+- behutsame Gamification
+- optionale Medien- oder Sammelalbum-Funktionen
 
-### Status und Motivation
-
-- Ampelstatus für das Tagesziel
-- Progressbalken für den aktuellen Tagesfortschritt
-- Tages-, Wochen- oder Reise-Scores
-- Awards wie z. B. „Cocktail-Kenner", „Softdrink-Profi“ oder „Paket-Mathematiker"
-- kleine Vergleichs- oder Sammelmechaniken ohne übertriebene Komplexität
-
-### Medien und Sammelalbum
-
-- Teilnehmer können Bilder zu Getränken oder besonderen Funden hochladen
-- Bilder sollen ähnlich wie ein kleines digitales Sammelalbum funktionieren
-- Freigegebene Bilder können auch bei anderen Teilnehmern angezeigt werden
-- Vor Speicherung oder Übertragung müssen Bilder verkleinert und komprimiert werden, damit Speicherbedarf und Datentransfer begrenzt bleiben
-- Bildnutzung soll optional sein und die Kernfunktion der App nicht blockieren
+Diese Themen haben aber derzeit nachrangige Priorität gegenüber einer stabilen, klaren und gut wartbaren Kern-App.
 
 ## Entwicklungssetup
 
@@ -115,57 +220,8 @@ Empfohlenes lokales Setup:
 - Visual Studio Code
 - Live Server
 - Git
-- Chrome oder Edge DevTools für PWA- und Offline-Tests
-
-## Projektplan
-
-### Phase 1 – Grundfunktion
-
-1. CSV-Struktur prüfen und Datenmodell festlegen
-2. Basis-UI für eine Person und einen Reisetag bauen
-3. Preisberechnung und Tagesziel integrieren
-4. Ampelanzeige und Progressbalken ergänzen
-5. Favoriten-Buttons ergänzen
-6. Default-Icons pro Kategorie anzeigen
-
-### Phase 2 – Lokale Nutzung stabilisieren
-
-1. Lokale Speicherung einbauen
-2. Tagesdaten beim Neuladen wiederherstellen
-3. Mobile Bedienung testen
-4. PWA-Grundlage mit Manifest und Service Worker ergänzen
-5. Offline-Fähigkeit testen
-
-### Phase 3 – Gruppenfunktionen
-
-1. Export und Import von Datenständen ergänzen
-2. Vergleichs- und Übersichtsseite ergänzen
-3. Einfache Ranking-Logik einführen
-4. Individuelle Paketpreise und spätere Nachbuchungen im Datenmodell berücksichtigen
-
-### Phase 4 – Gamification
-
-1. Scores definieren
-2. Awards und kleine Challenges einbauen
-3. Sichtbare Belohnungen und Sammelelemente gestalten
-4. Darauf achten, dass Gamification die Kernnutzung ergänzt, aber nicht überlagert
-
-### Phase 5 – Medienfunktionen
-
-1. Bild-Upload lokal ermöglichen
-2. Bilder beim Upload automatisch verkleinern und komprimieren
-3. Bilder an Getränke oder Kategorien binden
-4. Bilder in einer Sammelalbum-Ansicht darstellen
-5. Freigabe und Anzeige bei anderen Teilnehmern über einfache Datenaustauschmechanismen ermöglichen
-
-## Technische Leitplanken für spätere Features
-
-- Bilder nie in voller Handy-Auflösung speichern oder übertragen
-- Vor Speicherung Zielgröße und Qualitätsstufe definieren
-- Medien nur ergänzend einsetzen, damit die App schnell und offline-fähig bleibt
-- Neue Features immer so schneiden, dass zuerst eine kleine nutzbare Version entsteht
-- Komplexität bei Synchronisierung bewusst niedrig halten
+- Browser-DevTools für mobile, PWA- und Offline-Tests
 
 ## Git-Hinweis
 
-Das Repository kann zunächst privat bleiben. Für die frühe Projektphase ist das sinnvoll, weil Struktur, Datenmodell und Umfang sich noch ändern können.
+Das Repository kann in der frühen Phase privat bleiben. Das ist sinnvoll, solange Struktur, Datenmodell und Funktionsumfang noch aktiv weiterentwickelt werden.
