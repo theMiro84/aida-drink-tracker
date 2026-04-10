@@ -1,81 +1,226 @@
 <!doctype html>
 <html lang="de">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AIDA Drink Tracker</title>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <header class="app-header">
-      <div class="header-top">
-        <div class="status-container">
-          <div id="status-light" class="light light-red"></div>
-          <div class="totals">
-            <span id="day-label" class="day-label">Tag 1</span>
-            <span id="total-amount">0,00 €</span>
-            <small>Ziel: 26,67 €</small>
-          </div>
-        </div>
-        <div class="header-actions">
-          <button
-            id="undo-btn"
-            class="icon-btn"
-            aria-label="Rückgängig"
-            disabled
-          >
-            ↩
-          </button>
-          <button
-            id="next-day-btn"
-            class="icon-btn"
-            aria-label="Tag abschließen"
-          >
-            📅
-          </button>
-          <button id="overview-btn" class="icon-btn" aria-label="Übersicht">
-            📊
-          </button>
-        </div>
-      </div>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+        <title>Drink Navigator</title>
+        <link rel="stylesheet" href="styles.css" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
+        <header class="fixed-header">
+            <div class="header-brand">
+                <span class="material-symbols-outlined header-icon">directions_boat</span>
+                <span class="brand-text">DRINK NAVIGATOR</span>
+            </div>
+            <div class="day-badge-container">
+                <span id="day-label" class="day-badge">Tag 1</span>
+            </div>
+        </header>
 
-      <div class="progress-container">
-        <div id="progress-bar" class="progress-fill"></div>
-      </div>
-    </header>
+        <main id="app-content">
+            <section id="view-tag" class="screen">
+                <section class="ring-section tonal-card">
+                    <div class="ring-container">
+                        <svg class="nautical-ring" viewBox="0 0 176 176">
+                            <circle class="ring-track" cx="88" cy="88" r="76"></circle>
+                            <circle
+                                id="progress-ring"
+                                class="ring-fill"
+                                cx="88"
+                                cy="88"
+                                r="76"
+                            ></circle>
+                        </svg>
+                        <div class="ring-info">
+                            <span id="total-amount" class="display-lg">0,00 €</span>
+                            <span class="label-xs">Heute ausgegeben</span>
+                        </div>
+                    </div>
 
-    <main>
-      <div id="view-today">
-        <section class="history-container">
-          <ul id="history-list" class="history-list"></ul>
-        </section>
+                    <div class="ring-meta">
+                        <h2 class="font-headline text-md">Getränke-Tagesplan</h2>
+                        <p id="limit-info" class="text-sm">Limit verbleibend: 0,00 €</p>
+                    </div>
 
-        <section class="favorites">
-          <h2>Favoriten</h2>
-          <div id="fav-grid" class="grid"></div>
-        </section>
+                    <div class="action-grid">
+                        <button id="undo-btn" class="secondary-btn">
+                            <span class="material-symbols-outlined">undo</span>
+                            Rückgängig
+                        </button>
+                        <button id="next-day-btn" class="primary-btn">
+                            Nächster Tag
+                            <span class="material-symbols-outlined">arrow_forward</span>
+                        </button>
+                    </div>
+                </section>
 
-        <section class="drink-list-container">
-          <h2>Alle Getränke</h2>
-          <ul id="drink-list" class="list"></ul>
-        </section>
-      </div>
+                <section class="favorites-section">
+                    <div class="section-header">
+                        <h3 class="label-sm uppercase">Favoriten</h3>
+                    </div>
+                    <div id="fav-grid" class="favorites-grid"></div>
+                </section>
 
-      <div id="view-overview" class="hidden">
-        <section class="overview-container">
-          <div class="grand-total-box">
-            <span class="label">Reise-Gesamtsumme</span>
-            <span id="grand-total-amount" class="amount">0,00 €</span>
-            <small id="grand-total-count" class="count-sub"
-              >0 Getränke erfasst</small
-            >
-          </div>
-          <h2>Tagesverlauf</h2>
-          <ul id="overview-list" class="list"></ul>
-        </section>
-      </div>
-    </main>
+                <section class="search-section">
+                    <div class="search-bar">
+                        <span class="material-symbols-outlined search-icon">search</span>
+                        <input
+                            type="text"
+                            id="drink-search"
+                            placeholder="Getränk suchen..."
+                            class="search-input"
+                        />
+                    </div>
+                </section>
 
-    <script src="app.js"></script>
-  </body>
+                <section class="category-section" id="category-list">
+                    <div class="category-item tonal-card">
+                        <div class="category-header">
+                            <div class="category-brand">
+                                <div class="category-icon-wrapper">
+                                    <span class="material-symbols-outlined">local_bar</span>
+                                </div>
+                                <span class="font-headline category-title">Cocktails</span>
+                            </div>
+                            <span class="material-symbols-outlined">expand_more</span>
+                        </div>
+                        <div class="category-content" id="drink-list"></div>
+                    </div>
+                </section>
+            </section>
+
+            <section id="view-dashboard" class="screen hidden">
+                <div class="dashboard-hero tonal-card">
+                    <div class="ring-container-lg">
+                        <svg class="nautical-ring" viewBox="0 0 256 256">
+                            <circle class="ring-track" cx="128" cy="128" r="110"></circle>
+                            <circle
+                                id="overall-progress-ring"
+                                class="ring-fill"
+                                cx="128"
+                                cy="128"
+                                r="110"
+                                stroke-dasharray="691"
+                                stroke-dashoffset="691"
+                            ></circle>
+                        </svg>
+                        <div class="ring-info">
+                            <span class="label-xs">Paket-Limit</span>
+                            <span id="grand-total-display" class="display-xl">0 €</span>
+                            <div id="status-badge" class="badge-amber">0% erreicht</div>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="label-xs">Gesamt</span>
+                            <span id="stats-spent" class="font-headline text-lg">0,00 €</span>
+                        </div>
+                        <div class="stat-item text-right">
+                            <span class="label-xs">Restbetrag</span>
+                            <span id="stats-remaining" class="font-headline text-lg">0,00 €</span>
+                        </div>
+                    </div>
+                </div>
+
+                <section class="top-drinks-section">
+                    <div class="section-header">
+                        <h2 class="font-headline text-md">Meistgetrunken</h2>
+                        <span id="total-drinks-count" class="label-sm text-primary"
+                            >Gesamtanzahl: 0</span
+                        >
+                    </div>
+                    <div id="top-drinks-list" class="drink-stack"></div>
+                </section>
+
+                <section class="social-section">
+                    <div class="section-header-icon">
+                        <span class="material-symbols-outlined text-primary">groups</span>
+                        <h2 class="font-headline text-md">Vergleich mit Mitreisenden</h2>
+                    </div>
+                    <div class="social-table-container tonal-card">
+                        <table class="social-table">
+                            <thead>
+                                <tr>
+                                    <th>Gast</th>
+                                    <th class="text-right">Ausgaben</th>
+                                    <th class="text-right">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="social-ranking-body"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </section>
+
+            <section id="view-history" class="screen hidden">
+                <div class="screen-header">
+                    <h1 class="font-headline display-md">Verlauf</h1>
+                    <div class="filter-tabs">
+                        <button class="tab-item active">Heute</button>
+                        <button class="tab-item">Alle</button>
+                        <button class="tab-item">Alkoholisch</button>
+                    </div>
+                </div>
+
+                <div id="history-groups-container" class="history-stack"></div>
+
+                <section class="summary-section tonal-card">
+                    <div class="section-header-icon">
+                        <span class="material-symbols-outlined text-primary">analytics</span>
+                        <h2 class="font-headline text-md">Tages-Zusammenfassung</h2>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-item-mini">
+                            <span class="label-xs">Getränke</span>
+                            <div class="stat-value">
+                                <span id="summary-count" class="font-headline text-lg">0</span>
+                                <span class="label-xs">Stück</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="budget-summary">
+                        <div class="budget-label-row">
+                            <span class="text-sm font-medium text-primary"
+                                >Verbrauchtes Budget</span
+                            >
+                            <span id="summary-budget-total" class="font-bold">0,00 €</span>
+                        </div>
+                        <div class="budget-bar-track">
+                            <div id="summary-budget-fill" class="budget-bar-fill"></div>
+                        </div>
+                    </div>
+                </section>
+            </section>
+        </main>
+
+        <nav class="bottom-nav">
+            <button class="nav-item active" data-screen="tag">
+                <span class="material-symbols-outlined">local_bar</span>
+                <span>Tag</span>
+            </button>
+            <button class="nav-item" data-screen="dashboard">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span>Übersicht</span>
+            </button>
+            <button class="nav-item" data-screen="history">
+                <span class="material-symbols-outlined">history</span>
+                <span>Historie</span>
+            </button>
+        </nav>
+
+        <script src="app.js"></script>
+        <script>
+            /* Safari Bottom-Nav Fix */
+            if (/iPhone|iPad/.test(navigator.userAgent) && !/CriOS/.test(navigator.userAgent)) {
+                document.querySelector('.bottom-nav').style.bottom = '-0.75rem';
+            }
+        </script>
+    </body>
 </html>

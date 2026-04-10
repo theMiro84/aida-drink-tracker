@@ -1,358 +1,662 @@
+/* styles.css */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;800&family=Inter:wght@400;500;600&display=swap');
+
 :root {
-  /* Apple-inspirierte Systemfarben */
-  --bg-color: #f2f2f7;
-  --card-bg: #ffffff;
-  --text-main: #000000;
-  --text-sub: #8e8e93;
-  --accent-blue: #007aff;
-  --system-red: #ff3b30;
-  --system-yellow: #ffcc00;
-  --system-green: #34c759;
-  --border-color: #e5e5ea;
+    /* Colors from DESIGN.md */
+    --primary: #0060a9;
+    --primary-container: #0066b3;
+    --surface: #fcf9f8;
+    --surface-container-low: #f6f3f2;
+    --surface-container: #f0eded;
+    --surface-container-highest: #e5e2e1;
+    --surface-container-lowest: #ffffff;
+    --on-surface: #1c1b1b;
+    --on-surface-variant: #414751;
+    --outline-variant: rgba(193, 199, 211, 0.15); /* Ghost Border 15% */
+
+    /* Semantic Colors */
+    --error: #ba1a1a;
+    --warning: #a04c01;
+    --safe: #004e8b;
+
+    /* Spacing & Radii */
+    --radius-default: 0.5rem;
+    --radius-xl: 1rem;
+    --spacing-xl: 1.5rem;
+}
+
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
-    sans-serif;
-  background-color: var(--bg-color);
-  margin: 0;
-  color: var(--text-main);
-  -webkit-tap-highlight-color: transparent;
+    font-family: 'Inter', sans-serif;
+    background-color: var(--surface);
+    color: var(--on-surface);
+    margin: 0;
+    line-height: 1.5;
+    min-height: 100vh;
+    padding-bottom: 80px; /* Platz für BottomNav */
 }
 
-/* --- Header & Status --- */
-.app-header {
-  background: var(--card-bg);
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border-color);
-  position: sticky;
-  top: 0;
-  z-index: 10;
+h1,
+h2,
+h3,
+.font-headline {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.02em;
 }
 
-.header-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* Hilfsklasse für das No-Line-Rule */
+.tonal-card {
+    background-color: var(--surface-container-lowest);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    border: none;
 }
 
-.status-container {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.light {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.2);
-  transition: background-color 0.3s ease;
-}
-
-.light-red {
-  background-color: var(--system-red);
-}
-.light-yellow {
-  background-color: var(--system-yellow);
-}
-.light-green {
-  background-color: var(--system-green);
-}
-
-.totals {
-  display: flex;
-  flex-direction: column;
-}
-
-#total-amount {
-  font-size: 1.4rem;
-  font-weight: 700;
-  line-height: 1.1;
-}
-
-/* --- Styling für Tag-Anzeige --- */
-.day-label {
-  font-size: 0.75rem;
-  color: var(--accent-blue);
-  text-transform: uppercase;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  margin-bottom: 2px;
-}
-
-/* --- Header Actions (Undo Button) --- */
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.icon-btn {
-  background: none;
-  border: none;
-  font-size: 1.8rem;
-  color: var(--accent-blue);
-  cursor: pointer;
-  padding: 4px 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.2s ease;
-}
-
-.icon-btn:active {
-  opacity: 0.5;
-}
-
-.icon-btn:disabled {
-  color: var(--text-sub);
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-/* --- Progress Bar --- */
-.progress-container {
-  margin-top: 16px;
-  height: 8px;
-  background-color: var(--border-color);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  width: 0%; /* Wird per JS gesteuert */
-  background-color: var(--system-red);
-  border-radius: 4px;
-  transition:
-    width 0.4s ease,
-    background-color 0.4s ease;
+.hidden {
+    display: none !important;
 }
 
 main {
-  padding: 16px;
+    padding-top: 5rem; /* ca. 80px */
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    max-width: 42rem;
+    margin: 0 auto;
 }
 
-h2 {
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  color: var(--text-sub);
-  margin-bottom: 10px;
-  margin-left: 4px;
-  letter-spacing: 0.5px;
+/* Header Basis-Layout */
+.fixed-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 64px;
+    z-index: 50;
+    background-color: var(--surface);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1.5rem;
+    box-shadow: 0 4px 12px rgba(28, 27, 27, 0.08);
 }
 
-/* --- Verlaufsliste (History) --- */
-.history-container {
-  margin-bottom: 24px;
+/* Bottom Navigation Korrektur */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 50;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: var(--surface-container-lowest);
+    box-shadow: 0 -4px 12px rgba(28, 27, 27, 0.04);
+    border-radius: 1rem 1rem 0 0;
+    padding: 0.75rem 1rem;
 }
 
-.history-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--on-surface-variant);
+    text-decoration: none;
+    background: none;
+    border: none;
+    padding: 0.5rem 1rem;
+    transition:
+        transform 0.2s,
+        color 0.2s;
+    cursor: pointer;
 }
 
-.history-item {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.85rem;
-  color: var(--text-sub);
-  padding: 6px 12px;
-  background: var(--card-bg);
-  border-radius: 8px;
-  opacity: 0.8;
+/* Aktiver Tab Style laut Vorlage */
+.nav-item.active {
+    color: var(--primary);
+    background-color: rgba(0, 102, 179, 0.1); /* 10% Primary Fill */
+    border-radius: 0.75rem;
+    transform: scale(0.95);
 }
 
-.history-item-main {
-  display: flex;
-  flex-direction: column;
+.nav-item .material-symbols-outlined {
+    font-size: 1.5rem;
+    margin-bottom: 0.125rem;
 }
 
-.undo-hint {
-  font-size: 0.65rem;
-  color: var(--accent-blue);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 2px;
+/* Icon Fill bei aktivem Zustand */
+.nav-item.active .material-symbols-outlined {
+    font-variation-settings: 'FILL' 1;
 }
 
-/* Der neueste Eintrag wird optisch hervorgehoben */
-.history-item.newest {
-  opacity: 1;
-  color: var(--text-main);
-  font-weight: 500;
-  border-left: 3px solid var(--accent-blue);
+.nav-item span:last-child {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
-.history-empty {
-  font-size: 0.85rem;
-  color: var(--text-sub);
-  font-style: italic;
-  padding: 0 4px;
+/* Branding Links */
+.header-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-/* --- Favoriten --- */
-.grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 28px;
+.header-icon {
+    color: var(--primary);
+    font-variation-settings:
+        'FILL' 0,
+        'wght' 400;
 }
 
-button.fav-btn {
-  background: var(--card-bg);
-  border: none;
-  border-radius: 14px;
-  padding: 16px 12px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
+.brand-text {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    font-size: 1.125rem;
+    letter-spacing: 0.1em; /* tracking-widest */
+    text-transform: uppercase;
+    color: var(--primary);
 }
 
-button.fav-btn:active {
-  opacity: 0.7;
+/* Tag-Badge Rechts */
+.day-badge {
+    background-color: var(--surface-container); /* Sunken Element Look */
+    color: var(--primary);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: 0.875rem;
+    padding: 0.375rem 1rem; /* px-4 py-1.5 */
+    border-radius: 9999px; /* rounded-full */
+    letter-spacing: -0.01em;
 }
 
-button.fav-btn .icon {
-  font-size: 1.5rem;
+/* Nautical Ring */
+.ring-container {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-button.fav-btn small {
-  color: var(--text-sub);
-  font-weight: normal;
+.nautical-ring {
+    transform: rotate(-90deg);
+    width: 100%;
+    height: 100%;
 }
 
-/* --- Listenansicht --- */
-.list {
-  background: var(--card-bg);
-  border-radius: 14px;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  overflow: hidden;
+.nautical-ring .ring-fill {
+    stroke-dasharray: 477; /* Standard für Tag-Seite (r=76) */
 }
 
-.list-item {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border-color);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.ring-track {
+    fill: none;
+    stroke: var(--surface-container);
+    stroke-width: 8;
 }
 
-.list-item:last-child {
-  border-bottom: none;
+.ring-fill {
+    fill: none;
+    stroke: var(--primary);
+    stroke-width: 12;
+    stroke-linecap: round;
+    stroke-dasharray: 691;
+    transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.drink-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.ring-info {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 180px;
+    z-index: 2;
 }
 
-.drink-icon {
-  font-size: 1.4rem;
+.display-lg {
+    font-size: 2rem;
+    font-weight: 800;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: var(--on-surface);
+    letter-spacing: -0.05em;
+    line-height: 1;
 }
 
-.drink-text {
-  display: flex;
-  flex-direction: column;
+.label-xs {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--on-surface-variant);
+    margin-top: 4px;
 }
 
-.drink-name {
-  font-weight: 500;
-  font-size: 1rem;
-}
-.drink-price {
-  font-size: 0.85rem;
-  color: var(--text-sub);
-}
-
-.add-btn {
-  background: var(--bg-color);
-  border: none;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  font-size: 1.4rem;
-  color: var(--accent-blue);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
+/* Favorites Grid */
+.favorites-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 1rem;
 }
 
-.add-btn:active {
-  background: #e5e5ea;
+.fav-card {
+    background-color: var(--surface-container-low);
+    padding: 1rem;
+    border-radius: var(--radius-xl);
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: background-color 0.2s;
 }
 
-/* --- Hilfsklassen --- */
-.hidden {
-  display: none !important;
+.fav-card:active {
+    background-color: var(--surface-container);
 }
 
-/* --- Reiseübersicht --- */
-.grand-total-box {
-  background: var(--card-bg);
-  border-radius: 14px;
-  padding: 24px;
-  text-align: center;
-  margin-bottom: 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+.fav-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--on-surface);
+}
+.fav-price {
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: var(--primary);
 }
 
-.grand-total-box .label {
-  display: block;
-  font-size: 0.85rem;
-  color: var(--text-sub);
-  text-transform: uppercase;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  margin-bottom: 8px;
+/* Buttons */
+.action-grid {
+    display: flex;
+    gap: 12px;
+    margin-top: 1.5rem;
+    width: 100%;
 }
 
-.grand-total-box .amount {
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: var(--text-main);
+.primary-btn {
+    flex: 1;
+    background: linear-gradient(to bottom, #004e8b, #0066b3);
+    color: white;
+    border-radius: var(--radius-default);
+    padding: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
-.overview-day {
-  font-weight: 600;
-  font-size: 1rem;
+/* Suche */
+.search-section {
+    margin: var(--spacing-xl) 0;
 }
 
-.overview-details {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+.search-bar {
+    position: relative;
+    display: flex;
+    align-items: center;
 }
 
-.overview-total {
-  font-weight: 600;
-  font-size: 1rem;
+.search-input {
+    width: 100%;
+    background-color: var(--surface-container-highest); /* Aus DESIGN.md */
+    border: none;
+    border-radius: var(--radius-xl);
+    padding: 1rem 1rem 1rem 3.5rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    color: var(--on-surface);
+    outline: none;
+    transition: box-shadow 0.2s;
 }
 
-.overview-count {
-  font-size: 0.75rem;
-  color: var(--text-sub);
-  margin-top: 2px;
+.search-input:focus {
+    /* Ghost Border (20% opacity) laut DESIGN.md */
+    box-shadow: 0 0 0 2px rgba(0, 96, 169, 0.2);
 }
 
-.grand-total-box .count-sub {
-  display: block;
-  margin-top: 8px;
-  font-size: 0.85rem;
-  color: var(--text-sub);
+.search-icon {
+    position: absolute;
+    left: 1.25rem;
+    color: var(--primary);
+}
+
+/* Kategorien (Akkordeon) */
+.category-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.category-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.category-brand {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.category-icon-wrapper {
+    width: 40px;
+    height: 40px;
+    background-color: var(--surface-container);
+    border-radius: var(--radius-default);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--on-surface-variant);
+}
+
+.category-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.drink-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: var(--surface-container-lowest);
+    border-radius: var(--radius-default);
+    margin-top: 0.75rem;
+}
+
+.drink-item-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.drink-item-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.drink-item-price {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    color: var(--primary);
+}
+
+/* Dashboard Hero & Large Ring */
+.ring-container-lg {
+    position: relative;
+    width: 256px;
+    height: 256px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ring-container-lg .nautical-ring .ring-fill {
+    stroke-dasharray: 691; /* Für Dashboard (r=110) */
+}
+
+.display-xl {
+    font-size: 2.25rem;
+    font-weight: 800;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: var(--on-surface);
+    letter-spacing: -0.06em;
+    line-height: 1.1;
+}
+
+/* Status Badges */
+.badge-amber {
+    background-color: #fef3c7;
+    color: #b45309;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-top: 16px;
+    white-space: nowrap;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.stat-item {
+    background-color: var(--surface-container-low);
+    padding: 1.25rem;
+    border-radius: var(--radius-xl);
+}
+
+/* Social Table */
+.social-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.social-table th {
+    text-align: left;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--on-surface-variant);
+    padding: 1rem;
+    background-color: var(--surface-container);
+}
+
+.social-table td {
+    padding: 1rem;
+    font-size: 0.875rem;
+}
+
+.social-table tr:nth-child(even) {
+    background-color: var(--surface-container-low);
+}
+
+/* Meistgetrunken Stack */
+.drink-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* Historie Filter & Header */
+.screen-header {
+    margin-bottom: 2rem;
+}
+.display-md {
+    font-size: 1.875rem;
+    margin-bottom: 1.5rem;
+}
+
+.filter-tabs {
+    display: flex;
+    background-color: var(--surface-container);
+    padding: 4px;
+    border-radius: var(--radius-xl);
+    gap: 4px;
+}
+
+.tab-item {
+    flex: 1;
+    border: none;
+    background: none;
+    padding: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 10px;
+    color: var(--on-surface-variant);
+}
+
+.tab-item.active {
+    background-color: var(--surface-container-lowest);
+    color: var(--primary);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Chronologische Gruppen */
+.history-group-label {
+    position: sticky;
+    top: 64px; /* Unter dem Header */
+    background-color: var(--surface);
+    padding: 1rem 0;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--on-surface-variant);
+    z-index: 5;
+}
+
+.category-icon-wrapper-sm {
+    width: 28px;
+    height: 28px;
+    background-color: var(--surface-container);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.category-icon-wrapper-sm .material-symbols-outlined {
+    font-size: 16px;
+}
+
+/* History Card Layout Korrektur */
+.history-item-card {
+    background-color: var(--surface-container-lowest);
+    padding: 1.25rem;
+    border-radius: var(--radius-xl);
+    margin-bottom: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.card-row-main {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.drink-name-primary {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--on-surface);
+}
+
+.card-row-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: calc(28px + 0.75rem);
+}
+
+.history-time-stamp {
+    font-size: 0.8rem;
+    color: var(--on-surface-variant);
+    opacity: 0.7;
+}
+
+.history-price-tag {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    color: var(--primary);
+}
+
+.category-icon-wrapper-sm .material-symbols-outlined {
+    font-size: 18px;
+    font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24;
+    color: var(--primary);
+}
+
+.card-row-top {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.drink-name-bold {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--on-surface);
+}
+
+.card-row-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.history-time {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--on-surface-variant);
+    opacity: 0.6;
+}
+
+.history-price {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    color: var(--primary);
+    letter-spacing: -0.02em;
+}
+
+.drink-icon-emoji {
+    font-size: 1.1rem;
+}
+
+/* Zusammenfassung (Summary) */
+.stat-item-mini {
+    background-color: var(--surface-container-lowest);
+    padding: 1rem;
+    border-radius: var(--radius-default);
+}
+
+.budget-summary {
+    margin-top: 1.5rem;
+}
+.budget-label-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.budget-bar-track {
+    height: 6px;
+    background-color: var(--surface-container);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.budget-bar-fill {
+    height: 100%;
+    background-color: var(--primary);
+    width: 0%;
+    transition: width 0.6s ease;
 }
