@@ -39,7 +39,7 @@
        75–100%    → warning (Amber-Vorsicht)
        Über 100%  → safe    (Blue-Zone, Paket ausgeschöpft) */
     --color-error: #ba1a1a;
-    --color-warning: #a04c01; /* = tertiary-container */
+    --color-warning: #e08c00; /* = tertiary-container */
     --color-safe: #004e8b; /* = primary-container */
     --error-container: #ffdad6;
     --on-error: #ffffff;
@@ -253,7 +253,7 @@ body {
     margin: 0;
     line-height: 1.5;
     min-height: 100vh;
-    padding-bottom: 80px; /* Platz für BottomNav */
+    padding-bottom: 80px;
 }
 
 h1,
@@ -298,7 +298,6 @@ main {
     justify-content: space-between;
     align-items: center;
     padding: 0 1.5rem;
-    box-shadow: 0 4px 12px rgba(28, 27, 27, 0.08);
 }
 
 /* Bottom Navigation Korrektur */
@@ -312,7 +311,7 @@ main {
     justify-content: space-around;
     align-items: center;
     background-color: var(--surface-container-lowest);
-    box-shadow: 0 -4px 12px rgba(28, 27, 27, 0.04);
+    box-shadow: var(--shadow-float);
     border-radius: 1rem 1rem 0 0;
     padding: 0.75rem 1rem;
 }
@@ -424,10 +423,18 @@ main {
 .ring-fill {
     fill: none;
     stroke: var(--primary);
-    stroke-width: 12;
+    stroke-width: 8;
     stroke-linecap: round;
     stroke-dasharray: 691;
     transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#progress-ring {
+    stroke-dasharray: 477;
+}
+
+#overall-progress-ring {
+    stroke-dasharray: 691;
 }
 
 .ring-info {
@@ -512,6 +519,35 @@ main {
     align-items: center;
     justify-content: center;
     gap: 8px;
+}
+
+.secondary-btn {
+    flex: 1;
+    background: none;
+    color: var(--primary);
+    border: 1.5px solid rgba(0, 102, 179, 0.25); /* Ghost Border */
+    border-radius: var(--radius-sm);
+    padding: 0.75rem;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.secondary-btn:active {
+    background-color: rgba(0, 102, 179, 0.06);
+}
+
+.secondary-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
 }
 
 /* Suche */

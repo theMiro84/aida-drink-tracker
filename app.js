@@ -57,19 +57,6 @@ const drinksData = [
 
 const favorites = drinksData.slice(0, 4);
 
-const categoryIconMap = {
-    Sprizz: 'slight_smile',
-    'Bier vom Fass': 'sports_bar',
-    Flaschenbier: 'sports_bar',
-    Cocktail: 'local_bar',
-    Kaffee: 'coffee',
-    Softdrink: 'local_drink',
-    Wasser: 'water_drop',
-    'Wein - WEISS': 'wine_bar',
-    'Wein - ROT': 'wine_bar',
-    'Säfte. Nektar & Schorlen': 'nephrology',
-};
-
 // --- 1. DATEN-NORMALISIERUNG & ZENTRALE BERECHNUNG ---
 
 function normalizeDay(dayData, fallbackDayNumber = 1) {
@@ -275,7 +262,6 @@ function init() {
 
     elements.undoBtn = document.getElementById('undo-btn');
     elements.nextDayBtn = document.getElementById('next-day-btn');
-    elements.overviewBtn = document.getElementById('overview-btn');
 
     elements.viewToday = document.getElementById('view-today');
     elements.viewOverview = document.getElementById('view-overview');
@@ -285,7 +271,6 @@ function init() {
 
     elements.undoBtn.addEventListener('click', undoLastDrink);
     elements.nextDayBtn.addEventListener('click', startNewDay);
-    elements.overviewBtn.addEventListener('click', toggleOverview);
 
     renderFavorites();
     renderDrinkList();
@@ -350,7 +335,8 @@ function renderOverview() {
         badge.className = 'badge-blue';
     }
 
-    document.getElementById('status-badge').textContent = `${Math.round(percentage)}% erreicht`;
+    document.getElementById('status-badge').textContent =
+        `${Math.round(percentage * 100)}% erreicht`;
     document.getElementById('total-drinks-count').textContent =
         `Gesamtanzahl: ${stats.totalDrinks}`;
 
