@@ -199,6 +199,26 @@
     margin-top: 4px;
 }
 
+.text-lg {
+    font-size: 1.125rem;
+    line-height: 1.3;
+}
+
+.text-md {
+    font-size: 1rem;
+    line-height: 1.4;
+}
+
+.text-sm {
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.text-xs {
+    font-size: 0.75rem;
+    line-height: 1.5;
+}
+
 /* ─── Utility: Schriftfamilien direkt ────────────────────────────
    Für Stellen, die nur die Familie, nicht die ganze Scale brauchen. */
 .font-headline {
@@ -393,7 +413,7 @@ main {
     letter-spacing: -0.01em;
 }
 
-/* Nautical Ring */
+/* ─── Nautical Ring ──────────────────────────────────────────── */
 .ring-container {
     position: relative;
     width: 180px;
@@ -404,14 +424,20 @@ main {
     justify-content: center;
 }
 
+.ring-container-lg {
+    position: relative;
+    width: 256px;
+    height: 256px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .nautical-ring {
     transform: rotate(-90deg);
     width: 100%;
     height: 100%;
-}
-
-.nautical-ring .ring-fill {
-    stroke-dasharray: 477; /* Standard für Tag-Seite (r=76) */
 }
 
 .ring-track {
@@ -425,16 +451,17 @@ main {
     stroke: var(--primary);
     stroke-width: 8;
     stroke-linecap: round;
-    stroke-dasharray: 691;
     transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #progress-ring {
     stroke-dasharray: 477;
+    stroke-dashoffset: 477;
 }
 
 #overall-progress-ring {
     stroke-dasharray: 691;
+    stroke-dashoffset: 691;
 }
 
 .ring-info {
@@ -696,6 +723,16 @@ main {
     background-color: var(--surface-container-low);
     padding: 1.25rem;
     border-radius: var(--radius-xl);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.stat-item span:last-child {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* Social Table */
