@@ -90,6 +90,157 @@
     --spacing-xl: var(--space-xl);
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   TYPOGRAFIE-SCALE
+   Zwei Familien nach DESIGN.md:
+   – Plus Jakarta Sans → Display, Headline  ("Horizon"-Elemente)
+   – Inter             → Body, Label        ("Navigation"-Elemente)
+   Hierarchie entsteht durch Gewichtskontrast, nicht durch Farbe.
+═══════════════════════════════════════════════════════════════ */
+
+/* ─── Display ────────────────────────────────────────────────────
+   Für große Fokus-Zahlen: Tagesausgabe, Paket-Total.
+   Laut DESIGN.md: display-lg für daily totals als "bold focal point". */
+.display-xl {
+    font-family: var(--font-display);
+    font-size: 2.5rem; /* 40px */
+    font-weight: 800;
+    letter-spacing: -0.06em;
+    line-height: 1;
+    color: var(--on-surface);
+}
+
+.display-lg {
+    font-family: var(--font-display);
+    font-size: 2rem; /* 32px */
+    font-weight: 800;
+    letter-spacing: -0.05em;
+    line-height: 1;
+    color: var(--on-surface);
+}
+
+.display-md {
+    font-family: var(--font-display);
+    font-size: 1.875rem; /* 30px */
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+    color: var(--on-surface);
+}
+
+/* ─── Headline ────────────────────────────────────────────────────
+   Für Sektions-Titel und Screen-Überschriften.
+   Pairing-Regel: headline-lg (Semi-bold) + body-md (Regular)
+   erzeugt visuelle Autorität ohne neue Farbe. */
+.headline-lg {
+    font-family: var(--font-display);
+    font-size: 1.25rem; /* 20px */
+    font-weight: 700; /* Semi-bold */
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+    color: var(--on-surface);
+}
+
+.headline-md {
+    font-family: var(--font-display);
+    font-size: 1.125rem; /* 18px */
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+    color: var(--on-surface);
+}
+
+/* ─── Body ────────────────────────────────────────────────────────
+   Inter für alle Fließtexte und funktionale Inhalte.
+   Laut DESIGN.md: hohe Lesbarkeit auch unter Sonnenlicht auf Deck. */
+.body-md {
+    font-family: var(--font-body);
+    font-size: 1rem; /* 16px */
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--on-surface);
+}
+
+.body-sm {
+    font-family: var(--font-body);
+    font-size: 0.875rem; /* 14px */
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--on-surface-variant);
+}
+
+/* ─── Label ───────────────────────────────────────────────────────
+   Für Buttons, Badges, Meta-Infos und Navigation.
+   label-md mit Uppercase + Letter-Spacing für Premium-Buttons. */
+.label-md {
+    font-family: var(--font-body);
+    font-size: 0.875rem; /* 14px */
+    font-weight: 600;
+    letter-spacing: 0.05em; /* Laut DESIGN.md für Button-Labels */
+    line-height: 1;
+}
+
+.label-sm {
+    font-family: var(--font-body);
+    font-size: 0.75rem; /* 12px */
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    line-height: 1;
+}
+
+.label-xs {
+    /* Bereits genutzt – Definition präzisiert */
+    font-family: var(--font-body);
+    font-size: 0.65rem; /* ~10px */
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--on-surface-variant);
+    margin-top: 4px;
+}
+
+/* ─── Utility: Schriftfamilien direkt ────────────────────────────
+   Für Stellen, die nur die Familie, nicht die ganze Scale brauchen. */
+.font-headline {
+    font-family: var(--font-display);
+}
+
+.font-body {
+    font-family: var(--font-body);
+}
+
+/* ─── Utility: Farb-Overrides ────────────────────────────────────
+   Sparsam einsetzen – Hierarchie primär über Gewicht, nicht Farbe. */
+.text-primary {
+    color: var(--primary);
+}
+.text-on-surface {
+    color: var(--on-surface);
+}
+.text-subtle {
+    color: var(--on-surface-variant);
+}
+.text-outline {
+    color: var(--outline);
+}
+
+/* ─── Utility: Gewicht ───────────────────────────────────────────*/
+.font-regular {
+    font-weight: 400;
+}
+.font-medium {
+    font-weight: 500;
+}
+.font-semibold {
+    font-weight: 600;
+}
+.font-bold {
+    font-weight: 700;
+}
+.font-extrabold {
+    font-weight: 800;
+}
+
 * {
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
