@@ -2,27 +2,92 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;800&family=Inter:wght@400;500;600&display=swap');
 
 :root {
-    /* Colors from DESIGN.md */
-    --primary: #0060a9;
-    --primary-container: #0066b3;
-    --surface: #fcf9f8;
-    --surface-container-low: #f6f3f2;
-    --surface-container: #f0eded;
-    --surface-container-highest: #e5e2e1;
-    --surface-container-lowest: #ffffff;
-    --on-surface: #1c1b1b;
+    /* ─── Primärfarbe ────────────────────────────────────────────
+       Normiert auf #0066B3 – konsistent mit allen Vorlage-Screens.
+       #0060A9 war der falsche Wert (entspricht primary-container). */
+    --primary: #0066b3;
+    --primary-container: #004e8b; /* Dunklerer Gradient-Wert für CTAs */
+    --primary-fixed: #d3e4ff;
+    --primary-fixed-dim: #a2c9ff;
+    --on-primary: #ffffff;
+
+    /* ─── Surface-Hierarchie ─────────────────────────────────────
+       Vollständige Palette nach DESIGN.md.
+       Tiefe entsteht durch Stacking, nicht durch Schatten. */
+    --surface: #fcf9f8; /* Base */
+    --surface-bright: #fcf9f8;
+    --surface-dim: #dcd9d9;
+    --surface-container-lowest: #ffffff; /* Floating (Cards) */
+    --surface-container-low: #f6f3f2; /* Leicht erhöht */
+    --surface-container: #f0eded; /* Sunken / Chips */
+    --surface-container-high: #eae7e7; /* Tiefer sunken */
+    --surface-container-highest: #e5e2e1; /* Input-Backgrounds */
+    --surface-variant: #e5e2e1;
+    --on-surface: #1c1b1b; /* Nie 100% Schwarz – laut DESIGN.md */
     --on-surface-variant: #414751;
-    --outline-variant: rgba(193, 199, 211, 0.15); /* Ghost Border 15% */
 
-    /* Semantic Colors */
-    --error: #ba1a1a;
-    --warning: #a04c01;
-    --safe: #004e8b;
+    /* ─── Outline ────────────────────────────────────────────────
+       "Ghost Border"-Regel: outline-variant bei 15% Opacity als
+       Trennlinie-Fallback. Keine 1px solid borders. */
+    --outline: #717782;
+    --outline-variant: rgba(193, 199, 211, 0.15);
 
-    /* Spacing & Radii */
-    --radius-default: 0.5rem;
-    --radius-xl: 1rem;
-    --spacing-xl: 1.5rem;
+    /* ─── Semantische Farben ─────────────────────────────────────
+       Benennung mit --color-Präfix für klare Unterscheidung
+       zu Surface-Tokens. Werte aus DESIGN.md:
+       Unter 75%  → error   (Warnung vor Restkapazität)
+       75–100%    → warning (Amber-Vorsicht)
+       Über 100%  → safe    (Blue-Zone, Paket ausgeschöpft) */
+    --color-error: #ba1a1a;
+    --color-warning: #a04c01; /* = tertiary-container */
+    --color-safe: #004e8b; /* = primary-container */
+    --error-container: #ffdad6;
+    --on-error: #ffffff;
+    --tertiary: #7c3900;
+    --tertiary-container: #a04c01;
+    --on-tertiary-container: #ffdac6;
+
+    /* ─── Typografie-Tokens ──────────────────────────────────────
+       Vorbereitung für Block 2.
+       Familien hier als Vars, Scale-Klassen folgen in Block 2. */
+    --font-display: 'Plus Jakarta Sans', sans-serif;
+    --font-body: 'Inter', sans-serif;
+
+    /* ─── Spacing ────────────────────────────────────────────────
+       Einheitliche Abstands-Tokens. Listenabstand laut DESIGN.md:
+       1.5rem (xl) zwischen List-Items. */
+    --space-xs: 0.25rem; /*  4px */
+    --space-sm: 0.5rem; /*  8px */
+    --space-md: 1rem; /* 16px */
+    --space-lg: 1.25rem; /* 20px */
+    --space-xl: 1.5rem; /* 24px – Listenabstand */
+    --space-2xl: 2rem; /* 32px */
+
+    /* ─── Radii ──────────────────────────────────────────────────
+       Laut DESIGN.md: keine harten 90°-Ecken.
+       Alles ≥ 8px (0.5rem). */
+    --radius-sm: 0.5rem; /*  8px – Standard CTA */
+    --radius-default: 0.5rem; /*  8px */
+    --radius-lg: 0.75rem; /* 12px */
+    --radius-xl: 1rem; /* 16px – Cards */
+    --radius-2xl: 1.5rem; /* 24px – Hero-Sections */
+    --radius-full: 9999px; /* Pills */
+
+    /* ─── Ring-Dimensionen ───────────────────────────────────────
+       Vereinheitlicht für Tag (r=76) und Dashboard (r=110).
+       stroke-width laut DESIGN.md: 8px – gilt für beide Ringe. */
+    --ring-stroke: 8; /* px, unitlos für SVG stroke-width */
+    --ring-circumference-sm: 477; /* 2π × 76 ≈ 477  (Tag-Ring) */
+    --ring-circumference-lg: 691; /* 2π × 110 ≈ 691 (Dashboard-Ring) */
+
+    /* ─── Elevation ──────────────────────────────────────────────
+       Laut DESIGN.md nur für FABs/Modals.
+       12px blur, 4% opacity, on-surface getönt. */
+    --shadow-float: 0 4px 12px rgba(28, 27, 27, 0.04);
+
+    /* Legacy-Aliase – werden in Block 3 entfernt,
+       sobald alle Stellen migriert sind */
+    --spacing-xl: var(--space-xl);
 }
 
 * {

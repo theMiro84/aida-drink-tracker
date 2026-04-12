@@ -70,10 +70,6 @@ const categoryIconMap = {
     'Säfte. Nektar & Schorlen': 'nephrology',
 };
 
-function getMaterialIcon(category) {
-    return categoryIconMap[category] || 'liquor';
-}
-
 // --- 1. DATEN-NORMALISIERUNG & ZENTRALE BERECHNUNG ---
 
 function normalizeDay(dayData, fallbackDayNumber = 1) {
@@ -500,11 +496,11 @@ function updateUI() {
     ring.style.strokeDashoffset = offset;
 
     if (total < goal * 0.75) {
-        ring.style.stroke = 'var(--error)';
+        ring.style.stroke = 'var(--color-error)';
     } else if (total < goal) {
-        ring.style.stroke = 'var(--warning)';
+        ring.style.stroke = 'var(--color-warning)';
     } else {
-        ring.style.stroke = 'var(--safe)';
+        ring.style.stroke = 'var(--color-safe)';
     }
 
     const remaining = Math.max(goal - total, 0);
