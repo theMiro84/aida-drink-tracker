@@ -275,6 +275,7 @@ function init() {
     renderFavorites();
     renderDrinkList();
     updateUI();
+    initAccordions();
 }
 
 let isOverviewVisible = false;
@@ -508,6 +509,43 @@ function getMaterialIcon(category) {
         'Säfte. Nektar & Schorlen': 'nephrology', // Beispielhaft
     };
     return icons[category] || 'liquor';
+}
+
+// ─── Akkordeon-Toggle ─────────────────────────────────────────
+
+function initAccordions() {
+    const categoryItems = document.querySelectorAll('.category-item');
+
+    categoryItems.forEach((item) => {
+        const header = item.querySelector('.category-header');
+        const content = item.querySelector('.category-content');
+        const iconWrapper = item.querySelector('.category-icon-wrapper');
+        const icon = item.querySelector('.category-header .material-symbols-outlined:last-child');
+
+        if (!header) return;
+
+        header.addEventListener('click', () => {
+            const isOpen = item.classList.contains('is-open');
+
+            categoryItems.forEach((other) => {
+                if (other !== item) {
+                    other.classList.remove('is-open');
+                    const otherContent = other.querySelector('.category-content');
+                    if (otherContent) otherContent.style.display = 'none';
+                }
+            });
+
+            if (isOpen) {
+                item.classList.remove('is-open');
+                if (content) content.style.display = 'none';
+            } else {
+                item.classList.add('is-open');
+                if (content) content.style.display = 'block';
+            }
+        });
+
+        if (content) content.style.display = 'none';
+    });
 }
 
 init();
