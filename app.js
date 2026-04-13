@@ -77,6 +77,7 @@ function normalizeDay(dayData, fallbackDayNumber = 1) {
                 id: String(drink.id || 'unknown'),
                 name: String(drink.name || 'Unbekanntes Getränk'),
                 price: Number(drink.price) || 0,
+                isNonAlcoholic: drink.isNonAlcoholic === true,
                 timestamp: drink.timestamp || new Date().toISOString(),
             };
         });
@@ -188,6 +189,7 @@ function addDrink(drink) {
         name: drink.name,
         category: drink.category || 'Cocktail',
         price: Number(drink.price) || 0,
+        isNonAlcoholic: drink.isNonAlcoholic === true,
         timestamp: new Date().toISOString(),
     });
 
@@ -402,7 +404,7 @@ function renderHistory() {
     if (state.currentDay.drinks.length === 0) {
         container.innerHTML =
             '<p class="text-sm text-center py-8 opacity-50 italic">Noch keine Getränke erfasst.</p>';
-        updateSummary(0, 0);
+        updateSummary(0, 0, 0);
         return;
     }
 
@@ -418,7 +420,7 @@ function renderHistory() {
 
         const groupDiv = document.createElement('div');
         groupDiv.className = 'history-group';
-        groupDiv.innerHTML = `<div class="history-group-label section-label">${groupName}</div>`;
+        groupDiv.innerHTML = `<div class="history-group-label">${groupName}</div>`;
 
         groupDrinks.forEach((entry) => {
             const time = new Date(entry.timestamp).toLocaleTimeString([], {
@@ -447,7 +449,8 @@ function renderHistory() {
         container.appendChild(groupDiv);
     });
 
-    updateSummary(state.currentDay.drinks.length, state.currentDay.total);
+    const alcoholCount = state.currentDay.drinks.filter((d) => !d.isNonAlcoholic).length;
+    updateSummary(state.currentDay.drinks.length, state.currentDay.total, alcoholCount);
 }
 
 function getTimeGroupName(timestamp) {
@@ -458,8 +461,9 @@ function getTimeGroupName(timestamp) {
     return 'Nacht';
 }
 
-function updateSummary(count, total) {
+function updateSummary(count, total, alcoholCount = 0) {
     document.getElementById('summary-count').textContent = count;
+    document.getElementById('summary-alcohol-count').textContent = alcoholCount;
     document.getElementById('summary-budget-total').textContent = formatCurrency(total);
 
     const percentage = Math.min((total / CONFIG.DAILY_GOAL) * 100, 100);
