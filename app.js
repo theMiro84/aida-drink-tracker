@@ -418,7 +418,7 @@ function renderHistory() {
 
         const groupDiv = document.createElement('div');
         groupDiv.className = 'history-group';
-        groupDiv.innerHTML = `<div class="history-group-label">${groupName}</div>`;
+        groupDiv.innerHTML = `<div class="history-group-label section-label">${groupName}</div>`;
 
         groupDrinks.forEach((entry) => {
             const time = new Date(entry.timestamp).toLocaleTimeString([], {
@@ -497,7 +497,7 @@ function updateUI() {
 
 function getMaterialIcon(category) {
     const icons = {
-        Sprizz: 'slight_smile', // Oder ein passendes Symbol wie 'local_bar'
+        Sprizz: 'local_bar',
         'Bier vom Fass': 'sports_bar',
         Flaschenbier: 'sports_bar',
         Cocktail: 'local_bar',
@@ -506,7 +506,7 @@ function getMaterialIcon(category) {
         Wasser: 'water_drop',
         'Wein - WEISS': 'wine_bar',
         'Wein - ROT': 'wine_bar',
-        'Säfte. Nektar & Schorlen': 'nephrology', // Beispielhaft
+        'Säfte. Nektar & Schorlen': 'local_drink',
     };
     return icons[category] || 'liquor';
 }

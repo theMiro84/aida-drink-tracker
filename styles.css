@@ -189,14 +189,13 @@
 }
 
 .label-xs {
-    /* Bereits genutzt – Definition präzisiert */
     font-family: var(--font-body);
-    font-size: 0.65rem; /* ~10px */
+    font-size: 0.875rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.06em;
     color: var(--on-surface-variant);
-    margin-top: 4px;
+    line-height: 1.2;
 }
 
 .text-lg {
@@ -472,24 +471,6 @@ main {
     text-align: center;
     width: 180px;
     z-index: 2;
-}
-
-.display-lg {
-    font-size: 2rem;
-    font-weight: 800;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    color: var(--on-surface);
-    letter-spacing: -0.05em;
-    line-height: 1;
-}
-
-.label-xs {
-    font-size: 0.65rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--on-surface-variant);
-    margin-top: 4px;
 }
 
 /* Favorites Grid */
@@ -772,10 +753,6 @@ main {
 .screen-header {
     margin-bottom: 2rem;
 }
-.display-md {
-    font-size: 1.875rem;
-    margin-bottom: 1.5rem;
-}
 
 .filter-tabs {
     display: flex;
@@ -805,14 +782,9 @@ main {
 /* Chronologische Gruppen */
 .history-group-label {
     position: sticky;
-    top: 64px; /* Unter dem Header */
+    top: 64px;
     background-color: var(--surface);
-    padding: 1rem 0;
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: var(--on-surface-variant);
+    padding: 0.75rem 0;
     z-index: 5;
 }
 
