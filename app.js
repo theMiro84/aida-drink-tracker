@@ -215,9 +215,7 @@ function startNewDay() {
     }
 
     if (
-        confirm(
-            `Möchtest du Tag ${state.currentDay.day} wirklich abschließen?\nEin neuer, leerer Tag wird gestartet.`,
-        )
+        confirm(`Möchtest du Tag ${state.currentDay.day} wirklich abschließen?\nEin neuer, leerer Tag wird gestartet.`)
     ) {
         // Tag ins Archiv schieben (Kopie erzeugen)
         state.archive.push(JSON.parse(JSON.stringify(state.currentDay)));
@@ -338,10 +336,8 @@ function renderOverview() {
         badge.className = 'badge-blue';
     }
 
-    document.getElementById('status-badge').textContent =
-        `${Math.round(percentage * 100)}% erreicht`;
-    document.getElementById('total-drinks-count').textContent =
-        `Gesamtanzahl: ${stats.totalDrinks}`;
+    document.getElementById('status-badge').textContent = `${Math.round(percentage * 100)}% erreicht`;
+    document.getElementById('total-drinks-count').textContent = `Gesamtanzahl: ${stats.totalDrinks}`;
 
     const topList = document.getElementById('top-drinks-list');
     topList.innerHTML = '';
@@ -402,8 +398,7 @@ function renderHistory() {
     container.innerHTML = '';
 
     if (state.currentDay.drinks.length === 0) {
-        container.innerHTML =
-            '<p class="text-sm text-center py-8 opacity-50 italic">Noch keine Getränke erfasst.</p>';
+        container.innerHTML = '<p class="text-sm text-center py-8 opacity-50 italic">Noch keine Getränke erfasst.</p>';
         updateSummary(0, 0, 0);
         return;
     }
@@ -495,8 +490,7 @@ function updateUI() {
     }
 
     const remaining = Math.max(goal - total, 0);
-    document.getElementById('limit-info').textContent =
-        `Limit verbleibend: ${formatCurrency(remaining)}`;
+    document.getElementById('limit-info').textContent = `Limit verbleibend: ${formatCurrency(remaining)}`;
 }
 
 function getMaterialIcon(category) {
