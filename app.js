@@ -189,7 +189,7 @@ function addDrink(drink) {
         name: drink.name,
         category: drink.category || 'Cocktail',
         price: Number(drink.price) || 0,
-        isNonAlcoholic: drink.isNonAlcoholic === true,
+        isNonAlcoholic: drink.isNonAlcoholic ?? false,
         timestamp: new Date().toISOString(),
     });
 
@@ -449,8 +449,8 @@ function renderHistory() {
         container.appendChild(groupDiv);
     });
 
-    const alcoholCount = state.currentDay.drinks.filter((d) => !d.isNonAlcoholic).length;
-    updateSummary(state.currentDay.drinks.length, state.currentDay.total, alcoholCount);
+    const alcoholicCount = state.currentDay.drinks.filter((d) => d.isNonAlcoholic === false).length;
+    updateSummary(state.currentDay.drinks.length, alcoholicCount, state.currentDay.total);
 }
 
 function getTimeGroupName(timestamp) {
@@ -461,9 +461,9 @@ function getTimeGroupName(timestamp) {
     return 'Nacht';
 }
 
-function updateSummary(count, total, alcoholCount = 0) {
+function updateSummary(count, alcoholicCount, total) {
     document.getElementById('summary-count').textContent = count;
-    document.getElementById('summary-alcohol-count').textContent = alcoholCount;
+    document.getElementById('summary-alcoholic-count').textContent = alcoholicCount;
     document.getElementById('summary-budget-total').textContent = formatCurrency(total);
 
     const percentage = Math.min((total / CONFIG.DAILY_GOAL) * 100, 100);

@@ -214,8 +214,8 @@
 .section-header-icon {
     display: flex;
     align-items: center;
-    gap: var(--space-sm);
-    margin-bottom: var(--space-md);
+    gap: var(--space-xs);
+    margin-bottom: var(--space-xs);
 }
 
 /* ─── Utility: Schriftfamilien ───────────────────────────────────
@@ -497,6 +497,7 @@ main {
     flex-direction: column;
     align-items: center;
     text-align: center;
+    gap: var(--space-sm);
     width: 180px;
     z-index: 2;
 }
@@ -686,7 +687,7 @@ main {
 .category-header .material-symbols-outlined:last-child {
     transition: transform 0.25s ease;
     color: var(--on-surface-variant);
-    margin-right: var(--space-sm);
+    /* margin-right: var(--space-sm); */
     flex-shrink: 0;
 }
 
