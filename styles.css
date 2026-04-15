@@ -712,7 +712,10 @@ main {
     padding: 1rem;
     background-color: var(--surface-container-lowest);
     border-radius: var(--radius-default);
-    /* margin-top: 0.75rem; */
+}
+
+.drink-item.tonal-card {
+    margin-bottom: 0;
 }
 
 .drink-item-info {
@@ -800,6 +803,7 @@ main {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    margin-bottom: var(--space-lg);
 }
 
 /* ═══════════════════════════════════════════════════════════════
