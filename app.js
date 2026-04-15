@@ -463,7 +463,7 @@ function getTimeGroupName(timestamp) {
 
 function updateSummary(count, alcoholicCount, total) {
     document.getElementById('summary-count').textContent = count;
-    document.getElementById('summary-alcoholic-count').textContent = alcoholicCount;
+    document.getElementById('summary-alcohol-count').textContent = alcoholicCount;
     document.getElementById('summary-budget-total').textContent = formatCurrency(total);
 
     const percentage = Math.min((total / CONFIG.DAILY_GOAL) * 100, 100);

@@ -214,8 +214,8 @@
 .section-header-icon {
     display: flex;
     align-items: center;
-    gap: var(--space-xs);
-    margin-bottom: var(--space-xs);
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
 }
 
 /* ─── Utility: Schriftfamilien ───────────────────────────────────
@@ -317,6 +317,7 @@ h3,
     border-radius: var(--radius-xl);
     padding: var(--space-xl);
     border: none;
+    margin-bottom: var(--space-lg);
 }
 
 .hidden {
@@ -711,7 +712,7 @@ main {
     padding: 1rem;
     background-color: var(--surface-container-lowest);
     border-radius: var(--radius-default);
-    margin-top: 0.75rem;
+    /* margin-top: 0.75rem; */
 }
 
 .drink-item-info {
@@ -750,8 +751,7 @@ main {
 .stats-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-top: 2rem;
+    gap: var(--space-md);
 }
 
 .stat-item {
@@ -806,8 +806,13 @@ main {
    HISTORIE
 ═══════════════════════════════════════════════════════════════ */
 
-.screen-header {
-    margin-bottom: 2rem;
+.screen-title {
+    margin-bottom: var(--space-xl);
+}
+
+.filter-tabs-section {
+    margin-bottom: var(--space-md);
+    margin-top: var(--space-xl);
 }
 
 .filter-tabs {
@@ -836,16 +841,12 @@ main {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-/* Chronologische Gruppen-Labels ("Abend", "Nachmittag" etc.)
-   Sticky unter dem Header, Typografie via .section-label definiert. */
 .history-group-label {
     position: sticky;
     top: 64px;
     background-color: var(--surface);
     padding: 0.75rem 0;
     z-index: 5;
-    /* Typografie – identisch mit .section-label, hier explizit
-       damit app.js nur eine Klasse braucht */
     font-family: var(--font-body);
     font-size: 0.875rem;
     font-weight: 700;
@@ -921,7 +922,7 @@ main {
 /* Zusammenfassung */
 .stat-item-mini {
     background-color: var(--surface-container-lowest);
-    padding: 1rem;
+    padding: 0 1rem 1rem 1rem;
     border-radius: var(--radius-default);
 }
 
