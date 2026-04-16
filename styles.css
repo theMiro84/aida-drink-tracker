@@ -2,18 +2,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;800&family=Inter:wght@400;500;600&display=swap');
 
 :root {
-    /* ─── Primärfarbe ────────────────────────────────────────────
-       Normiert auf #0066B3 – konsistent mit allen Vorlage-Screens.
-       #0060A9 war der falsche Wert (entspricht primary-container). */
     --primary: #0066b3;
     --primary-container: #004e8b; /* Dunklerer Gradient-Wert für CTAs */
     --primary-fixed: #d3e4ff;
     --primary-fixed-dim: #a2c9ff;
     --on-primary: #ffffff;
 
-    /* ─── Surface-Hierarchie ─────────────────────────────────────
-       Vollständige Palette nach DESIGN.md.
-       Tiefe entsteht durch Stacking, nicht durch Schatten. */
     --surface: #fcf9f8; /* Base */
     --surface-bright: #fcf9f8;
     --surface-dim: #dcd9d9;
@@ -26,18 +20,9 @@
     --on-surface: #1c1b1b; /* Nie 100% Schwarz – laut DESIGN.md */
     --on-surface-variant: #414751;
 
-    /* ─── Outline ────────────────────────────────────────────────
-       "Ghost Border"-Regel: outline-variant bei 15% Opacity als
-       Trennlinie-Fallback. Keine 1px solid borders. */
     --outline: #717782;
     --outline-variant: rgba(193, 199, 211, 0.15);
 
-    /* ─── Semantische Farben ─────────────────────────────────────
-       Benennung mit --color-Präfix für klare Unterscheidung
-       zu Surface-Tokens. Werte aus DESIGN.md:
-       Unter 75%  → error   (Warnung vor Restkapazität)
-       75–100%    → warning (Amber-Vorsicht)
-       Über 100%  → safe    (Blue-Zone, Paket ausgeschöpft) */
     --color-error: #ba1a1a;
     --color-warning: #e08c00; /* = tertiary-container */
     --color-safe: #004e8b; /* = primary-container */
@@ -47,16 +32,11 @@
     --tertiary-container: #a04c01;
     --on-tertiary-container: #ffdac6;
 
-    /* ─── Typografie-Tokens ──────────────────────────────────────
-       Zwei Familien nach DESIGN.md:
-       – Plus Jakarta Sans → Display, Headline ("Horizon"-Elemente)
-       – Inter             → Body, Label       ("Navigation"-Elemente) */
     --font-display: 'Plus Jakarta Sans', sans-serif;
     --font-body: 'Inter', sans-serif;
+    --font-size-item-name: 0.95rem;
+    --font-size-item-sub: 0.75rem;
 
-    /* ─── Spacing ────────────────────────────────────────────────
-       Einheitliche Abstands-Tokens. Listenabstand laut DESIGN.md:
-       1.5rem (xl) zwischen List-Items. */
     --space-xs: 0.25rem; /*  4px */
     --space-sm: 0.5rem; /*  8px */
     --space-md: 1rem; /* 16px */
@@ -65,9 +45,9 @@
     --space-2xl: 2rem; /* 32px */
     --space-3xl: 3rem; /* 48px */
 
-    /* ─── Radii ──────────────────────────────────────────────────
-       Laut DESIGN.md: keine harten 90°-Ecken.
-       Alles ≥ 8px (0.5rem). */
+    --item-padding-v: var(--space-md);
+    --item-padding-h: var(--space-md);
+
     --radius-sm: 0.5rem; /*  8px – Standard CTA */
     --radius-default: 0.5rem; /*  8px */
     --radius-lg: 0.75rem; /* 12px */
@@ -75,16 +55,10 @@
     --radius-2xl: 1.5rem; /* 24px – Hero-Sections */
     --radius-full: 9999px; /* Pills */
 
-    /* ─── Ring-Dimensionen ───────────────────────────────────────
-       Vereinheitlicht für Tag (r=76) und Dashboard (r=110).
-       stroke-width laut DESIGN.md: 8px – gilt für beide Ringe. */
     --ring-stroke: 8; /* px, unitlos für SVG stroke-width */
     --ring-circumference-sm: 477; /* 2π × 76 ≈ 477  (Tag-Ring) */
     --ring-circumference-lg: 691; /* 2π × 110 ≈ 691 (Dashboard-Ring) */
 
-    /* ─── Elevation ──────────────────────────────────────────────
-       Laut DESIGN.md nur für FABs/Modals.
-       12px blur, 4% opacity, on-surface getönt. */
     --shadow-float: 0 4px 12px rgba(28, 27, 27, 0.04);
 }
 
@@ -733,33 +707,69 @@ main {
     display: none;
 }
 
-.drink-item {
+/* --- UNIFIED DRINK CARD (Tag, Übersicht, Historie) --- */
+.drink-card {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem;
-    background-color: var(--surface-container-lowest);
-    border-radius: var(--radius-default);
+    padding: var(--item-padding-v) var(--item-padding-h);
+    gap: var(--space-md);
+    background-color: transparent;
+    transition: background-color 0.2s;
+    cursor: pointer;
+    width: 100%;
+    border-radius: var(--radius-md); /* Für Tonal Cards */
 }
 
-.drink-item.tonal-card {
-    margin-bottom: 0;
+.drink-card:active {
+    background-color: var(--surface-container-low);
 }
 
-.drink-item-info {
+.drink-card-main {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    flex: 1;
+    min-width: 0; /* Erlaubt Text-Truncation */
+}
+
+.drink-card-info {
     display: flex;
     flex-direction: column;
+    gap: var(--space-xs); /* Konsistenter Gap zwischen Name und Sub-Label */
+    min-width: 0;
 }
 
-.drink-item-name {
-    font-weight: 700;
-    font-size: 0.95rem;
+.drink-card-name {
+    font-family: var(--font-body);
+    font-size: var(--font-size-item-name);
+    font-weight: 500;
+    color: var(--on-surface);
+    line-height: 1.3;
+    white-space: normal;
+    word-break: break-word;
 }
 
-.drink-item-price {
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-weight: 800;
+.drink-card-sub {
+    font-size: var(--font-size-item-sub);
+    color: var(--on-surface-variant);
+    text-transform: uppercase;
+    letter-spacing: 0.05rem;
+}
+
+.drink-card-sub.blue {
     color: var(--primary);
+    font-weight: 600;
+}
+
+.drink-card-value {
+    font-family: var(--font-body);
+    font-size: var(--font-size-item-name);
+    font-weight: 600;
+    color: var(--on-surface);
+    text-align: right;
+    white-space: nowrap; /* Verhindert Umbruch des €-Zeichens */
+    flex-shrink: 0; /* Blockiert das Zusammenquetschen des Preises */
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -890,12 +900,7 @@ main {
 /* History Cards */
 .history-item-card {
     background-color: var(--surface-container-lowest);
-    padding: 1.25rem;
-    border-radius: var(--radius-xl);
-    margin-bottom: 0.75rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    margin-bottom: var(--space-xs);
 }
 
 .card-row-main {

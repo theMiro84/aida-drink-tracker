@@ -292,36 +292,6 @@ function initSearch() {
     }
 }
 
-async function init() {
-    await loadCSVData();
-    loadState();
-
-    elements.favGrid = document.getElementById('fav-grid');
-    elements.drinkList = document.getElementById('drink-list');
-    elements.totalAmount = document.getElementById('total-amount');
-    elements.statusLight = document.getElementById('status-light');
-    elements.progressBar = document.getElementById('progress-bar');
-    elements.dayLabel = document.getElementById('day-label');
-    elements.historyList = document.getElementById('history-list');
-
-    elements.undoBtn = document.getElementById('undo-btn');
-    elements.nextDayBtn = document.getElementById('next-day-btn');
-
-    elements.viewToday = document.getElementById('view-today');
-    elements.viewOverview = document.getElementById('view-overview');
-    elements.overviewList = document.getElementById('overview-list');
-    elements.grandTotalAmount = document.getElementById('grand-total-amount');
-    elements.grandTotalCount = document.getElementById('grand-total-count');
-
-    elements.undoBtn.addEventListener('click', undoLastDrink);
-    elements.nextDayBtn.addEventListener('click', startNewDay);
-
-    initSearch();
-
-    renderDrinkList();
-    updateUI();
-}
-
 let isOverviewVisible = false;
 
 function switchScreen(screenId) {
@@ -391,15 +361,22 @@ function renderOverview() {
 
     topDrinks.forEach((drink) => {
         const item = document.createElement('div');
-        item.className = 'drink-item tonal-card';
-        item.style.marginBottom = '0.75rem';
+        item.className = 'drink-card tonal-card';
+        const iconName = getMaterialIcon(drink.latestName); // Jetzt mit Icon!
+
         item.innerHTML = `
-            <div class="drink-item-info">
-                <span class="drink-item-name">${drink.latestName}</span>
-                <span class="text-xs color-primary" style="color:var(--primary)">${drink.count}x bestellt</span>
+            <div class="drink-card-main">
+                <div class="category-icon-wrapper-sm">
+                 <span class="material-symbols-outlined">${iconName}</span>
+                </div>
+            <div class="drink-card-info">
+                <span class="drink-card-name">${drink.latestName}</span>
+                <span class="drink-card-sub blue">${drink.count}x bestellt</span>
             </div>
-            <span class="drink-item-price">${formatCurrency(drink.totalSpent)}</span>
+        </div>
+        <span class="drink-card-value">${formatCurrency(drink.totalSpent)}</span>
         `;
+
         topList.appendChild(item);
     });
 }
@@ -490,19 +467,19 @@ function renderDrinkList() {
         // 3. Getränke in diese Kategorie einfügen
         drinks.forEach((drink) => {
             const drinkDiv = document.createElement('div');
-            drinkDiv.className = 'drink-item';
+            drinkDiv.className = 'drink-card';
 
-            // Markierung, falls es nicht im Paket ist
             const extraBadge = !drink.isAI
                 ? '<span class="label-xs text-outline" style="margin-left:4px;">(Zuzahlung)</span>'
                 : '';
 
             drinkDiv.innerHTML = `
-                <div class="drink-item-info">
-                    <span class="drink-item-name">${drink.name}</span>
-                    <span class="text-xs uppercase tracking-widest text-outline">${drink.category} ${extraBadge}</span>
+                <div class="drink-card-main">
+                  <div class="drink-card-info">
+                    <span class="drink-card-name">${drink.name} ${extraBadge}</span>
+                  </div>
                 </div>
-                <span class="drink-item-price">${formatCurrency(drink.price)}</span>
+                <span class="drink-card-value">${formatCurrency(drink.price)}</span>
             `;
 
             // Klick-Event zum Hinzufügen
@@ -517,58 +494,122 @@ function renderDrinkList() {
     initAccordions();
 }
 
+let currentHistoryFilter = 'heute'; // globaler State für den Tab
+
+function initHistoryFilters() {
+    const tabs = document.querySelectorAll('#view-history .tab-item');
+    if (!tabs.length) return;
+
+    tabs.forEach((tab) => {
+        tab.addEventListener('click', (e) => {
+            // Optisches Highlighting der Tabs
+            tabs.forEach((t) => t.classList.remove('active'));
+            e.target.classList.add('active');
+
+            // Filter-Wert setzen
+            const text = e.target.textContent.toLowerCase();
+            if (text.includes('heute')) currentHistoryFilter = 'heute';
+            else if (text.includes('alle')) currentHistoryFilter = 'alle';
+            else if (text.includes('alkoholisch')) currentHistoryFilter = 'alkohol';
+
+            renderHistory();
+        });
+    });
+}
+
 function renderHistory() {
     const container = document.getElementById('history-groups-container');
+    if (!container) return;
     container.innerHTML = '';
 
-    if (state.currentDay.drinks.length === 0) {
-        container.innerHTML = '<p class="text-sm text-center py-8 opacity-50 italic">Noch keine Getränke erfasst.</p>';
-        updateSummary(0, 0, 0);
+    let drinksToRender = [];
+    let groupingMode = 'time';
+
+    if (currentHistoryFilter === 'heute') {
+        drinksToRender = [...state.currentDay.drinks];
+        groupingMode = 'time';
+    } else if (currentHistoryFilter === 'alkohol') {
+        drinksToRender = state.currentDay.drinks.filter((d) => d.isNonAlcoholic === false);
+        groupingMode = 'time';
+    } else if (currentHistoryFilter === 'alle') {
+        const allDays = [...state.archive, state.currentDay].filter(Boolean);
+        allDays.forEach((day) => {
+            day.drinks.forEach((d) => (d._dayLabel = `Tag ${day.day}`));
+        });
+        drinksToRender = allDays.flatMap((day) => day.drinks);
+        groupingMode = 'day';
+    }
+
+    if (drinksToRender.length === 0) {
+        container.innerHTML =
+            '<p class="text-sm text-center py-8 opacity-50 italic">Keine Getränke in dieser Ansicht.</p>';
+        updateSummaryCard();
         return;
     }
 
-    const groups = { Nacht: [], Abend: [], Nachmittag: [], Vormittag: [] };
-    state.currentDay.drinks.forEach((drink) => {
-        const group = getTimeGroupName(drink.timestamp);
-        groups[group].unshift(drink);
-    });
+    drinksToRender.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-    ['Abend', 'Nachmittag', 'Vormittag', 'Nacht'].forEach((groupName) => {
+    const groups = {};
+    if (groupingMode === 'time') {
+        groups['Nacht'] = [];
+        groups['Abend'] = [];
+        groups['Nachmittag'] = [];
+        groups['Vormittag'] = [];
+        drinksToRender.forEach((drink) => {
+            const group = getTimeGroupName(drink.timestamp);
+            groups[group].push(drink);
+        });
+    } else {
+        drinksToRender.forEach((drink) => {
+            const group = drink._dayLabel || 'Unbekannt';
+            if (!groups[group]) groups[group] = [];
+            groups[group].push(drink);
+        });
+    }
+
+    const groupNames = groupingMode === 'time' ? ['Nacht', 'Abend', 'Nachmittag', 'Vormittag'] : Object.keys(groups);
+
+    groupNames.forEach((groupName) => {
         const groupDrinks = groups[groupName];
-        if (groupDrinks.length === 0) return;
+        if (!groupDrinks || groupDrinks.length === 0) return;
 
         const groupDiv = document.createElement('div');
         groupDiv.className = 'history-group';
         groupDiv.innerHTML = `<div class="history-group-label">${groupName}</div>`;
 
         groupDrinks.forEach((entry) => {
-            const time = new Date(entry.timestamp).toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
-            });
-            const iconName = getMaterialIcon(entry.category);
+            const time = new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
             const card = document.createElement('div');
-            card.className = 'history-item-card';
+            card.className = 'drink-card history-item-card';
+            const iconName = getMaterialIcon(entry.category);
+            const extraBadge = !entry.isAI
+                ? '<span class="label-xs text-outline" style="margin-left:4px;">(Zuzahlung)</span>'
+                : '';
 
             card.innerHTML = `
-                <div class="card-row-main">
+                <div class="drink-card-main">
                     <div class="category-icon-wrapper-sm">
                         <span class="material-symbols-outlined">${iconName}</span>
                     </div>
-                    <span class="drink-name-primary">${entry.name}</span>
+                    <div class="drink-card-info">
+                        <span class="drink-card-name">${entry.name} ${extraBadge}</span>
+                        <span class="drink-card-sub">${time} Uhr</span>
+                    </div>
                 </div>
-                <div class="card-row-details">
-                    <span class="history-time-stamp">${time} Uhr</span>
-                    <span class="history-price-tag">${formatCurrency(entry.price)}</span>
-                </div>
-            `;
+                <span class="drink-card-value">${formatCurrency(entry.price)}</span>
+                `;
             groupDiv.appendChild(card);
         });
+
         container.appendChild(groupDiv);
     });
 
-    const alcoholicCount = state.currentDay.drinks.filter((d) => d.isNonAlcoholic === false).length;
+    updateSummaryCard();
+}
+
+function updateSummaryCard() {
+    const alcoholicCount = state.currentDay.drinks.filter((d) => !d.isNonAlcoholic).length;
     updateSummary(state.currentDay.drinks.length, alcoholicCount, state.currentDay.total);
 }
 
@@ -684,6 +725,37 @@ function initAccordions() {
 
         if (content) content.style.display = 'none';
     });
+}
+
+async function init() {
+    await loadCSVData();
+    loadState();
+
+    elements.favGrid = document.getElementById('fav-grid');
+    elements.drinkList = document.getElementById('drink-list');
+    elements.totalAmount = document.getElementById('total-amount');
+    elements.statusLight = document.getElementById('status-light');
+    elements.progressBar = document.getElementById('progress-bar');
+    elements.dayLabel = document.getElementById('day-label');
+    elements.historyList = document.getElementById('history-list');
+
+    elements.undoBtn = document.getElementById('undo-btn');
+    elements.nextDayBtn = document.getElementById('next-day-btn');
+
+    elements.viewToday = document.getElementById('view-today');
+    elements.viewOverview = document.getElementById('view-overview');
+    elements.overviewList = document.getElementById('overview-list');
+    elements.grandTotalAmount = document.getElementById('grand-total-amount');
+    elements.grandTotalCount = document.getElementById('grand-total-count');
+
+    elements.undoBtn.addEventListener('click', undoLastDrink);
+    elements.nextDayBtn.addEventListener('click', startNewDay);
+
+    initSearch();
+    initHistoryFilters();
+
+    renderDrinkList();
+    updateUI();
 }
 
 init().catch((err) => console.error('Kritischer Fehler beim Start:', err));
