@@ -361,8 +361,8 @@ function renderOverview() {
 
     topDrinks.forEach((drink) => {
         const item = document.createElement('div');
-        item.className = 'drink-card tonal-card';
-        const iconName = getMaterialIcon(drink.latestName); // Jetzt mit Icon!
+        item.className = 'drink-card';
+        const iconName = getMaterialIcon(drink.latestName);
 
         item.innerHTML = `
             <div class="drink-card-main">
@@ -444,7 +444,7 @@ function renderDrinkList() {
     // 2. Für jede Kategorie ein Akkordeon rendern
     for (const [category, drinks] of Object.entries(groupedDrinks)) {
         const categoryDiv = document.createElement('div');
-        categoryDiv.className = 'category-item tonal-card';
+        categoryDiv.className = 'category-item';
 
         const iconName = getMaterialIcon(category);
 
@@ -581,7 +581,7 @@ function renderHistory() {
             const time = new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
             const card = document.createElement('div');
-            card.className = 'drink-card history-item-card';
+            card.className = 'drink-card';
             const iconName = getMaterialIcon(entry.category);
             const extraBadge = !entry.isAI
                 ? '<span class="label-xs text-outline" style="margin-left:4px;">(Zuzahlung)</span>'

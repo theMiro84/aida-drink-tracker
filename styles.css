@@ -273,9 +273,6 @@ body {
     padding-bottom: 80px;
 }
 
-/* Globale Headline-Basis: Plus Jakarta Sans für h1–h3.
-   Spezifischere Klassen wie .section-label (0,1,0) überschreiben
-   diesen Elementselektor (0,0,1) automatisch. */
 h1,
 h2,
 h3,
@@ -285,14 +282,10 @@ h3,
     letter-spacing: -0.02em;
 }
 
-/* Hilfsklasse für das No-Line-Rule (DESIGN.md):
-   Tiefe durch Surface-Stacking, nicht durch Borders. */
 .tonal-card {
     background-color: var(--surface-container-lowest);
     border-radius: var(--radius-xl);
     padding: var(--space-xl);
-    border: none;
-    margin-bottom: var(--space-lg);
 }
 
 .hidden {
@@ -490,23 +483,25 @@ main {
 }
 
 .fav-card {
+    border: none;
     background-color: var(--surface-container-low);
     padding: 1rem;
     border-radius: var(--radius-xl);
     text-align: left;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: var(--space-xs);
     transition: background-color 0.2s;
 }
 
 .fav-card:active {
+    transform: scale(0.95);
     background-color: var(--surface-container);
 }
 
 .fav-name {
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--on-surface);
 }
 
@@ -641,16 +636,27 @@ main {
 
 .category-header {
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
+    padding: var(--space-md);
     cursor: pointer;
-    padding: var(--space-lg) var(--space-xl);
+    user-select: none;
+}
+
+.category-header:active {
+    background-color: var(--surface-container-highest);
+}
+
+.category-header .material-symbols-outlined:last-child {
+    transition: transform 0.25s ease;
+    color: var(--on-surface-variant);
+    flex-shrink: 0;
 }
 
 .category-brand {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: var(--space-md);
 }
 
 .category-icon-wrapper {
@@ -666,17 +672,24 @@ main {
 }
 
 .category-title {
-    font-size: 1.125rem;
+    font-size: 1.1rem;
     font-weight: 600;
+    color: var(--on-surface);
 }
 
 .category-item {
+    background-color: var(--surface-container-low);
+    border-radius: var(--radius-xl);
+    margin-bottom: var(--space-xs);
     overflow: hidden;
-    padding: 0;
+    display: flex;
+    flex-direction: column;
+    transition: background-color 0.2s;
+    isolation: isolate;
 }
 
-.category-item.tonal-card {
-    margin-bottom: 0;
+.category-item.is-open {
+    background-color: rgba(0, 102, 179, 0.04);
 }
 
 .category-item.is-open .category-icon-wrapper {
@@ -687,24 +700,12 @@ main {
     color: var(--primary);
 }
 
-.category-header .material-symbols-outlined:last-child {
-    transition: transform 0.25s ease;
-    color: var(--on-surface-variant);
-    /* margin-right: var(--space-sm); */
-    flex-shrink: 0;
-}
-
 .category-item.is-open .category-header .material-symbols-outlined:last-child {
     transform: rotate(180deg);
 }
 
-.category-item.is-open > .category-header {
-    background-color: rgba(0, 102, 179, 0.04);
-}
-
 .category-content {
-    padding: 0 var(--space-xl) var(--space-xl);
-    display: none;
+    padding: 0 var(--space-xs) var(--space-xs) var(--space-xs);
 }
 
 /* --- UNIFIED DRINK CARD (Tag, Übersicht, Historie) --- */
@@ -714,14 +715,20 @@ main {
     align-items: center;
     padding: var(--item-padding-v) var(--item-padding-h);
     gap: var(--space-md);
-    background-color: transparent;
-    transition: background-color 0.2s;
+
+    background-color: var(--surface-container-lowest);
+    border-radius: var(--radius-default);
+    margin-bottom: var(--space-xs);
+
+    transition:
+        transform 0.1s,
+        background-color 0.2s;
     cursor: pointer;
     width: 100%;
-    border-radius: var(--radius-md); /* Für Tonal Cards */
 }
 
 .drink-card:active {
+    transform: scale(0.98);
     background-color: var(--surface-container-low);
 }
 
@@ -752,24 +759,19 @@ main {
 
 .drink-card-sub {
     font-size: var(--font-size-item-sub);
-    color: var(--on-surface-variant);
+    color: var(--primary);
     text-transform: uppercase;
     letter-spacing: 0.05rem;
-}
-
-.drink-card-sub.blue {
-    color: var(--primary);
-    font-weight: 600;
 }
 
 .drink-card-value {
     font-family: var(--font-body);
     font-size: var(--font-size-item-name);
     font-weight: 600;
-    color: var(--on-surface);
+    color: var(--primary);
     text-align: right;
-    white-space: nowrap; /* Verhindert Umbruch des €-Zeichens */
-    flex-shrink: 0; /* Blockiert das Zusammenquetschen des Preises */
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -964,9 +966,9 @@ main {
 
 .stat-number {
     font-family: var(--font-display);
-    font-size: 1.75rem; /* 28px – deutlich sichtbar, passt in die Box */
+    font-size: 1.75rem;
     font-weight: 800;
-    color: var(--on-surface);
+    color: var(--primary);
     letter-spacing: -0.04em;
     line-height: 1;
 }
@@ -1003,4 +1005,12 @@ main {
     background-color: var(--primary);
     width: 0%;
     transition: width 0.6s ease;
+}
+
+#category-list,
+#top-drinks-list,
+#history-groups-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0; /* Da die Karten selbst margin-bottom haben */
 }
