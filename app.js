@@ -429,10 +429,8 @@ function renderDrinkList() {
     const container = document.getElementById('category-list');
     if (!container) return;
 
-    // Bestehendes HTML (das hartcodierte "Cocktails") leeren
     container.innerHTML = '';
 
-    // 1. Getränke nach Kategorie (Typ) gruppieren
     const groupedDrinks = {};
     drinksData.forEach((drink) => {
         if (!groupedDrinks[drink.category]) {
@@ -441,7 +439,6 @@ function renderDrinkList() {
         groupedDrinks[drink.category].push(drink);
     });
 
-    // 2. Für jede Kategorie ein Akkordeon rendern
     for (const [category, drinks] of Object.entries(groupedDrinks)) {
         const categoryDiv = document.createElement('div');
         categoryDiv.className = 'category-item';
@@ -464,14 +461,11 @@ function renderDrinkList() {
 
         const contentDiv = categoryDiv.querySelector('.category-content');
 
-        // 3. Getränke in diese Kategorie einfügen
         drinks.forEach((drink) => {
             const drinkDiv = document.createElement('div');
             drinkDiv.className = 'drink-card';
 
-            const extraBadge = !drink.isAI
-                ? '<span class="label-xs text-outline" style="margin-left:4px;">(Zuzahlung)</span>'
-                : '';
+            const extraBadge = !drink.isAI ? '<span class="label-xs text-outline">(Zuzahlung)</span>' : '';
 
             drinkDiv.innerHTML = `
                 <div class="drink-card-main">
@@ -482,7 +476,6 @@ function renderDrinkList() {
                 <span class="drink-card-value">${formatCurrency(drink.price)}</span>
             `;
 
-            // Klick-Event zum Hinzufügen
             drinkDiv.addEventListener('click', () => addDrink(drink));
             contentDiv.appendChild(drinkDiv);
         });
@@ -583,9 +576,7 @@ function renderHistory() {
             const card = document.createElement('div');
             card.className = 'drink-card';
             const iconName = getMaterialIcon(entry.category);
-            const extraBadge = !entry.isAI
-                ? '<span class="label-xs text-outline" style="margin-left:4px;">(Zuzahlung)</span>'
-                : '';
+            const extraBadge = !entry.isAI ? '<span class="label-xs text-outline">(Zuzahlung)</span>' : '';
 
             card.innerHTML = `
                 <div class="drink-card-main">
