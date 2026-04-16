@@ -225,17 +225,14 @@ function undoLastDrink() {
 }
 
 function startNewDay() {
-    if (state.currentDay.drinks.length === 0) {
-        alert('Dieser Tag enthält noch keine Getränke.');
-        return;
-    }
+    const message =
+        state.currentDay.drinks.length === 0
+            ? `Tag ${state.currentDay.day} hat keine Einträge. Trotzdem abschließen und neuen Tag starten?`
+            : `Möchtest du Tag ${state.currentDay.day} wirklich abschließen?\nEin neuer, leerer Tag wird gestartet.`;
 
-    if (
-        confirm(`Möchtest du Tag ${state.currentDay.day} wirklich abschließen?\nEin neuer, leerer Tag wird gestartet.`)
-    ) {
-        // Tag ins Archiv schieben (Kopie erzeugen)
+    if (confirm(message)) {
         state.archive.push(JSON.parse(JSON.stringify(state.currentDay)));
-        // Neuen Tag initialisieren
+
         state.currentDay = createNewDay(state.currentDay.day + 1);
 
         saveState();
