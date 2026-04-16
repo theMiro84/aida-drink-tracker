@@ -12,86 +12,83 @@ let state = {
 const elements = {};
 
 // Stammdatenquelle (später ggf. durch CSV-Import ersetzt)
-const drinksData = [
-    {
-        id: 'd1',
-        name: 'APEROL SPRIZZ',
-        category: 'Sprizz',
-        price: 9.2,
-        isNonAlcoholic: false,
-        isAI: true,
-    },
-    {
-        id: 'd2',
-        name: 'RADEBERGER 0,5 l',
-        category: 'Bier vom Fass',
-        price: 5.5,
-        isNonAlcoholic: false,
-        isAI: true,
-    },
-    {
-        id: 'd3',
-        name: 'MOJITO',
-        category: 'Cocktail',
-        price: 9.2,
-        isNonAlcoholic: false,
-        isAI: true,
-    },
-    {
-        id: 'd4',
-        name: 'CAPPUCCINO',
-        category: 'Kaffee',
-        price: 4.1,
-        isNonAlcoholic: true,
-        isAI: true,
-    },
-    {
-        id: 'd5',
-        name: 'COCA-COLA 0,2 l',
-        category: 'Softdrink',
-        price: 2.6,
-        isNonAlcoholic: true,
-        isAI: true,
-    },
-];
+// --- 1. STAMMDATEN & CSV PARSER ---
+let drinksData = [];
+let favorites = [];
 
-const favorites = drinksData.slice(0, 4);
+async function loadCSVData() {
+    try {
+        const response = await fetch('data/getraenke.csv');
+        if (!response.ok) throw new Error(`HTTP Fehler! Status: ${response.status}`);
+
+        const csvText = await response.text();
+        const lines = csvText.split('\n').filter((line) => line.trim() !== '');
+
+        // Erste Zeile (Header) überspringen
+        drinksData = lines.slice(1).map((line, index) => {
+            const cols = line.split(';');
+            return {
+                id: `csv-${index}`,
+                name: cols[0]?.trim() || 'Unbekannt',
+                category: cols[1]?.trim() || 'Sonstiges',
+                price: parseFloat((cols[2] || '0').replace(',', '.')),
+                isNonAlcoholic: cols[3]?.trim() === 'Ja',
+                isAI: cols[4]?.trim() === 'Ja', // Spalte E
+                isF: cols[5]?.trim() === 'Ja', // Spalte F (vorbereitet für später)
+            };
+        });
+
+        // Vorläufiger Fallback für Favoriten
+        favorites = drinksData.slice(0, 4);
+    } catch (error) {
+        console.error('Fehler beim Laden der CSV:', error);
+        alert('Konnte Getränkedaten nicht laden. Bitte Live Server nutzen.');
+    }
+}
 
 // --- 1. DATEN-NORMALISIERUNG & ZENTRALE BERECHNUNG ---
-
 function normalizeDay(dayData, fallbackDayNumber = 1) {
     if (!dayData) dayData = {};
 
-    // Grundgerüst eines Tages erzwingen
     const normalized = {
         day: Number(dayData.day) || fallbackDayNumber,
         date: dayData.date || new Date().toISOString(),
         drinks: [],
-        total: 0, // Wird unten immer abgeleitet berechnet
+        total: 0, // Paket-Erreichung (nur AI-Getränke)
+        totalExtra: 0, // Zusatzkosten (Nicht-AI-Getränke)
     };
 
-    // Hybridmodell sicherstellen: Snapshot-Werte übernehmen und validieren
     if (Array.isArray(dayData.drinks)) {
         normalized.drinks = dayData.drinks.map((drink) => {
             return {
                 id: String(drink.id || 'unknown'),
                 name: String(drink.name || 'Unbekanntes Getränk'),
+                category: drink.category || 'Sonstiges',
                 price: Number(drink.price) || 0,
                 isNonAlcoholic: drink.isNonAlcoholic === true,
+                isAI: drink.isAI === true,
+                isF: drink.isF === true,
                 timestamp: drink.timestamp || new Date().toISOString(),
             };
         });
     }
 
-    // `total` ist ein rein abgeleiteter Wert der normalisierten Drinks
     normalized.total = calculateTotal(normalized.drinks);
+    normalized.totalExtra = calculateTotalExtra(normalized.drinks);
 
     return normalized;
 }
 
 function calculateTotal(drinks) {
     if (!Array.isArray(drinks)) return 0;
-    return drinks.reduce((sum, item) => sum + item.price, 0);
+
+    return drinks.filter((item) => item.isAI).reduce((sum, item) => sum + item.price, 0);
+}
+
+function calculateTotalExtra(drinks) {
+    if (!Array.isArray(drinks)) return 0;
+
+    return drinks.filter((item) => !item.isAI).reduce((sum, item) => sum + item.price, 0);
 }
 
 function createNewDay(dayNumber) {
@@ -249,7 +246,8 @@ function getCategoryIcon(category) {
     return icons[category] || '🥃';
 }
 
-function init() {
+async function init() {
+    await loadCSVData();
     loadState();
 
     elements.favGrid = document.getElementById('fav-grid');
@@ -275,25 +273,9 @@ function init() {
     renderFavorites();
     renderDrinkList();
     updateUI();
-    initAccordions();
 }
 
 let isOverviewVisible = false;
-
-// function toggleOverview() {
-//     isOverviewVisible = !isOverviewVisible;
-
-//     if (isOverviewVisible) {
-//         elements.viewToday.classList.add("hidden");
-//         elements.viewOverview.classList.remove("hidden");
-//         elements.overviewBtn.textContent = "✕";
-//         renderOverview();
-//     } else {
-//         elements.viewToday.classList.remove("hidden");
-//         elements.viewOverview.classList.add("hidden");
-//         elements.overviewBtn.textContent = "📊";
-//     }
-// }
 
 function switchScreen(screenId) {
     document.querySelectorAll('.screen').forEach((s) => s.classList.add('hidden'));
@@ -374,23 +356,75 @@ function renderFavorites() {
     });
 }
 
-function renderDrinkList() {
-    const list = document.getElementById('drink-list');
-    list.innerHTML = '';
+// --- 5. UI RENDERING ---
 
+function renderDrinkList() {
+    const container = document.getElementById('category-list');
+    if (!container) return;
+
+    // Bestehendes HTML (das hartcodierte "Cocktails") leeren
+    container.innerHTML = '';
+
+    // 1. Getränke nach Kategorie (Typ) gruppieren
+    const groupedDrinks = {};
     drinksData.forEach((drink) => {
-        const div = document.createElement('div');
-        div.className = 'drink-item';
-        div.innerHTML = `
-            <div class="drink-item-info">
-                <span class="drink-item-name">${drink.name}</span>
-                <span class="text-xs uppercase tracking-widest text-outline">${drink.category}</span>
-            </div>
-            <span class="drink-item-price">${formatCurrency(drink.price)}</span>
-        `;
-        div.addEventListener('click', () => addDrink(drink));
-        list.appendChild(div);
+        if (!groupedDrinks[drink.category]) {
+            groupedDrinks[drink.category] = [];
+        }
+        groupedDrinks[drink.category].push(drink);
     });
+
+    // 2. Für jede Kategorie ein Akkordeon rendern
+    for (const [category, drinks] of Object.entries(groupedDrinks)) {
+        const categoryDiv = document.createElement('div');
+        categoryDiv.className = 'category-item tonal-card';
+
+        const iconName = getMaterialIcon(category);
+
+        // Header des Akkordeons
+        categoryDiv.innerHTML = `
+            <div class="category-header">
+                <div class="category-brand">
+                    <div class="category-icon-wrapper">
+                        <span class="material-symbols-outlined">${iconName}</span>
+                    </div>
+                    <span class="font-headline category-title">${category}</span>
+                </div>
+                <span class="material-symbols-outlined">expand_more</span>
+            </div>
+            <div class="category-content" style="display: none;"></div>
+        `;
+
+        const contentDiv = categoryDiv.querySelector('.category-content');
+
+        // 3. Getränke in diese Kategorie einfügen
+        drinks.forEach((drink) => {
+            const drinkDiv = document.createElement('div');
+            drinkDiv.className = 'drink-item';
+
+            // Markierung, falls es nicht im Paket ist
+            const extraBadge = !drink.isAI
+                ? '<span class="label-xs text-outline" style="margin-left:4px;">(Zuzahlung)</span>'
+                : '';
+
+            drinkDiv.innerHTML = `
+                <div class="drink-item-info">
+                    <span class="drink-item-name">${drink.name}</span>
+                    <span class="text-xs uppercase tracking-widest text-outline">${drink.category} ${extraBadge}</span>
+                </div>
+                <span class="drink-item-price">${formatCurrency(drink.price)}</span>
+            `;
+
+            // Klick-Event zum Hinzufügen
+            drinkDiv.addEventListener('click', () => addDrink(drink));
+            contentDiv.appendChild(drinkDiv);
+        });
+
+        container.appendChild(categoryDiv);
+    }
+
+    // WICHTIG: Akkordeon-Klick-Logik neu binden, da die Elemente neu im DOM sind
+    initAccordions();
 }
 
 function renderHistory() {
@@ -546,4 +580,4 @@ function initAccordions() {
     });
 }
 
-init();
+init().catch((err) => console.error('Kritischer Fehler beim Start:', err));
