@@ -240,14 +240,10 @@ function startNewDay() {
     }
 }
 
-// --- 5. UI RENDERING ---
-
 function formatCurrency(amount) {
     return `${amount.toFixed(2).replace('.', ',')} ${CONFIG.CURRENCY}`;
 }
 
-// --- SUCHE ---
-// --- SUCHE ---
 function initSearch() {
     const searchInput = document.getElementById('drink-search');
     const clearBtn = document.getElementById('clear-search');
@@ -429,76 +425,70 @@ function renderFavorites() {
     favorites.forEach((drink) => {
         const btn = document.createElement('button');
         btn.className = 'fav-card';
+
+        const extraSymbol = !drink.isAI ? '<span class="text-outline" style="margin-left: 4px;">*</span>' : '';
+
         btn.innerHTML = `
             <span class="fav-name">${drink.name}</span>
-            <span class="fav-price">${formatCurrency(drink.price)}</span>
+            <span class="fav-price">${formatCurrency(drink.price)}${extraSymbol}</span>
         `;
         btn.addEventListener('click', () => addDrink(drink));
         grid.appendChild(btn);
     });
 }
 
-// --- 5. UI RENDERING ---
-
-function renderDrinkList() {
+function renderDrinkList(drinksToRender = drinksData) {
     const container = document.getElementById('category-list');
     if (!container) return;
 
     container.innerHTML = '';
 
-    const groupedDrinks = {};
-    drinksData.forEach((drink) => {
-        if (!groupedDrinks[drink.category]) {
-            groupedDrinks[drink.category] = [];
-        }
-        groupedDrinks[drink.category].push(drink);
-    });
-
-    for (const [category, drinks] of Object.entries(groupedDrinks)) {
-        const categoryDiv = document.createElement('div');
-        categoryDiv.className = 'category-item';
-
-        const iconName = getMaterialIcon(category);
-
-        // Header des Akkordeons
-        categoryDiv.innerHTML = `
-            <div class="category-header">
-                <div class="category-brand">
-                    <div class="category-icon-wrapper">
-                        <span class="material-symbols-outlined">${iconName}</span>
-                    </div>
-                    <span class="font-headline category-title">${category}</span>
-                </div>
-                <span class="material-symbols-outlined">expand_more</span>
-            </div>
-            <div class="category-content" style="display: none;"></div>
-        `;
-
-        const contentDiv = categoryDiv.querySelector('.category-content');
-
-        drinks.forEach((drink) => {
-            const drinkDiv = document.createElement('div');
-            drinkDiv.className = 'drink-card';
-
-            const extraBadge = !drink.isAI ? '<span class="label-xs text-outline">(Zuzahlung)</span>' : '';
-
-            drinkDiv.innerHTML = `
-                <div class="drink-card-main">
-                  <div class="drink-card-info">
-                    <span class="drink-card-name">${drink.name} ${extraBadge}</span>
-                  </div>
-                </div>
-                <span class="drink-card-value">${formatCurrency(drink.price)}</span>
-            `;
-
-            drinkDiv.addEventListener('click', () => addDrink(drink));
-            contentDiv.appendChild(drinkDiv);
-        });
-
-        container.appendChild(categoryDiv);
+    if (drinksToRender.length === 0) {
+        container.innerHTML = '<div class="text-sm text-center py-4 opacity-50 italic">Keine Getränke gefunden.</div>';
+        return;
     }
 
-    // WICHTIG: Akkordeon-Klick-Logik neu binden, da die Elemente neu im DOM sind
+    const sortedDrinks = [...drinksToRender].sort((a, b) => a.name.localeCompare(b.name));
+
+    const categoryDiv = document.createElement('div');
+    categoryDiv.className = 'category-item';
+
+    categoryDiv.innerHTML = `
+        <div class="category-header">
+            <div class="category-brand">
+                <div class="category-icon-wrapper">
+                    <span class="material-symbols-outlined">menu_book</span>
+                </div>
+                <span class="font-headline category-title">Getränke von A bis Z</span>
+            </div>
+            <span class="material-symbols-outlined">expand_more</span>
+        </div>
+        <div class="category-content" style="display: none;"></div>
+    `;
+
+    const contentDiv = categoryDiv.querySelector('.category-content');
+
+    sortedDrinks.forEach((drink) => {
+        const drinkDiv = document.createElement('div');
+        drinkDiv.className = 'drink-card';
+
+        const extraBadge = !drink.isAI ? '<span class="label-xs text-outline">(Zuzahlung)</span>' : '';
+
+        drinkDiv.innerHTML = `
+            <div class="drink-card-main">
+              <div class="drink-card-info">
+                <span class="drink-card-name">${drink.name} ${extraBadge}</span>
+              </div>
+            </div>
+            <span class="drink-card-value">${formatCurrency(drink.price)}</span>
+        `;
+
+        drinkDiv.addEventListener('click', () => addDrink(drink));
+        contentDiv.appendChild(drinkDiv);
+    });
+
+    container.appendChild(categoryDiv);
+
     initAccordions();
 }
 
