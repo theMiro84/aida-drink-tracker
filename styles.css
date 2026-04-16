@@ -183,14 +183,14 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: var(--space-md);
+    margin-bottom: var(--space-sm);
 }
 
 .section-header-icon {
     display: flex;
     align-items: center;
     gap: var(--space-sm);
-    margin-bottom: var(--space-md);
+    margin-bottom: var(--space-sm);
 }
 
 /* ─── Utility: Schriftfamilien ───────────────────────────────────
@@ -475,11 +475,14 @@ main {
    TAG-SCREEN: FAVORITES & BUTTONS
 ═══════════════════════════════════════════════════════════════ */
 
+.favorites-section {
+    margin-bottom: var(--space-md);
+}
+
 .favorites-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
-    margin-top: 1rem;
 }
 
 .fav-card {
@@ -1012,7 +1015,7 @@ main {
 }
 
 .budget-summary {
-    margin-top: 1.5rem;
+    margin-top: var(--space-md);
 }
 
 .budget-label-row {
