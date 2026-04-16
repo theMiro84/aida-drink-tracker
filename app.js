@@ -238,6 +238,7 @@ function formatCurrency(amount) {
 }
 
 // --- SUCHE ---
+// --- SUCHE ---
 function initSearch() {
     const searchInput = document.getElementById('drink-search');
     const clearBtn = document.getElementById('clear-search');
@@ -257,11 +258,16 @@ function initSearch() {
         const categories = document.querySelectorAll('.category-item');
 
         categories.forEach((category) => {
-            const drinks = category.querySelectorAll('.drink-item');
+            const drinks = category.querySelectorAll('.drink-card');
             let hasVisibleDrink = false;
 
             drinks.forEach((drink) => {
-                const name = drink.querySelector('.drink-item-name').textContent.toLowerCase();
+                // FIX: Nach .drink-card-name statt .drink-item-name suchen
+                const nameNode = drink.querySelector('.drink-card-name');
+                if (!nameNode) return;
+
+                const name = nameNode.textContent.toLowerCase();
+
                 if (name.includes(searchTerm)) {
                     drink.style.display = 'flex';
                     hasVisibleDrink = true;
