@@ -239,10 +239,20 @@ function formatCurrency(amount) {
 // --- SUCHE ---
 function initSearch() {
     const searchInput = document.getElementById('drink-search');
+    const clearBtn = document.getElementById('clear-search');
     if (!searchInput) return;
 
     searchInput.addEventListener('input', (e) => {
         const searchTerm = e.target.value.toLowerCase();
+
+        if (clearBtn) {
+            if (searchTerm.length > 0) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+        }
+
         const categories = document.querySelectorAll('.category-item');
 
         categories.forEach((category) => {
@@ -252,17 +262,15 @@ function initSearch() {
             drinks.forEach((drink) => {
                 const name = drink.querySelector('.drink-item-name').textContent.toLowerCase();
                 if (name.includes(searchTerm)) {
-                    drink.style.display = 'flex'; // Behält das CSS-Grid/Flex Layout
+                    drink.style.display = 'flex';
                     hasVisibleDrink = true;
                 } else {
                     drink.style.display = 'none';
                 }
             });
 
-            // Gesamte Kategorie ausblenden, wenn kein Treffer
             category.style.display = hasVisibleDrink ? 'block' : 'none';
 
-            // Auto-öffnen bei Suche, schließen wenn Suche geleert wird
             const content = category.querySelector('.category-content');
             if (searchTerm !== '' && hasVisibleDrink) {
                 category.classList.add('is-open');
@@ -273,6 +281,14 @@ function initSearch() {
             }
         });
     });
+
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            searchInput.dispatchEvent(new Event('input'));
+            searchInput.focus();
+        });
+    }
 }
 
 async function init() {

@@ -63,6 +63,7 @@
     --space-lg: 1.25rem; /* 20px */
     --space-xl: 1.5rem; /* 24px – Listenabstand */
     --space-2xl: 2rem; /* 32px */
+    --space-3xl: 3rem; /* 48px */
 
     /* ─── Radii ──────────────────────────────────────────────────
        Laut DESIGN.md: keine harten 90°-Ecken.
@@ -598,13 +599,24 @@ main {
 ═══════════════════════════════════════════════════════════════ */
 
 .search-section {
-    margin: var(--space-xl) 0;
+    padding: var(--space-md) 0;
 }
 
 .search-bar {
     position: relative;
     display: flex;
     align-items: center;
+    width: 100%;
+}
+
+.search-icon {
+    position: absolute;
+    left: var(--space-md);
+    color: var(--primary);
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    z-index: 2;
 }
 
 .search-input {
@@ -612,8 +624,8 @@ main {
     background-color: var(--surface-container-highest);
     border: none;
     border-radius: var(--radius-xl);
-    padding: 1rem 1rem 1rem 3.5rem;
-    font-family: 'Inter', sans-serif;
+    padding: var(--space-md) var(--space-3xl);
+    font-family: var(--font-body);
     font-size: 1rem;
     color: var(--on-surface);
     outline: none;
@@ -621,12 +633,24 @@ main {
 }
 
 .search-input:focus {
-    box-shadow: 0 0 0 2px rgba(0, 96, 169, 0.2);
+    box-shadow: 0 0 0 2px var(--primary-fixed);
 }
 
-.search-icon {
+.clear-icon {
     position: absolute;
-    left: 1.25rem;
+    right: var(--space-md);
+    background: none;
+    border: none;
+    padding: var(--space-xs);
+    color: var(--on-surface-variant);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.clear-icon:active {
     color: var(--primary);
 }
 
@@ -675,6 +699,10 @@ main {
 .category-item {
     overflow: hidden;
     padding: 0;
+}
+
+.category-item.tonal-card {
+    margin-bottom: 0;
 }
 
 .category-item.is-open .category-icon-wrapper {
