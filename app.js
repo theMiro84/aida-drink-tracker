@@ -724,6 +724,23 @@ function initAccordions() {
     });
 }
 
+function resetApp() {
+    const confirmFirst = confirm('Möchtest du wirklich ALLE Daten löschen? Dies kann nicht rückgängig gemacht werden.');
+    if (!confirmFirst) return;
+
+    localStorage.removeItem(CONFIG.STORAGE_KEY);
+
+    state.archive = [];
+    state.currentDay = createNewDay(1);
+
+    saveState();
+    updateUI();
+
+    switchScreen('tag');
+
+    alert('App wurde erfolgreich zurückgesetzt.');
+}
+
 async function init() {
     await loadCSVData();
     loadState();
@@ -747,6 +764,8 @@ async function init() {
 
     elements.undoBtn.addEventListener('click', undoLastDrink);
     elements.nextDayBtn.addEventListener('click', startNewDay);
+
+    document.getElementById('reset-app-btn')?.addEventListener('click', resetApp);
 
     initSearch();
     initHistoryFilters();
