@@ -98,16 +98,17 @@ function createNewDay(dayNumber) {
 // --- 2. AGGREGATION FÜR SPÄTERE AUSWERTUNGEN ---
 
 function getAggregatedStats() {
-    // Kombiniert Archiv und aktuellen Tag für die All-Time-Statistik
     const allDays = [...state.archive, state.currentDay].filter(Boolean);
     const stats = {
         grandTotal: 0,
+        grandTotalExtra: 0,
         totalDrinks: 0,
         byDrink: {},
     };
 
     allDays.forEach((day) => {
-        stats.grandTotal += day.total;
+        stats.grandTotal += day.total || 0;
+        stats.grandTotalExtra += day.totalExtra || 0;
         stats.totalDrinks += day.drinks.length;
 
         day.drinks.forEach((drink) => {
@@ -343,31 +344,45 @@ document.querySelectorAll('.nav-item').forEach((btn) => {
 function renderOverview() {
     const stats = getAggregatedStats();
 
-    const limit = 240;
-    const spent = stats.grandTotal;
+    const limit = 240; // Fester Paketpreis laut Testphase
+    const spent = stats.grandTotal; // Nur AI-Getränke
+    const extra = stats.grandTotalExtra; // Zuzahlungen
     const remaining = Math.max(limit - spent, 0);
-    const circumference = 691;
+    const circumference = 691; // Länge des SVG Rings
     const percentage = Math.min(spent / limit, 1);
 
     document.getElementById('grand-total-display').textContent = formatCurrency(spent);
-    document.getElementById('stats-spent').textContent = formatCurrency(spent);
-    document.getElementById('stats-remaining').textContent = formatCurrency(remaining);
+
+    const statsExtraEl = document.getElementById('stats-extra');
+    if (statsExtraEl) statsExtraEl.textContent = formatCurrency(extra);
+
+    const statsRemainingEl = document.getElementById('stats-remaining');
+    if (statsRemainingEl) statsRemainingEl.textContent = formatCurrency(remaining);
 
     const ring = document.getElementById('overall-progress-ring');
     if (ring) {
         const offset = circumference - percentage * circumference;
         ring.style.strokeDashoffset = offset;
+
+        if (spent < limit * 0.75) {
+            ring.style.stroke = 'var(--color-error)';
+        } else if (spent < limit) {
+            ring.style.stroke = 'var(--color-warning)';
+        } else {
+            ring.style.stroke = 'var(--color-safe)';
+        }
     }
 
     const badge = document.getElementById('status-badge');
-    if (percentage >= 1) {
-        badge.className = 'badge-blue';
+    if (badge) {
+        badge.className = percentage >= 1 ? 'badge-blue' : 'badge-amber';
+        badge.textContent = `${Math.round(percentage * 100)}% erreicht`;
     }
 
-    document.getElementById('status-badge').textContent = `${Math.round(percentage * 100)}% erreicht`;
     document.getElementById('total-drinks-count').textContent = `Gesamtanzahl: ${stats.totalDrinks}`;
 
     const topList = document.getElementById('top-drinks-list');
+    if (!topList) return;
     topList.innerHTML = '';
 
     const topDrinks = Object.values(stats.byDrink)
@@ -377,7 +392,7 @@ function renderOverview() {
     topDrinks.forEach((drink) => {
         const item = document.createElement('div');
         item.className = 'drink-item tonal-card';
-        item.style.marginBottom = '0.75rem'; // Nautical Spacing
+        item.style.marginBottom = '0.75rem';
         item.innerHTML = `
             <div class="drink-item-info">
                 <span class="drink-item-name">${drink.latestName}</span>
