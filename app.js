@@ -98,11 +98,12 @@ function createNewDay(dayNumber) {
 // --- 2. AGGREGATION FÜR SPÄTERE AUSWERTUNGEN ---
 
 function getAggregatedStats() {
+    // Kombiniert Archiv und aktuellen Tag für die All-Time-Statistik
     const allDays = [...state.archive, state.currentDay].filter(Boolean);
     const stats = {
         grandTotal: 0,
         totalDrinks: 0,
-        byDrink: {}, // Vorbereitung für z.B. "Top Drinks"
+        byDrink: {},
     };
 
     allDays.forEach((day) => {
@@ -113,14 +114,13 @@ function getAggregatedStats() {
             if (!stats.byDrink[drink.id]) {
                 stats.byDrink[drink.id] = {
                     id: drink.id,
-                    latestName: drink.name, // Historischer Name als Fallback
+                    latestName: drink.name,
                     count: 0,
                     totalSpent: 0,
                 };
             }
             stats.byDrink[drink.id].count += 1;
             stats.byDrink[drink.id].totalSpent += drink.price;
-            stats.byDrink[drink.id].latestName = drink.name;
         });
     });
 
@@ -159,7 +159,7 @@ function loadState() {
         state.archive = [];
     }
 
-    saveState(); // Reparierte/Normalisierte Daten direkt zurückspeichern
+    saveState();
 }
 
 function saveState() {
@@ -182,15 +182,19 @@ function addDrink(drink) {
     if (!drink || !drink.name) return;
 
     state.currentDay.drinks.push({
-        id: drink.id || 'custom',
-        name: drink.name,
-        category: drink.category || 'Cocktail',
+        id: String(drink.id || 'custom'),
+        name: String(drink.name),
+        category: String(drink.category || 'Sonstiges'),
         price: Number(drink.price) || 0,
-        isNonAlcoholic: drink.isNonAlcoholic ?? false,
+        isNonAlcoholic: drink.isNonAlcoholic === true,
+        isAI: drink.isAI === true,
+        isF: drink.isF === true,
         timestamp: new Date().toISOString(),
     });
 
     state.currentDay.total = calculateTotal(state.currentDay.drinks);
+    state.currentDay.totalExtra = calculateTotalExtra(state.currentDay.drinks);
+
     saveState();
     updateUI();
 }
@@ -199,7 +203,9 @@ function undoLastDrink() {
     if (state.currentDay.drinks.length === 0) return;
 
     state.currentDay.drinks.pop();
+
     state.currentDay.total = calculateTotal(state.currentDay.drinks);
+    state.currentDay.totalExtra = calculateTotalExtra(state.currentDay.drinks);
 
     saveState();
     updateUI();
@@ -230,20 +236,43 @@ function formatCurrency(amount) {
     return `${amount.toFixed(2).replace('.', ',')} ${CONFIG.CURRENCY}`;
 }
 
-function getCategoryIcon(category) {
-    const icons = {
-        Sprizz: '🍹',
-        'Bier vom Fass': '🍺',
-        Flaschenbier: '🍺',
-        Cocktail: '🍸',
-        Kaffee: '☕',
-        Softdrink: '🥤',
-        Wasser: '💧',
-        'Wein - WEISS': '🥂',
-        'Wein - ROT': '🍷',
-        'Säfte. Nektar & Schorlen': '🧃',
-    };
-    return icons[category] || '🥃';
+// --- SUCHE ---
+function initSearch() {
+    const searchInput = document.getElementById('drink-search');
+    if (!searchInput) return;
+
+    searchInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const categories = document.querySelectorAll('.category-item');
+
+        categories.forEach((category) => {
+            const drinks = category.querySelectorAll('.drink-item');
+            let hasVisibleDrink = false;
+
+            drinks.forEach((drink) => {
+                const name = drink.querySelector('.drink-item-name').textContent.toLowerCase();
+                if (name.includes(searchTerm)) {
+                    drink.style.display = 'flex'; // Behält das CSS-Grid/Flex Layout
+                    hasVisibleDrink = true;
+                } else {
+                    drink.style.display = 'none';
+                }
+            });
+
+            // Gesamte Kategorie ausblenden, wenn kein Treffer
+            category.style.display = hasVisibleDrink ? 'block' : 'none';
+
+            // Auto-öffnen bei Suche, schließen wenn Suche geleert wird
+            const content = category.querySelector('.category-content');
+            if (searchTerm !== '' && hasVisibleDrink) {
+                category.classList.add('is-open');
+                if (content) content.style.display = 'block';
+            } else if (searchTerm === '') {
+                category.classList.remove('is-open');
+                if (content) content.style.display = 'none';
+            }
+        });
+    });
 }
 
 async function init() {
@@ -270,7 +299,8 @@ async function init() {
     elements.undoBtn.addEventListener('click', undoLastDrink);
     elements.nextDayBtn.addEventListener('click', startNewDay);
 
-    renderFavorites();
+    initSearch();
+
     renderDrinkList();
     updateUI();
 }
@@ -326,15 +356,16 @@ function renderOverview() {
 
     const topDrinks = Object.values(stats.byDrink)
         .sort((a, b) => b.count - a.count)
-        .slice(0, 3);
+        .slice(0, 4);
 
     topDrinks.forEach((drink) => {
         const item = document.createElement('div');
         item.className = 'drink-item tonal-card';
+        item.style.marginBottom = '0.75rem'; // Nautical Spacing
         item.innerHTML = `
             <div class="drink-item-info">
                 <span class="drink-item-name">${drink.latestName}</span>
-                <span class="text-xs color-primary">${drink.count}x bestellt</span>
+                <span class="text-xs color-primary" style="color:var(--primary)">${drink.count}x bestellt</span>
             </div>
             <span class="drink-item-price">${formatCurrency(drink.totalSpent)}</span>
         `;
@@ -342,8 +373,36 @@ function renderOverview() {
     });
 }
 
+function updateFavorites() {
+    const stats = getAggregatedStats();
+
+    const topStatDrinks = Object.values(stats.byDrink)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 4);
+
+    favorites = [];
+
+    topStatDrinks.forEach((statDrink) => {
+        const originalDrink = drinksData.find((d) => d.id === statDrink.id);
+        if (originalDrink) {
+            favorites.push(originalDrink);
+        }
+    });
+}
+
 function renderFavorites() {
-    elements.favGrid.innerHTML = '';
+    const grid = document.getElementById('fav-grid');
+    const section = document.querySelector('.favorites-section');
+    if (!grid || !section) return;
+
+    grid.innerHTML = '';
+
+    if (favorites.length === 0) {
+        section.style.display = 'none';
+        return;
+    }
+
+    section.style.display = 'block';
     favorites.forEach((drink) => {
         const btn = document.createElement('button');
         btn.className = 'fav-card';
@@ -352,7 +411,7 @@ function renderFavorites() {
             <span class="fav-price">${formatCurrency(drink.price)}</span>
         `;
         btn.addEventListener('click', () => addDrink(drink));
-        elements.favGrid.appendChild(btn);
+        grid.appendChild(btn);
     });
 }
 
@@ -504,6 +563,10 @@ function updateUI() {
     elements.totalAmount.textContent = formatCurrency(state.currentDay.total);
 
     elements.undoBtn.disabled = state.currentDay.drinks.length === 0;
+
+    updateFavorites();
+    renderFavorites();
+
     renderHistory();
     if (isOverviewVisible) renderOverview();
 
@@ -512,35 +575,47 @@ function updateUI() {
     const percentage = Math.min(total / goal, 1);
 
     const ring = document.getElementById('progress-ring');
-    const offset = 477 - percentage * 477;
-    ring.style.strokeDashoffset = offset;
+    if (ring) {
+        const offset = 477 - percentage * 477;
+        ring.style.strokeDashoffset = offset;
 
-    if (total < goal * 0.75) {
-        ring.style.stroke = 'var(--color-error)';
-    } else if (total < goal) {
-        ring.style.stroke = 'var(--color-warning)';
-    } else {
-        ring.style.stroke = 'var(--color-safe)';
+        if (total < goal * 0.75) {
+            ring.style.stroke = 'var(--color-error)';
+        } else if (total < goal) {
+            ring.style.stroke = 'var(--color-warning)';
+        } else {
+            ring.style.stroke = 'var(--color-safe)';
+        }
     }
 
     const remaining = Math.max(goal - total, 0);
-    document.getElementById('limit-info').textContent = `Limit verbleibend: ${formatCurrency(remaining)}`;
+    const limitInfo = document.getElementById('limit-info');
+    if (limitInfo) {
+        limitInfo.textContent = `Limit verbleibend: ${formatCurrency(remaining)}`;
+
+        if (state.currentDay.totalExtra > 0) {
+            limitInfo.innerHTML += `<br><span class="text-xs text-outline" style="font-weight:normal;">Zuzahlung heute: ${formatCurrency(state.currentDay.totalExtra)}</span>`;
+        }
+    }
 }
 
 function getMaterialIcon(category) {
-    const icons = {
-        Sprizz: 'local_bar',
-        'Bier vom Fass': 'sports_bar',
-        Flaschenbier: 'sports_bar',
-        Cocktail: 'local_bar',
-        Kaffee: 'coffee',
-        Softdrink: 'local_drink',
-        Wasser: 'water_drop',
-        'Wein - WEISS': 'wine_bar',
-        'Wein - ROT': 'wine_bar',
-        'Säfte. Nektar & Schorlen': 'local_drink',
-    };
-    return icons[category] || 'liquor';
+    const catLower = category.toLowerCase();
+
+    if (catLower.includes('bier')) return 'sports_bar';
+    if (catLower.includes('wein') || catLower.includes('sekt') || catLower.includes('champagner')) return 'wine_bar';
+    if (catLower.includes('kaffee') || catLower.includes('tee')) return 'coffee';
+    if (catLower.includes('cocktail') || catLower.includes('sprizz') || catLower.includes('mix')) return 'local_bar';
+    if (
+        catLower.includes('alkoholfrei') ||
+        catLower.includes('softdrink') ||
+        catLower.includes('wasser') ||
+        catLower.includes('saft')
+    )
+        return 'local_drink';
+
+    // Fallback
+    return 'liquor';
 }
 
 // ─── Akkordeon-Toggle ─────────────────────────────────────────
