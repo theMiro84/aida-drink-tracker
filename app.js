@@ -201,15 +201,27 @@ function addDrink(drink) {
 }
 
 function undoLastDrink() {
-    if (state.currentDay.drinks.length === 0) return;
+    if (state.currentDay.drinks.length > 0) {
+        state.currentDay.drinks.pop();
 
-    state.currentDay.drinks.pop();
+        state.currentDay.total = calculateTotal(state.currentDay.drinks);
+        state.currentDay.totalExtra = calculateTotalExtra(state.currentDay.drinks);
 
-    state.currentDay.total = calculateTotal(state.currentDay.drinks);
-    state.currentDay.totalExtra = calculateTotalExtra(state.currentDay.drinks);
+        saveState();
+        updateUI();
+        return;
+    }
 
-    saveState();
-    updateUI();
+    if (state.currentDay.drinks.length === 0 && state.archive.length > 0) {
+        if (confirm(`Möchtest du Tag ${state.currentDay.day - 1} wieder aus dem Archiv holen und bearbeiten?`)) {
+            const previousDay = state.archive.pop();
+
+            state.currentDay = previousDay;
+
+            saveState();
+            updateUI();
+        }
+    }
 }
 
 function startNewDay() {
@@ -631,7 +643,10 @@ function updateUI() {
     if (elements.dayLabel) elements.dayLabel.textContent = `Tag ${state.currentDay.day}`;
     elements.totalAmount.textContent = formatCurrency(state.currentDay.total);
 
-    elements.undoBtn.disabled = state.currentDay.drinks.length === 0;
+    const canUndoDrink = state.currentDay.drinks.length > 0;
+    const canRestoreDay = state.currentDay.drinks.length === 0 && state.archive.length > 0;
+
+    elements.undoBtn.disabled = !(canUndoDrink || canRestoreDay);
 
     updateFavorites();
     renderFavorites();
@@ -642,12 +657,10 @@ function updateUI() {
     const goal = CONFIG.DAILY_GOAL;
     const total = state.currentDay.total;
     const percentage = Math.min(total / goal, 1);
-
     const ring = document.getElementById('progress-ring');
     if (ring) {
         const offset = 477 - percentage * 477;
         ring.style.strokeDashoffset = offset;
-
         if (total < goal * 0.75) {
             ring.style.stroke = 'var(--color-error)';
         } else if (total < goal) {
@@ -661,7 +674,6 @@ function updateUI() {
     const limitInfo = document.getElementById('limit-info');
     if (limitInfo) {
         limitInfo.textContent = `Limit verbleibend: ${formatCurrency(remaining)}`;
-
         if (state.currentDay.totalExtra > 0) {
             limitInfo.innerHTML += `<br><span class="text-xs text-outline" style="font-weight:normal;">Zuzahlung heute: ${formatCurrency(state.currentDay.totalExtra)}</span>`;
         }
