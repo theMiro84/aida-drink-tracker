@@ -116,6 +116,7 @@ function getAggregatedStats() {
                 stats.byDrink[drink.id] = {
                     id: drink.id,
                     latestName: drink.name,
+                    category: drink.category,
                     count: 0,
                     totalSpent: 0,
                 };
@@ -313,14 +314,11 @@ function switchScreen(screenId) {
         btn.classList.toggle('active', btn.dataset.screen === screenId);
     });
 
-    if (screenId === 'dashboard') renderOverview();
+    isOverviewVisible = screenId === 'dashboard';
+
+    if (isOverviewVisible) renderOverview();
     if (screenId === 'history') renderHistory();
 }
-
-// Event Listener für die Bottom-Nav
-document.querySelectorAll('.nav-item').forEach((btn) => {
-    btn.addEventListener('click', () => switchScreen(btn.dataset.screen));
-});
 
 function renderOverview() {
     const stats = getAggregatedStats();
@@ -373,7 +371,7 @@ function renderOverview() {
     topDrinks.forEach((drink) => {
         const item = document.createElement('div');
         item.className = 'drink-card';
-        const iconName = getMaterialIcon(drink.latestName);
+        const iconName = getMaterialIcon(drink.category || '');
 
         item.innerHTML = `
             <div class="drink-card-main">
@@ -744,27 +742,25 @@ async function init() {
     await loadCSVData();
     loadState();
 
-    elements.favGrid = document.getElementById('fav-grid');
-    elements.drinkList = document.getElementById('drink-list');
     elements.totalAmount = document.getElementById('total-amount');
-    elements.statusLight = document.getElementById('status-light');
-    elements.progressBar = document.getElementById('progress-bar');
     elements.dayLabel = document.getElementById('day-label');
-    elements.historyList = document.getElementById('history-list');
 
     elements.undoBtn = document.getElementById('undo-btn');
     elements.nextDayBtn = document.getElementById('next-day-btn');
-
-    elements.viewToday = document.getElementById('view-today');
-    elements.viewOverview = document.getElementById('view-overview');
-    elements.overviewList = document.getElementById('overview-list');
-    elements.grandTotalAmount = document.getElementById('grand-total-amount');
-    elements.grandTotalCount = document.getElementById('grand-total-count');
 
     elements.undoBtn.addEventListener('click', undoLastDrink);
     elements.nextDayBtn.addEventListener('click', startNewDay);
 
     document.getElementById('reset-app-btn')?.addEventListener('click', resetApp);
+
+    document.querySelectorAll('.nav-item').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+            const navItem = e.target.closest('.nav-item');
+            if (navItem && navItem.dataset.screen) {
+                switchScreen(navItem.dataset.screen);
+            }
+        });
+    });
 
     initSearch();
     initHistoryFilters();

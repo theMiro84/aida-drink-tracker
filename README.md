@@ -21,11 +21,11 @@ Die bestehende Version 1 kann bereits:
 - Getränke hinzufügen
 - Getränke reduzieren
 - neue Tage starten
+- echte Anbindung der CSV-Datenquelle
 
 Damit ist eine erste lokale Basis zum täglichen Tracking vorhanden.
 
 Noch nicht vollständig umgesetzt sind derzeit:
-- echte Anbindung der CSV-Datenquelle
 - saubere Mehrnutzer-Struktur
 - Datenaustausch zwischen Geräten
 - konsolidierte Weiterentwicklung aller Screens nach dem verbindlichen Designsystem
@@ -86,7 +86,6 @@ Die Weiterentwicklung erfolgt bewusst in kleinen, kontrollierten Schritten.
 - Tagesansicht, Dashboard und Historie zu einem konsistenten System zusammenführen
 
 ### 2. Designsystem verbindlich anwenden
-- DESIGN.md als primäre Designquelle nutzen
 - Farben, Surfaces, Typografie, Komponentenstil, Abstände und Navigation konsistent übernehmen
 - wiederkehrende Elemente wie Header, KPI-Karten, Suchfeld, Kategorien, Listen, Summary-Blöcke und Bottom Navigation angleichen
 
