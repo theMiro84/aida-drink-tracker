@@ -1,15 +1,26 @@
 const CONFIG = {
-    DAILY_GOAL: 26.67,
     CURRENCY: '€',
     STORAGE_KEY: 'aida_drink_tracker_v1',
 };
 
 let state = {
+    profile: {
+        username: 'Gast',
+        initials: 'G',
+        duration: 9,
+        packagePrice: 240,
+    },
     currentDay: null,
     archive: [],
 };
 
 const elements = {};
+
+// Hilfsfunktion: Berechnet das dynamische Tagesziel
+function getDailyGoal() {
+    if (!state.profile || state.profile.duration <= 0) return 0;
+    return state.profile.packagePrice / state.profile.duration;
+}
 
 // Stammdatenquelle (später ggf. durch CSV-Import ersetzt)
 // --- 1. STAMMDATEN & CSV PARSER ---
@@ -137,21 +148,18 @@ function loadState() {
         if (savedData) {
             const parsedData = JSON.parse(savedData);
 
-            // Archiv normalisieren
+            state.profile = {
+                username: parsedData.profile?.username || 'Gast',
+                initials: parsedData.profile?.initials || 'G',
+                duration: Number(parsedData.profile?.duration) || 9,
+                packagePrice: Number(parsedData.profile?.packagePrice) || 240,
+            };
+
             state.archive = Array.isArray(parsedData.archive)
                 ? parsedData.archive.map((day, index) => normalizeDay(day, index + 1))
                 : [];
 
-            // Aktuellen Tag normalisieren (mit Fallback für Legacy-Daten)
-            let currentRaw = parsedData.currentDay;
-            if (!currentRaw && parsedData.consumedDrinks) {
-                currentRaw = {
-                    day: parsedData.dayCounter || 1,
-                    drinks: parsedData.consumedDrinks,
-                };
-            }
-
-            state.currentDay = normalizeDay(currentRaw, state.archive.length + 1);
+            state.currentDay = normalizeDay(parsedData.currentDay, state.archive.length + 1);
         } else {
             state.currentDay = createNewDay(1);
         }
@@ -160,19 +168,12 @@ function loadState() {
         state.currentDay = createNewDay(1);
         state.archive = [];
     }
-
     saveState();
 }
 
 function saveState() {
     try {
-        localStorage.setItem(
-            CONFIG.STORAGE_KEY,
-            JSON.stringify({
-                currentDay: state.currentDay,
-                archive: state.archive,
-            }),
-        );
+        localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(state));
     } catch (error) {
         console.error('Fehler beim Speichern der Daten:', error);
     }
@@ -323,7 +324,7 @@ function switchScreen(screenId) {
 function renderOverview() {
     const stats = getAggregatedStats();
 
-    const limit = 240; // Fester Paketpreis laut Testphase
+    const limit = state.profile.packagePrice;
     const spent = stats.grandTotal; // Nur AI-Getränke
     const extra = stats.grandTotalExtra; // Zuzahlungen
     const remaining = Math.max(limit - spent, 0);
@@ -430,7 +431,17 @@ function renderFavorites() {
             <span class="fav-name">${drink.name}</span>
             <span class="fav-price">${formatCurrency(drink.price)}${extraSymbol}</span>
         `;
-        btn.addEventListener('click', () => addDrink(drink));
+
+        btn.addEventListener('click', (e) => {
+            const target = e.currentTarget;
+            target.classList.add('tap-flash');
+            if (navigator.vibrate) navigator.vibrate(40);
+
+            setTimeout(() => {
+                addDrink(drink);
+            }, 150);
+        });
+
         grid.appendChild(btn);
     });
 }
@@ -481,7 +492,17 @@ function renderDrinkList(drinksToRender = drinksData) {
             <span class="drink-card-value">${formatCurrency(drink.price)}</span>
         `;
 
-        drinkDiv.addEventListener('click', () => addDrink(drink));
+        drinkDiv.addEventListener('click', (e) => {
+            const target = e.currentTarget;
+            target.classList.add('tap-flash');
+            if (navigator.vibrate) navigator.vibrate(40);
+
+            setTimeout(() => {
+                target.classList.remove('tap-flash');
+                addDrink(drink);
+            }, 150);
+        });
+
         contentDiv.appendChild(drinkDiv);
     });
 
@@ -620,7 +641,8 @@ function updateSummary(count, alcoholicCount, total) {
     document.getElementById('summary-alcohol-count').textContent = alcoholicCount;
     document.getElementById('summary-budget-total').textContent = formatCurrency(total);
 
-    const percentage = Math.min((total / CONFIG.DAILY_GOAL) * 100, 100);
+    const goal = getDailyGoal();
+    const percentage = goal > 0 ? Math.min((total / goal) * 100, 100) : 0;
     document.getElementById('summary-budget-fill').style.width = `${percentage}%`;
 }
 
@@ -639,7 +661,7 @@ function updateUI() {
     renderHistory();
     if (isOverviewVisible) renderOverview();
 
-    const goal = CONFIG.DAILY_GOAL;
+    const goal = getDailyGoal();
     const total = state.currentDay.total;
     const percentage = Math.min(total / goal, 1);
     const ring = document.getElementById('progress-ring');

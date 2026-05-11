@@ -1046,3 +1046,10 @@ main {
     flex-direction: column;
     gap: 0; /* Da die Karten selbst margin-bottom haben */
 }
+
+/* --- TAP FEEDBACK --- */
+.tap-flash {
+    background-color: var(--primary-fixed) !important;
+    transform: scale(0.95) !important;
+    transition: all 0.1s ease-out !important;
+}
