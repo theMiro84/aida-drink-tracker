@@ -721,18 +721,21 @@ function processScannedCompanion(jsonString) {
 // Rendert die Tabelle im Dashboard
 function renderSocialTable() {
     const section = document.querySelector('.social-section');
+    const tableWrapper = document.getElementById('social-table-wrapper');
     const tbody = document.getElementById('social-ranking-body');
-    if (!section || !tbody) return;
+
+    if (!section || !tbody || !tableWrapper) return;
+
+    section.classList.remove('hidden');
 
     if (state.companions.length === 0) {
-        section.classList.add('hidden');
+        tableWrapper.classList.add('hidden');
         return;
     }
 
-    section.classList.remove('hidden');
+    tableWrapper.classList.remove('hidden');
     tbody.innerHTML = '';
 
-    // Eigenes Profil auch in die Liste aufnehmen
     const stats = getAggregatedStats();
     const allUsers = [
         {
@@ -744,17 +747,14 @@ function renderSocialTable() {
         ...state.companions,
     ];
 
-    // Nach Ausgaben absteigend sortieren
     allUsers.sort((a, b) => b.spent - a.spent);
 
     allUsers.forEach((user) => {
         const percentage = user.limit > 0 ? (user.spent / user.limit) * 100 : 0;
-        let statusClass = 'text-primary'; // Safe
-        if (percentage >= 100)
-            statusClass = 'text-primary'; // Über Limit (Blue Zone)
-        else if (percentage >= 75)
-            statusClass = 'text-warning'; // Amber / Warning
-        else statusClass = 'text-error'; // Unter 75%
+        let statusClass = 'text-primary';
+        if (percentage >= 100) statusClass = 'text-primary';
+        else if (percentage >= 75) statusClass = 'text-warning';
+        else statusClass = 'text-error';
 
         const tr = document.createElement('tr');
         if (user.isMe) tr.style.backgroundColor = 'var(--surface-container-highest)';
@@ -766,6 +766,98 @@ function renderSocialTable() {
         `;
         tbody.appendChild(tr);
     });
+}
+
+let html5QrcodeScanner = null;
+
+function openSyncModal() {
+    document.getElementById('sync-modal').classList.remove('hidden');
+    renderMyQRCode();
+    switchSyncTab('show');
+}
+
+function closeSyncModal() {
+    document.getElementById('sync-modal').classList.add('hidden');
+    if (html5QrcodeScanner) {
+        html5QrcodeScanner.clear().catch((err) => console.error('Fehler beim Stoppen des Scanners:', err));
+    }
+}
+
+function switchSyncTab(tab) {
+    const showTabBtn = document.getElementById('tab-show-qr');
+    const scanTabBtn = document.getElementById('tab-scan-qr');
+    const showContainer = document.getElementById('qr-show-container');
+    const scanContainer = document.getElementById('qr-scan-container');
+
+    if (tab === 'show') {
+        showTabBtn.classList.add('active');
+        scanTabBtn.classList.remove('active');
+        showContainer.classList.remove('hidden');
+        scanContainer.classList.add('hidden');
+        if (html5QrcodeScanner) {
+            html5QrcodeScanner.clear().catch((err) => console.error(err));
+        }
+    } else {
+        showTabBtn.classList.remove('active');
+        scanTabBtn.classList.add('active');
+        showContainer.classList.add('hidden');
+        scanContainer.classList.remove('hidden');
+        startScanner();
+    }
+}
+
+function renderMyQRCode() {
+    const canvas = document.getElementById('my-qr-code');
+    if (!canvas) return;
+
+    if (typeof QRious === 'undefined') {
+        console.error('QRious Bibliothek wurde nicht geladen!');
+        alert('Fehler: QR-Bibliothek fehlt. Bitte Internetverbindung prüfen.');
+        return;
+    }
+
+    try {
+        const payload = getSocialPayload();
+
+        new QRious({
+            element: canvas,
+            value: payload,
+            size: 250,
+            background: '#ffffff',
+            foreground: '#004e8b',
+            level: 'M',
+        });
+        console.log('QR-Code erfolgreich generiert für:', payload);
+    } catch (err) {
+        console.error('Fehler beim QR-Rendering:', err);
+    }
+}
+
+function startScanner() {
+    if (!html5QrcodeScanner) {
+        html5QrcodeScanner = new Html5QrcodeScanner(
+            'qr-reader',
+            { fps: 10, qrbox: { width: 250, height: 250 } },
+            false,
+        );
+    }
+    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+}
+
+function onScanSuccess(decodedText, decodedResult) {
+    const success = processScannedCompanion(decodedText);
+    if (success) {
+        if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
+        alert('Erfolgreich hinzugefügt/aktualisiert!');
+        closeSyncModal();
+        renderSocialTable();
+    } else {
+        alert('Kein gültiger Drink Navigator QR-Code.');
+    }
+}
+
+function onScanFailure(error) {
+    // Wird permanent bei jedem fehlerhaften Scan-Frame aufgerufen, ignorieren.
 }
 
 function updateUI() {
@@ -915,6 +1007,12 @@ async function init() {
 
     initSearch();
     initHistoryFilters();
+
+    // Modal & QR Events binden
+    document.getElementById('open-sync-btn')?.addEventListener('click', openSyncModal);
+    document.getElementById('close-sync-btn')?.addEventListener('click', closeSyncModal);
+    document.getElementById('tab-show-qr')?.addEventListener('click', () => switchSyncTab('show'));
+    document.getElementById('tab-scan-qr')?.addEventListener('click', () => switchSyncTab('scan'));
 
     renderDrinkList();
     updateUI();

@@ -14,6 +14,9 @@
             rel="icon"
             href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230066b3'><path d='M20 21c-1.39 0-2.78-.47-4-1.32-2.44 1.71-5.56 1.71-8 0C6.78 20.53 5.39 21 4 21H2v2h2c1.38 0 2.74-.35 4-.99 2.52 1.29 5.48 1.29 8 0 1.26.65 2.62.99 4 .99h2v-2h-2M3.95 19H4c1.6 0 3.02-.88 4-2 .98 1.12 2.4 2 4 2s3.02-.88 4-2c.98 1.12 2.4 2 4 2h.05l1.89-6.68c.08-.26.06-.54-.06-.78s-.34-.42-.6-.5L20 10.62V6c0-1.1-.9-2-2-2h-3V1H9v3H6c-1.1 0-2 .9-2 2v4.62l-1.29.42c-.26.08-.47.26-.6.5s-.15.52-.06.78L3.95 19M6 6h12v3.97L12 8 6 9.97V6z'/></svg>"
         />
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     </head>
     <body>
         <header class="fixed-header">
@@ -148,12 +151,19 @@
                     <div id="top-drinks-list" class="drink-stack"></div>
                 </section>
 
-                <section class="social-section hidden">
-                    <div class="section-header-icon">
-                        <span class="material-symbols-outlined text-primary">groups</span>
-                        <h2 class="headline-md font-headline">Vergleich mit Mitreisenden</h2>
+                <section class="social-section">
+                    <div class="section-header-icon" style="justify-content: space-between; width: 100%">
+                        <div style="display: flex; gap: var(--space-sm); align-items: center">
+                            <span class="material-symbols-outlined text-primary">groups</span>
+                            <h2 class="headline-md font-headline">Mitreisende</h2>
+                        </div>
+                        <button id="open-sync-btn" class="secondary-btn" style="padding: 6px 12px; flex: none">
+                            <span class="material-symbols-outlined" style="font-size: 1.25rem">qr_code_scanner</span>
+                            Sync
+                        </button>
                     </div>
-                    <div class="social-table-container tonal-card">
+
+                    <div id="social-table-wrapper" class="social-table-container tonal-card hidden">
                         <table class="social-table">
                             <thead>
                                 <tr>
@@ -166,6 +176,7 @@
                         </table>
                     </div>
                 </section>
+
                 <section class="danger-zone">
                     <h2 class="headline-md font-headline">Gefahrenzone</h2>
                     <p class="body-sm text-outline">Hier werden alle lokalen Daten unwiderruflich gelöscht.</p>
@@ -223,6 +234,38 @@
 
                 <div id="history-groups-container" class="history-stack"></div>
             </section>
+
+            <div id="sync-modal" class="modal-overlay hidden">
+                <div class="modal-content tonal-card">
+                    <div class="modal-header">
+                        <h2 class="headline-md font-headline">Social Sync</h2>
+                        <button id="close-sync-btn" class="icon-btn" aria-label="Schließen">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+                    <div class="filter-tabs" style="margin-bottom: var(--space-md)">
+                        <button id="tab-show-qr" class="tab-item active">Mein Code</button>
+                        <button id="tab-scan-qr" class="tab-item">Scannen</button>
+                    </div>
+
+                    <div id="qr-show-container" class="qr-container">
+                        <p class="body-sm text-center" style="margin-bottom: var(--space-md)">
+                            Zeige diesen Code, um deine Tagesstände zu teilen.
+                        </p>
+                        <canvas id="my-qr-code"></canvas>
+                    </div>
+
+                    <div id="qr-scan-container" class="qr-container hidden">
+                        <p class="body-sm text-center" style="margin-bottom: var(--space-md)">
+                            Scanne den Code eines Mitreisenden.
+                        </p>
+                        <div
+                            id="qr-reader"
+                            style="width: 100%; border-radius: var(--radius-sm); overflow: hidden"
+                        ></div>
+                    </div>
+                </div>
+            </div>
         </main>
 
         <nav class="bottom-nav">
