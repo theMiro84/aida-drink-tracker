@@ -21,10 +21,47 @@
                 <span class="material-symbols-outlined header-icon">directions_boat</span>
                 <span class="brand-text">DRINK NAVIGATOR</span>
             </div>
-            <div class="day-badge-container">
-                <span id="day-label" class="day-badge">Tag 1</span>
+            <div class="header-actions">
+                <div class="day-badge-container">
+                    <span id="day-label" class="day-badge">Tag 1</span>
+                </div>
+                <button id="profile-open-btn" class="icon-btn" aria-label="Profil">
+                    <span class="material-symbols-outlined">account_circle</span>
+                </button>
             </div>
         </header>
+
+        <section id="view-profile" class="screen hidden">
+            <div class="section-header-icon">
+                <span class="material-symbols-outlined text-primary">person_edit</span>
+                <h1 class="headline-lg font-headline">Mein Profil</h1>
+            </div>
+
+            <div class="tonal-card profile-form">
+                <div class="input-group">
+                    <label class="label-xs">Vollständiger Name</label>
+                    <input type="text" id="prof-name" class="profile-input" placeholder="z.B. Max Mustermann" />
+                </div>
+                <div class="input-group">
+                    <label class="label-xs">Nickname / Kürzel</label>
+                    <input type="text" id="prof-nickname" class="profile-input" placeholder="z.B. Käpt'n" />
+                </div>
+                <div class="stats-grid" style="margin-top: var(--space-md)">
+                    <div class="input-group">
+                        <label class="label-xs">Reisedauer (Tage)</label>
+                        <input type="number" id="prof-duration" class="profile-input" min="1" />
+                    </div>
+                    <div class="input-group">
+                        <label class="label-xs">Paketpreis (€)</label>
+                        <input type="number" id="prof-price" class="profile-input" step="0.01" />
+                    </div>
+                </div>
+
+                <button id="save-profile-btn" class="primary-btn" style="margin-top: var(--space-xl); width: 100%">
+                    Einstellungen speichern
+                </button>
+            </div>
+        </section>
 
         <main id="app-content">
             <section id="view-tag" class="screen">

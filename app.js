@@ -5,8 +5,8 @@ const CONFIG = {
 
 let state = {
     profile: {
-        username: 'Gast',
-        initials: 'G',
+        name: 'Gast',
+        nickname: 'Gaston',
         duration: 9,
         packagePrice: 240,
     },
@@ -16,13 +16,34 @@ let state = {
 
 const elements = {};
 
+function renderProfile() {
+    document.getElementById('prof-name').value = state.profile.name;
+    document.getElementById('prof-nickname').value = state.profile.nickname;
+    document.getElementById('prof-duration').value = state.profile.duration;
+    document.getElementById('prof-price').value = state.profile.packagePrice;
+}
+
+function saveProfileData() {
+    state.profile.name = document.getElementById('prof-name').value || 'Gast';
+    state.profile.nickname = document.getElementById('prof-nickname').value || 'Seebär';
+    state.profile.duration = Number(document.getElementById('prof-duration').value) || 1;
+    state.profile.packagePrice = Number(document.getElementById('prof-price').value) || 0;
+
+    saveState();
+    updateUI();
+
+    // Feedback und Rückkehr zum Dashboard
+    if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
+    alert('Profil aktualisiert!');
+    switchScreen('dashboard');
+}
+
 // Hilfsfunktion: Berechnet das dynamische Tagesziel
 function getDailyGoal() {
     if (!state.profile || state.profile.duration <= 0) return 0;
     return state.profile.packagePrice / state.profile.duration;
 }
 
-// Stammdatenquelle (später ggf. durch CSV-Import ersetzt)
 // --- 1. STAMMDATEN & CSV PARSER ---
 let drinksData = [];
 let favorites = [];
@@ -783,6 +804,13 @@ async function init() {
             }
         });
     });
+
+    document.getElementById('profile-open-btn').addEventListener('click', () => {
+        renderProfile();
+        switchScreen('profile');
+    });
+
+    document.getElementById('save-profile-btn').addEventListener('click', saveProfileData);
 
     initSearch();
     initHistoryFilters();
