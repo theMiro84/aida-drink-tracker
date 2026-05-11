@@ -768,7 +768,10 @@ function renderSocialTable() {
     });
 }
 
-let html5QrcodeScanner = null;
+// --- 6. MODAL & SCANNER LOGIK ---
+
+let html5QrCode = null;
+let isScanning = false;
 
 function openSyncModal() {
     document.getElementById('sync-modal').classList.remove('hidden');
@@ -778,9 +781,7 @@ function openSyncModal() {
 
 function closeSyncModal() {
     document.getElementById('sync-modal').classList.add('hidden');
-    if (html5QrcodeScanner) {
-        html5QrcodeScanner.clear().catch((err) => console.error('Fehler beim Stoppen des Scanners:', err));
-    }
+    stopScanner(); // Kamera hart ausschalten beim Schließen
 }
 
 function switchSyncTab(tab) {
@@ -794,31 +795,22 @@ function switchSyncTab(tab) {
         scanTabBtn.classList.remove('active');
         showContainer.classList.remove('hidden');
         scanContainer.classList.add('hidden');
-        if (html5QrcodeScanner) {
-            html5QrcodeScanner.clear().catch((err) => console.error(err));
-        }
+        stopScanner(); // Kamera ausmachen, wenn wir auf "Mein Code" wechseln
     } else {
         showTabBtn.classList.remove('active');
         scanTabBtn.classList.add('active');
         showContainer.classList.add('hidden');
         scanContainer.classList.remove('hidden');
-        startScanner();
+        // Wir starten NICHT automatisch. Der User soll den Button drücken.
     }
 }
 
 function renderMyQRCode() {
     const canvas = document.getElementById('my-qr-code');
-    if (!canvas) return;
-
-    if (typeof QRious === 'undefined') {
-        console.error('QRious Bibliothek wurde nicht geladen!');
-        alert('Fehler: QR-Bibliothek fehlt. Bitte Internetverbindung prüfen.');
-        return;
-    }
+    if (!canvas || typeof QRious === 'undefined') return;
 
     try {
         const payload = getSocialPayload();
-
         new QRious({
             element: canvas,
             value: payload,
@@ -827,37 +819,83 @@ function renderMyQRCode() {
             foreground: '#004e8b',
             level: 'M',
         });
-        console.log('QR-Code erfolgreich generiert für:', payload);
     } catch (err) {
         console.error('Fehler beim QR-Rendering:', err);
     }
 }
 
-function startScanner() {
-    if (!html5QrcodeScanner) {
-        html5QrcodeScanner = new Html5QrcodeScanner(
-            'qr-reader',
-            { fps: 10, qrbox: { width: 250, height: 250 } },
-            false,
-        );
+function toggleScanner() {
+    if (isScanning) {
+        stopScanner();
+    } else {
+        startScanner();
     }
-    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
 }
 
-function onScanSuccess(decodedText, decodedResult) {
+function startScanner() {
+    if (!html5QrCode) {
+        html5QrCode = new Html5Qrcode('qr-reader'); // Profi-API ohne UI
+    }
+
+    const btn = document.getElementById('toggle-scan-btn');
+    btn.innerHTML = `<span class="material-symbols-outlined">hourglass_empty</span> Starte...`;
+    btn.disabled = true;
+
+    // Direkt die Rückkamera (environment) anfordern
+    html5QrCode
+        .start(
+            { facingMode: 'environment' },
+            { fps: 10, qrbox: { width: 250, height: 250 } },
+            onScanSuccess,
+            onScanFailure,
+        )
+        .then(() => {
+            isScanning = true;
+            btn.disabled = false;
+            btn.classList.add('text-error'); // Rote Schrift signalisiert "Abbrechen"
+            btn.innerHTML = `<span class="material-symbols-outlined">stop_circle</span> Scannen stoppen`;
+        })
+        .catch((err) => {
+            console.error('Kamerafehler:', err);
+            btn.disabled = false;
+            btn.innerHTML = `<span class="material-symbols-outlined">photo_camera</span> Kamera starten`;
+            alert('Fehler beim Kamerazugriff. Berechtigung erteilt?');
+        });
+}
+
+function stopScanner() {
+    if (html5QrCode && isScanning) {
+        html5QrCode
+            .stop()
+            .then(() => {
+                isScanning = false;
+                const btn = document.getElementById('toggle-scan-btn');
+                if (btn) {
+                    btn.classList.remove('text-error');
+                    btn.innerHTML = `<span class="material-symbols-outlined">photo_camera</span> Kamera starten`;
+                }
+            })
+            .catch((err) => console.error('Fehler beim Stoppen:', err));
+    }
+}
+
+function onScanSuccess(decodedText) {
+    // Sobald wir was finden, sofort Kamera ausmachen
+    stopScanner();
+
     const success = processScannedCompanion(decodedText);
     if (success) {
         if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
-        alert('Erfolgreich hinzugefügt/aktualisiert!');
+        alert('Gast erfolgreich aktualisiert!');
         closeSyncModal();
         renderSocialTable();
     } else {
-        alert('Kein gültiger Drink Navigator QR-Code.');
+        alert('Ungültiger Code!');
     }
 }
 
 function onScanFailure(error) {
-    // Wird permanent bei jedem fehlerhaften Scan-Frame aufgerufen, ignorieren.
+    // Ignorieren, passiert bei jedem Frame ohne QR Code
 }
 
 function updateUI() {
@@ -1013,6 +1051,7 @@ async function init() {
     document.getElementById('close-sync-btn')?.addEventListener('click', closeSyncModal);
     document.getElementById('tab-show-qr')?.addEventListener('click', () => switchSyncTab('show'));
     document.getElementById('tab-scan-qr')?.addEventListener('click', () => switchSyncTab('scan'));
+    document.getElementById('toggle-scan-btn')?.addEventListener('click', toggleScanner);
 
     renderDrinkList();
     updateUI();

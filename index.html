@@ -257,12 +257,28 @@
 
                     <div id="qr-scan-container" class="qr-container hidden">
                         <p class="body-sm text-center" style="margin-bottom: var(--space-md)">
-                            Scanne den Code eines Mitreisenden.
+                            Code in das Feld halten.
                         </p>
+
                         <div
                             id="qr-reader"
-                            style="width: 100%; border-radius: var(--radius-sm); overflow: hidden"
+                            style="
+                                width: 100%;
+                                border-radius: var(--radius-xl);
+                                overflow: hidden;
+                                background-color: var(--surface-container-highest);
+                                min-height: 250px;
+                            "
                         ></div>
+
+                        <button
+                            id="toggle-scan-btn"
+                            class="secondary-btn"
+                            style="margin-top: var(--space-md); width: 100%"
+                        >
+                            <span class="material-symbols-outlined">photo_camera</span>
+                            Kamera starten
+                        </button>
                     </div>
                 </div>
             </div>
