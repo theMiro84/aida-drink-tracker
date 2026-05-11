@@ -12,6 +12,7 @@ let state = {
     },
     currentDay: null,
     archive: [],
+    companions: [],
 };
 
 const elements = {};
@@ -170,11 +171,13 @@ function loadState() {
             const parsedData = JSON.parse(savedData);
 
             state.profile = {
-                username: parsedData.profile?.username || 'Gast',
-                initials: parsedData.profile?.initials || 'G',
+                name: parsedData.profile?.name || 'Gast',
+                nickname: parsedData.profile?.nickname || 'Seebär',
                 duration: Number(parsedData.profile?.duration) || 9,
                 packagePrice: Number(parsedData.profile?.packagePrice) || 240,
             };
+
+            state.companions = Array.isArray(parsedData.companions) ? parsedData.companions : [];
 
             state.archive = Array.isArray(parsedData.archive)
                 ? parsedData.archive.map((day, index) => normalizeDay(day, index + 1))
@@ -409,6 +412,8 @@ function renderOverview() {
         `;
 
         topList.appendChild(item);
+
+        renderSocialTable();
     });
 }
 
@@ -665,6 +670,102 @@ function updateSummary(count, alcoholicCount, total) {
     const goal = getDailyGoal();
     const percentage = goal > 0 ? Math.min((total / goal) * 100, 100) : 0;
     document.getElementById('summary-budget-fill').style.width = `${percentage}%`;
+}
+
+// --- 5. SOCIAL SYNC (QR VORBEREITUNG) ---
+
+// Generiert das minimale Array für den eigenen QR-Code
+function getSocialPayload() {
+    const stats = getAggregatedStats();
+    // Format: [Nickname, Limit, AI-Gesamt, Zuzahlung]
+    const payload = [
+        state.profile.nickname || state.profile.name,
+        state.profile.packagePrice,
+        Number(stats.grandTotal.toFixed(2)),
+        Number(stats.grandTotalExtra.toFixed(2)),
+    ];
+    return JSON.stringify(payload);
+}
+
+// Verarbeitet einen gescannten String und speichert den Freund
+function processScannedCompanion(jsonString) {
+    try {
+        const data = JSON.parse(jsonString);
+        if (Array.isArray(data) && data.length >= 4) {
+            const companion = {
+                nickname: String(data[0]),
+                limit: Number(data[1]),
+                spent: Number(data[2]),
+                extra: Number(data[3]),
+                lastUpdate: new Date().toISOString(),
+            };
+
+            // Vorhandenen Freund updaten oder neu hinzufügen
+            const index = state.companions.findIndex((c) => c.nickname === companion.nickname);
+            if (index >= 0) {
+                state.companions[index] = companion;
+            } else {
+                state.companions.push(companion);
+            }
+
+            saveState();
+            if (isOverviewVisible) renderOverview();
+            return true;
+        }
+    } catch (e) {
+        console.error('Fehler beim Verarbeiten der QR-Daten:', e);
+    }
+    return false;
+}
+
+// Rendert die Tabelle im Dashboard
+function renderSocialTable() {
+    const section = document.querySelector('.social-section');
+    const tbody = document.getElementById('social-ranking-body');
+    if (!section || !tbody) return;
+
+    if (state.companions.length === 0) {
+        section.classList.add('hidden');
+        return;
+    }
+
+    section.classList.remove('hidden');
+    tbody.innerHTML = '';
+
+    // Eigenes Profil auch in die Liste aufnehmen
+    const stats = getAggregatedStats();
+    const allUsers = [
+        {
+            nickname: (state.profile.nickname || 'Ich') + ' (Du)',
+            limit: state.profile.packagePrice,
+            spent: stats.grandTotal,
+            isMe: true,
+        },
+        ...state.companions,
+    ];
+
+    // Nach Ausgaben absteigend sortieren
+    allUsers.sort((a, b) => b.spent - a.spent);
+
+    allUsers.forEach((user) => {
+        const percentage = user.limit > 0 ? (user.spent / user.limit) * 100 : 0;
+        let statusClass = 'text-primary'; // Safe
+        if (percentage >= 100)
+            statusClass = 'text-primary'; // Über Limit (Blue Zone)
+        else if (percentage >= 75)
+            statusClass = 'text-warning'; // Amber / Warning
+        else statusClass = 'text-error'; // Unter 75%
+
+        const tr = document.createElement('tr');
+        if (user.isMe) tr.style.backgroundColor = 'var(--surface-container-highest)';
+
+        tr.innerHTML = `
+            <td class="font-bold">${user.nickname}</td>
+            <td class="text-right">${formatCurrency(user.spent)}</td>
+            <td class="text-right font-bold ${statusClass}">${Math.round(percentage)}%</td>
+        `;
+        tbody.appendChild(tr);
+    });
 }
 
 function updateUI() {
