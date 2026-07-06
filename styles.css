@@ -1097,6 +1097,10 @@ main {
     box-shadow: inset 0 0 0 2px var(--primary-fixed-dim);
 }
 
+#view-profile .stats-grid .profile-input {
+    width: 100%;
+}
+
 /* --- MODAL --- */
 .modal-overlay {
     position: fixed;
