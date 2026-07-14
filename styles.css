@@ -298,8 +298,10 @@ main {
     box-shadow: var(--shadow-float);
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
     padding: 0.75rem 1rem;
-    /* Safari: Home-Indicator-Bereich freihalten – ersetzt UA-Sniff-Script */
-    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+    /* Zukunfts-Versuch (aktuell auf iOS Safari nicht zuverlässig – die Nav
+       sitzt dadurch zu weit oben). Solange greift der bewährte UA-Sniff-Fix
+       in index.html (bottom: -0.75rem auf iPhone/iPad). Später erneut testen:
+       padding-bottom: calc(0.75rem + env(safe-area-inset-bottom)); */
 }
 
 .nav-item {

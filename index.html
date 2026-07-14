@@ -283,5 +283,16 @@
         </nav>
 
         <script src="app.js"></script>
+        <script>
+            /* Safari Bottom-Nav Fix (bewährt):
+               Der moderne CSS-Ansatz (100dvh + env(safe-area-inset-bottom),
+               siehe styles.css) funktioniert auf iOS Safari derzeit nicht
+               zuverlässig – die Nav sitzt dadurch zu weit oben. Bis das greift,
+               schiebt dieser UA-Sniff die Leiste wie früher um 0.75rem nach
+               unten. In Zukunft erneut ohne diesen Fix testen. */
+            if (/iPhone|iPad/.test(navigator.userAgent) && !/CriOS/.test(navigator.userAgent)) {
+                document.querySelector('.bottom-nav').style.bottom = '-0.75rem';
+            }
+        </script>
     </body>
 </html>
