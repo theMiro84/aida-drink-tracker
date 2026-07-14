@@ -4,6 +4,8 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
         <title>Drink Navigator</title>
+        <meta name="theme-color" content="#0066b3" />
+        <link rel="manifest" href="manifest.json" />
         <link rel="stylesheet" href="styles.css" />
         <link
             href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
@@ -49,7 +51,7 @@
                     <label class="label-xs">Nickname / Kürzel</label>
                     <input type="text" id="prof-nickname" class="profile-input" placeholder="z.B. Käpt'n" />
                 </div>
-                <div class="stats-grid" style="margin-top: var(--space-md)">
+                <div class="stats-grid">
                     <div class="input-group">
                         <label class="label-xs">Reisedauer (Tage)</label>
                         <input type="number" id="prof-duration" class="profile-input" min="1" />
@@ -60,9 +62,7 @@
                     </div>
                 </div>
 
-                <button id="save-profile-btn" class="primary-btn" style="margin-top: var(--space-xl); width: 100%">
-                    Einstellungen speichern
-                </button>
+                <button id="save-profile-btn" class="primary-btn btn-block">Einstellungen speichern</button>
             </div>
         </section>
 
@@ -108,7 +108,7 @@
                     <div class="search-bar">
                         <span class="material-symbols-outlined search-icon">search</span>
                         <input type="text" id="drink-search" placeholder="Getränk suchen..." class="search-input" />
-                        <button id="clear-search" class="clear-icon hidden" aria-label="Suche löschen">
+                        <button id="clear-search" class="clear-icon" aria-label="Suche löschen">
                             <span class="material-symbols-outlined">close</span>
                         </button>
                     </div>
@@ -152,13 +152,13 @@
                 </section>
 
                 <section class="social-section">
-                    <div class="section-header-icon" style="justify-content: space-between; width: 100%">
-                        <div style="display: flex; gap: var(--space-sm); align-items: center">
+                    <div class="section-header-icon social-section-header">
+                        <div class="social-section-title">
                             <span class="material-symbols-outlined text-primary">groups</span>
                             <h2 class="headline-md font-headline">Mitreisende</h2>
                         </div>
-                        <button id="open-sync-btn" class="secondary-btn" style="padding: 6px 12px; flex: none">
-                            <span class="material-symbols-outlined" style="font-size: 1.25rem">qr_code_scanner</span>
+                        <button id="open-sync-btn" class="secondary-btn sync-btn">
+                            <span class="material-symbols-outlined">qr_code_scanner</span>
                             Sync
                         </button>
                     </div>
@@ -243,39 +243,22 @@
                             <span class="material-symbols-outlined">close</span>
                         </button>
                     </div>
-                    <div class="filter-tabs" style="margin-bottom: var(--space-md)">
+                    <div class="filter-tabs sync-tabs">
                         <button id="tab-show-qr" class="tab-item active">Mein Code</button>
                         <button id="tab-scan-qr" class="tab-item">Scannen</button>
                     </div>
 
                     <div id="qr-show-container" class="qr-container">
-                        <p class="body-sm text-center" style="margin-bottom: var(--space-md)">
-                            Zeige diesen Code, um deine Tagesstände zu teilen.
-                        </p>
+                        <p class="body-sm qr-hint">Zeige diesen Code, um deine Tagesstände zu teilen.</p>
                         <canvas id="my-qr-code"></canvas>
                     </div>
 
                     <div id="qr-scan-container" class="qr-container hidden">
-                        <p class="body-sm text-center" style="margin-bottom: var(--space-md)">
-                            Code in das Feld halten.
-                        </p>
+                        <p class="body-sm qr-hint">Code in das Feld halten.</p>
 
-                        <div
-                            id="qr-reader"
-                            style="
-                                width: 100%;
-                                border-radius: var(--radius-xl);
-                                overflow: hidden;
-                                background-color: var(--surface-container-highest);
-                                min-height: 250px;
-                            "
-                        ></div>
+                        <div id="qr-reader" class="qr-reader"></div>
 
-                        <button
-                            id="toggle-scan-btn"
-                            class="secondary-btn"
-                            style="margin-top: var(--space-md); width: 100%"
-                        >
+                        <button id="toggle-scan-btn" class="secondary-btn btn-block">
                             <span class="material-symbols-outlined">photo_camera</span>
                             Kamera starten
                         </button>
@@ -300,11 +283,5 @@
         </nav>
 
         <script src="app.js"></script>
-        <script>
-            /* Safari Bottom-Nav Fix */
-            if (/iPhone|iPad/.test(navigator.userAgent) && !/CriOS/.test(navigator.userAgent)) {
-                document.querySelector('.bottom-nav').style.bottom = '-0.75rem';
-            }
-        </script>
     </body>
 </html>
