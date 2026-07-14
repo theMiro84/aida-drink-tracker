@@ -71,8 +71,6 @@ async function loadCSVData() {
             };
         });
 
-        // Vorläufiger Fallback für Favoriten
-        favorites = drinksData.slice(0, 4);
     } catch (error) {
         console.error('Fehler beim Laden der CSV:', error);
         alert('Konnte Getränkedaten nicht laden. Bitte Live Server nutzen.');
@@ -275,17 +273,9 @@ function initSearch() {
     const clearBtn = document.getElementById('clear-search');
     if (!searchInput) return;
 
+    // Sichtbarkeit des Clear-Buttons regelt CSS (:placeholder-shown).
     searchInput.addEventListener('input', (e) => {
         const searchTerm = e.target.value.toLowerCase();
-
-        if (clearBtn) {
-            if (searchTerm.length > 0) {
-                clearBtn.classList.remove('hidden');
-            } else {
-                clearBtn.classList.add('hidden');
-            }
-        }
-
         const categories = document.querySelectorAll('.category-item');
 
         categories.forEach((category) => {
@@ -293,30 +283,17 @@ function initSearch() {
             let hasVisibleDrink = false;
 
             drinks.forEach((drink) => {
-                // FIX: Nach .drink-card-name statt .drink-item-name suchen
                 const nameNode = drink.querySelector('.drink-card-name');
                 if (!nameNode) return;
 
-                const name = nameNode.textContent.toLowerCase();
-
-                if (name.includes(searchTerm)) {
-                    drink.style.display = 'flex';
-                    hasVisibleDrink = true;
-                } else {
-                    drink.style.display = 'none';
-                }
+                const matches = nameNode.textContent.toLowerCase().includes(searchTerm);
+                drink.hidden = !matches;
+                if (matches) hasVisibleDrink = true;
             });
 
-            category.style.display = hasVisibleDrink ? 'block' : 'none';
-
-            const content = category.querySelector('.category-content');
-            if (searchTerm !== '' && hasVisibleDrink) {
-                category.classList.add('is-open');
-                if (content) content.style.display = 'block';
-            } else if (searchTerm === '') {
-                category.classList.remove('is-open');
-                if (content) content.style.display = 'none';
-            }
+            // <details>-Element: native Attribute statt Inline-Styles
+            category.hidden = !hasVisibleDrink;
+            category.open = searchTerm !== '' && hasVisibleDrink;
         });
     });
 
@@ -405,16 +382,16 @@ function renderOverview() {
                 </div>
             <div class="drink-card-info">
                 <span class="drink-card-name">${drink.latestName}</span>
-                <span class="drink-card-sub blue">${drink.count}x bestellt</span>
+                <span class="drink-card-sub">${drink.count}x bestellt</span>
             </div>
         </div>
         <span class="drink-card-value">${formatCurrency(drink.totalSpent)}</span>
         `;
 
         topList.appendChild(item);
-
-        renderSocialTable();
     });
+
+    renderSocialTable();
 }
 
 function updateFavorites() {
@@ -442,16 +419,16 @@ function renderFavorites() {
     grid.innerHTML = '';
 
     if (favorites.length === 0) {
-        section.style.display = 'none';
+        section.classList.add('hidden');
         return;
     }
 
-    section.style.display = 'block';
+    section.classList.remove('hidden');
     favorites.forEach((drink) => {
         const btn = document.createElement('button');
         btn.className = 'fav-card';
 
-        const extraSymbol = !drink.isAI ? '<span class="text-outline" style="margin-left: 4px;">*</span>' : '';
+        const extraSymbol = !drink.isAI ? '<span class="fav-extra">*</span>' : '';
 
         btn.innerHTML = `
             <span class="fav-name">${drink.name}</span>
@@ -479,17 +456,17 @@ function renderDrinkList(drinksToRender = drinksData) {
     container.innerHTML = '';
 
     if (drinksToRender.length === 0) {
-        container.innerHTML = '<div class="text-sm text-center py-4 opacity-50 italic">Keine Getränke gefunden.</div>';
+        container.innerHTML = '<div class="empty-state">Keine Getränke gefunden.</div>';
         return;
     }
 
     const sortedDrinks = [...drinksToRender].sort((a, b) => a.name.localeCompare(b.name));
 
-    const categoryDiv = document.createElement('div');
+    const categoryDiv = document.createElement('details');
     categoryDiv.className = 'category-item';
 
     categoryDiv.innerHTML = `
-        <div class="category-header">
+        <summary class="category-header">
             <div class="category-brand">
                 <div class="category-icon-wrapper">
                     <span class="material-symbols-outlined">menu_book</span>
@@ -497,8 +474,8 @@ function renderDrinkList(drinksToRender = drinksData) {
                 <span class="font-headline category-title">Getränke von A bis Z</span>
             </div>
             <span class="material-symbols-outlined">expand_more</span>
-        </div>
-        <div class="category-content" style="display: none;"></div>
+        </summary>
+        <div class="category-content"></div>
     `;
 
     const contentDiv = categoryDiv.querySelector('.category-content');
@@ -533,8 +510,6 @@ function renderDrinkList(drinksToRender = drinksData) {
     });
 
     container.appendChild(categoryDiv);
-
-    initAccordions();
 }
 
 let currentHistoryFilter = 'heute'; // globaler State für den Tab
@@ -584,8 +559,7 @@ function renderHistory() {
     }
 
     if (drinksToRender.length === 0) {
-        container.innerHTML =
-            '<p class="text-sm text-center py-8 opacity-50 italic">Keine Getränke in dieser Ansicht.</p>';
+        container.innerHTML = '<p class="empty-state">Keine Getränke in dieser Ansicht.</p>';
         updateSummaryCard();
         return;
     }
@@ -757,7 +731,7 @@ function renderSocialTable() {
         else statusClass = 'text-error';
 
         const tr = document.createElement('tr');
-        if (user.isMe) tr.style.backgroundColor = 'var(--surface-container-highest)';
+        if (user.isMe) tr.classList.add('is-me');
 
         tr.innerHTML = `
             <td class="font-bold">${user.nickname}</td>
@@ -894,7 +868,7 @@ function onScanSuccess(decodedText) {
     }
 }
 
-function onScanFailure(error) {
+function onScanFailure() {
     // Ignorieren, passiert bei jedem Frame ohne QR Code
 }
 
@@ -934,7 +908,7 @@ function updateUI() {
     if (limitInfo) {
         limitInfo.textContent = `Limit verbleibend: ${formatCurrency(remaining)}`;
         if (state.currentDay.totalExtra > 0) {
-            limitInfo.innerHTML += `<br><span class="text-xs text-outline" style="font-weight:normal;">Zuzahlung heute: ${formatCurrency(state.currentDay.totalExtra)}</span>`;
+            limitInfo.innerHTML += `<span class="limit-extra">Zuzahlung heute: ${formatCurrency(state.currentDay.totalExtra)}</span>`;
         }
     }
 }
@@ -956,43 +930,6 @@ function getMaterialIcon(category) {
 
     // Fallback
     return 'liquor';
-}
-
-// ─── Akkordeon-Toggle ─────────────────────────────────────────
-
-function initAccordions() {
-    const categoryItems = document.querySelectorAll('.category-item');
-
-    categoryItems.forEach((item) => {
-        const header = item.querySelector('.category-header');
-        const content = item.querySelector('.category-content');
-        const iconWrapper = item.querySelector('.category-icon-wrapper');
-        const icon = item.querySelector('.category-header .material-symbols-outlined:last-child');
-
-        if (!header) return;
-
-        header.addEventListener('click', () => {
-            const isOpen = item.classList.contains('is-open');
-
-            categoryItems.forEach((other) => {
-                if (other !== item) {
-                    other.classList.remove('is-open');
-                    const otherContent = other.querySelector('.category-content');
-                    if (otherContent) otherContent.style.display = 'none';
-                }
-            });
-
-            if (isOpen) {
-                item.classList.remove('is-open');
-                if (content) content.style.display = 'none';
-            } else {
-                item.classList.add('is-open');
-                if (content) content.style.display = 'block';
-            }
-        });
-
-        if (content) content.style.display = 'none';
-    });
 }
 
 function resetApp() {

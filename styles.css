@@ -2,6 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;800&family=Inter:wght@400;500;600&display=swap');
 
 :root {
+    /* ─── Farben ────────────────────────────────────────────────── */
     --primary: #0066b3;
     --primary-container: #004e8b; /* Dunklerer Gradient-Wert für CTAs */
     --primary-fixed: #d3e4ff;
@@ -9,34 +10,27 @@
     --on-primary: #ffffff;
 
     --surface: #fcf9f8; /* Base */
-    --surface-bright: #fcf9f8;
-    --surface-dim: #dcd9d9;
     --surface-container-lowest: #ffffff; /* Floating (Cards) */
     --surface-container-low: #f6f3f2; /* Leicht erhöht */
     --surface-container: #f0eded; /* Sunken / Chips */
-    --surface-container-high: #eae7e7; /* Tiefer sunken */
     --surface-container-highest: #e5e2e1; /* Input-Backgrounds */
-    --surface-variant: #e5e2e1;
     --on-surface: #1c1b1b; /* Nie 100% Schwarz – laut DESIGN.md */
     --on-surface-variant: #414751;
 
     --outline: #717782;
-    --outline-variant: rgba(193, 199, 211, 0.15);
 
+    /* Status-Farben (auch aus app.js via var() referenziert) */
     --color-error: #ba1a1a;
     --color-warning: #e08c00; /* = tertiary-container */
     --color-safe: #004e8b; /* = primary-container */
-    --error-container: #ffdad6;
-    --on-error: #ffffff;
-    --tertiary: #7c3900;
-    --tertiary-container: #a04c01;
-    --on-tertiary-container: #ffdac6;
 
+    /* ─── Typografie ────────────────────────────────────────────── */
     --font-display: 'Plus Jakarta Sans', sans-serif;
     --font-body: 'Inter', sans-serif;
     --font-size-item-name: 0.95rem;
     --font-size-item-sub: 0.75rem;
 
+    /* ─── Abstände ──────────────────────────────────────────────── */
     --space-xs: 0.25rem; /*  4px */
     --space-sm: 0.5rem; /*  8px */
     --space-md: 1rem; /* 16px */
@@ -48,18 +42,29 @@
     --item-padding-v: var(--space-md);
     --item-padding-h: var(--space-md);
 
+    /* ─── Radien ────────────────────────────────────────────────── */
     --radius-sm: 0.5rem; /*  8px – Standard CTA */
-    --radius-default: 0.5rem; /*  8px */
-    --radius-lg: 0.75rem; /* 12px */
+    --radius-default: 0.5rem; /*  8px – Icon-Chips, Listenzeilen */
+    --radius-lg: 0.75rem; /* 12px – Tabs, Nav-Pill */
     --radius-xl: 1rem; /* 16px – Cards */
     --radius-2xl: 1.5rem; /* 24px – Hero-Sections */
     --radius-full: 9999px; /* Pills */
 
+    /* ─── Nautical Ring ─────────────────────────────────────────── */
     --ring-stroke: 8; /* px, unitlos für SVG stroke-width */
     --ring-circumference-sm: 477; /* 2π × 76 ≈ 477  (Tag-Ring) */
     --ring-circumference-lg: 691; /* 2π × 110 ≈ 691 (Dashboard-Ring) */
 
     --shadow-float: 0 4px 12px rgba(28, 27, 27, 0.04);
+
+    /* Wiederkehrende Primary-Transparenzen */
+    --primary-tint-04: rgba(0, 102, 179, 0.04);
+    --primary-tint-06: rgba(0, 102, 179, 0.06);
+    --primary-tint-10: rgba(0, 102, 179, 0.1);
+    --primary-tint-25: rgba(0, 102, 179, 0.25);
+    --error-tint-20: rgba(186, 26, 26, 0.2);
+    --error-tint-30: rgba(186, 26, 26, 0.3);
+    --error-tint-05: rgba(186, 26, 26, 0.05);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -67,9 +72,6 @@
    Hierarchie entsteht durch Gewichtskontrast, nicht durch Farbe.
 ═══════════════════════════════════════════════════════════════ */
 
-/* ─── Display ────────────────────────────────────────────────────
-   Für große Fokus-Zahlen: Tagesausgabe, Paket-Total.
-   display-lg für daily totals als "bold focal point" (DESIGN.md). */
 .display-xl {
     font-family: var(--font-display);
     font-size: 2.5rem; /* 40px */
@@ -97,9 +99,6 @@
     color: var(--on-surface);
 }
 
-/* ─── Headline ────────────────────────────────────────────────────
-   Pairing-Regel: headline-lg (Semi-bold) + body-md (Regular)
-   erzeugt visuelle Autorität ohne neue Farbe. */
 .headline-lg {
     font-family: var(--font-display);
     font-size: 1.25rem; /* 20px */
@@ -118,17 +117,6 @@
     color: var(--on-surface);
 }
 
-/* ─── Body ────────────────────────────────────────────────────────
-   Inter für alle Fließtexte und funktionale Inhalte.
-   Hohe Lesbarkeit auch unter Sonnenlicht auf Deck (DESIGN.md). */
-.body-md {
-    font-family: var(--font-body);
-    font-size: 1rem; /* 16px */
-    font-weight: 400;
-    line-height: 1.5;
-    color: var(--on-surface);
-}
-
 .body-sm {
     font-family: var(--font-body);
     font-size: 0.875rem; /* 14px */
@@ -137,9 +125,6 @@
     color: var(--on-surface-variant);
 }
 
-/* ─── Label ───────────────────────────────────────────────────────
-   Für Buttons, Badges, Meta-Infos und Navigation.
-   label-md mit Uppercase + Letter-Spacing für Premium-Buttons. */
 .label-md {
     font-family: var(--font-body);
     font-size: 0.875rem; /* 14px */
@@ -156,9 +141,7 @@
     line-height: 1;
 }
 
-/* Klein-Label für Metadaten direkt an Zahlen/Werten:
-   "Heute ausgegeben", "Paket-Limit", "Gesamt" usw.
-   Bewusst klein (10px) – tritt hinter die Zahl zurück. */
+/* Klein-Label für Metadaten direkt an Zahlen/Werten. */
 .label-xs {
     font-family: var(--font-body);
     font-size: 0.65rem; /* ~10px */
@@ -193,65 +176,45 @@
     margin-bottom: var(--space-sm);
 }
 
-/* ─── Utility: Schriftfamilien ───────────────────────────────────
-   Für Stellen, die nur die Familie, nicht die ganze Scale brauchen. */
+/* ─── Utility: Schrift & Farbe (sparsam) ─────────────────────────── */
 .font-headline {
     font-family: var(--font-display);
 }
 
-.font-body {
-    font-family: var(--font-body);
+.font-bold {
+    font-weight: 700;
 }
 
-/* ─── Utility: Farb-Overrides ────────────────────────────────────
-   Sparsam einsetzen – Hierarchie primär über Gewicht, nicht Farbe. */
-.text-primary {
-    color: var(--primary);
-}
-.text-on-surface {
-    color: var(--on-surface);
-}
-.text-subtle {
-    color: var(--on-surface-variant);
-}
-.text-outline {
-    color: var(--outline);
-}
-
-/* ─── Utility: Größen (ohne Semantik) ───────────────────────────
-   Nur für Inline-Overrides; bevorzuge semantische Scale-Klassen. */
 .text-lg {
     font-size: 1.125rem;
     line-height: 1.3;
 }
-.text-md {
-    font-size: 1rem;
-    line-height: 1.4;
+
+.text-primary {
+    color: var(--primary);
 }
-.text-sm {
-    font-size: 0.875rem;
-    line-height: 1.5;
+.text-outline {
+    color: var(--outline);
 }
-.text-xs {
-    font-size: 0.75rem;
-    line-height: 1.5;
+.text-warning {
+    color: var(--color-warning);
+}
+.text-error {
+    color: var(--color-error);
 }
 
-/* ─── Utility: Gewicht ───────────────────────────────────────────*/
-.font-regular {
-    font-weight: 400;
+/* ─── Utility: Ausrichtung ───────────────────────────────────────── */
+.text-right {
+    text-align: right;
 }
-.font-medium {
-    font-weight: 500;
-}
-.font-semibold {
-    font-weight: 600;
-}
-.font-bold {
-    font-weight: 700;
-}
-.font-extrabold {
-    font-weight: 800;
+
+/* Leerzustands-Text für leere Listen/Ansichten. */
+.empty-state {
+    text-align: center;
+    padding: var(--space-2xl) 0;
+    color: var(--on-surface-variant);
+    font-size: 0.875rem;
+    font-style: italic;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -264,20 +227,20 @@
 }
 
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-body);
     background-color: var(--surface);
     color: var(--on-surface);
     margin: 0;
     line-height: 1.5;
     min-height: 100vh;
-    padding-bottom: 80px;
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
 }
 
 h1,
 h2,
 h3,
 .font-headline {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: var(--font-display);
     font-weight: 800;
     letter-spacing: -0.02em;
 }
@@ -294,8 +257,8 @@ h3,
 
 main {
     padding-top: 5rem;
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
+    padding-left: var(--space-xl);
+    padding-right: var(--space-xl);
     max-width: 42rem;
     margin: 0 auto;
 }
@@ -315,7 +278,7 @@ main {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 1.5rem;
+    padding: 0 var(--space-xl);
 }
 
 .bottom-nav {
@@ -329,8 +292,10 @@ main {
     align-items: center;
     background-color: var(--surface-container-lowest);
     box-shadow: var(--shadow-float);
-    border-radius: 1rem 1rem 0 0;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
     padding: 0.75rem 1rem;
+    /* Safari: Home-Indicator-Bereich freihalten – ersetzt UA-Sniff-Script */
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
 }
 
 .nav-item {
@@ -351,8 +316,8 @@ main {
 
 .nav-item.active {
     color: var(--primary);
-    background-color: rgba(0, 102, 179, 0.1);
-    border-radius: 0.75rem;
+    background-color: var(--primary-tint-10);
+    border-radius: var(--radius-lg);
     transform: scale(0.95);
 }
 
@@ -366,7 +331,7 @@ main {
 }
 
 .nav-item span:last-child {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: var(--font-display);
     font-size: 0.65rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -387,7 +352,7 @@ main {
 }
 
 .brand-text {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: var(--font-display);
     font-weight: 800;
     font-size: 1.125rem;
     letter-spacing: 0.1em;
@@ -395,14 +360,29 @@ main {
     color: var(--primary);
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    color: var(--primary);
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+}
+
 .day-badge {
     background-color: var(--surface-container);
     color: var(--primary);
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: var(--font-display);
     font-weight: 700;
     font-size: 0.875rem;
     padding: 0.375rem 1rem;
-    border-radius: 9999px;
+    border-radius: var(--radius-full);
     letter-spacing: -0.01em;
 }
 
@@ -439,25 +419,25 @@ main {
 .ring-track {
     fill: none;
     stroke: var(--surface-container);
-    stroke-width: 8;
+    stroke-width: var(--ring-stroke);
 }
 
 .ring-fill {
     fill: none;
     stroke: var(--primary);
-    stroke-width: 8;
+    stroke-width: var(--ring-stroke);
     stroke-linecap: round;
     transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #progress-ring {
-    stroke-dasharray: 477;
-    stroke-dashoffset: 477;
+    stroke-dasharray: var(--ring-circumference-sm);
+    stroke-dashoffset: var(--ring-circumference-sm);
 }
 
 #overall-progress-ring {
-    stroke-dasharray: 691;
-    stroke-dashoffset: 691;
+    stroke-dasharray: var(--ring-circumference-lg);
+    stroke-dashoffset: var(--ring-circumference-lg);
 }
 
 .ring-info {
@@ -469,6 +449,12 @@ main {
     gap: var(--space-sm);
     width: 180px;
     z-index: 2;
+}
+
+/* Hero-Cards (Tag-Ring + Dashboard-Hero) teilen denselben Radius. */
+.ring-section,
+.dashboard-hero {
+    border-radius: var(--radius-2xl);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -514,6 +500,11 @@ main {
     color: var(--primary);
 }
 
+.fav-extra {
+    margin-left: 4px;
+    color: var(--outline);
+}
+
 .action-grid {
     display: flex;
     gap: 12px;
@@ -523,8 +514,8 @@ main {
 
 .primary-btn {
     flex: 1;
-    background: linear-gradient(to bottom, #004e8b, #0066b3);
-    color: white;
+    background: linear-gradient(to bottom, var(--primary-container), var(--primary));
+    color: var(--on-primary);
     border: none;
     border-radius: var(--radius-default);
     padding: 0.75rem;
@@ -541,7 +532,7 @@ main {
     flex: 1;
     background: none;
     color: var(--primary);
-    border: 1.5px solid rgba(0, 102, 179, 0.25);
+    border: 1.5px solid var(--primary-tint-25);
     border-radius: var(--radius-sm);
     padding: 0.75rem;
     font-family: var(--font-body);
@@ -558,12 +549,29 @@ main {
 }
 
 .secondary-btn:active {
-    background-color: rgba(0, 102, 179, 0.06);
+    background-color: var(--primary-tint-06);
 }
 
 .secondary-btn:disabled {
     opacity: 0.35;
     cursor: not-allowed;
+}
+
+/* Buttons, die die volle Breite einnehmen (Profil speichern, Scanner). */
+.btn-block {
+    width: 100%;
+    flex: none;
+    margin-top: var(--space-md);
+}
+
+/* Kompakter Sync-Button in der Section-Kopfzeile. */
+.sync-btn {
+    padding: 6px 12px;
+    flex: none;
+}
+
+.sync-btn .material-symbols-outlined {
+    font-size: 1.25rem;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -626,8 +634,13 @@ main {
     color: var(--primary);
 }
 
+/* Clear-Button nur zeigen, wenn Eingabe vorhanden – ersetzt JS-Toggle. */
+.search-input:placeholder-shown ~ .clear-icon {
+    display: none;
+}
+
 /* ═══════════════════════════════════════════════════════════════
-   KATEGORIEN (AKKORDEON)
+   KATEGORIEN (NATIVE <details>-AKKORDEON)
 ═══════════════════════════════════════════════════════════════ */
 
 .category-section {
@@ -644,6 +657,12 @@ main {
     padding: var(--space-md);
     cursor: pointer;
     user-select: none;
+    list-style: none;
+}
+
+/* Nativen <summary>-Marker entfernen. */
+.category-header::-webkit-details-marker {
+    display: none;
 }
 
 .category-header:active {
@@ -691,24 +710,29 @@ main {
     isolation: isolate;
 }
 
-.category-item.is-open {
-    background-color: rgba(0, 102, 179, 0.04);
+.category-item[open] {
+    background-color: var(--primary-tint-04);
 }
 
-.category-item.is-open .category-icon-wrapper {
-    background-color: rgba(0, 102, 179, 0.1);
+.category-item[open] .category-icon-wrapper {
+    background-color: var(--primary-tint-10);
 }
 
-.category-item.is-open .category-icon-wrapper .material-symbols-outlined {
+.category-item[open] .category-icon-wrapper .material-symbols-outlined {
     color: var(--primary);
 }
 
-.category-item.is-open .category-header .material-symbols-outlined:last-child {
+.category-item[open] .category-header .material-symbols-outlined:last-child {
     transform: rotate(180deg);
 }
 
 .category-content {
     padding: 0 var(--space-xs) var(--space-xs) var(--space-xs);
+}
+
+/* Kategorie in der Suche ausblenden (überschreibt display:flex). */
+.category-item[hidden] {
+    display: none;
 }
 
 /* --- UNIFIED DRINK CARD (Tag, Übersicht, Historie) --- */
@@ -746,7 +770,7 @@ main {
 .drink-card-info {
     display: flex;
     flex-direction: column;
-    gap: var(--space-xs); /* Konsistenter Gap zwischen Name und Sub-Label */
+    gap: var(--space-xs);
     min-width: 0;
 }
 
@@ -777,20 +801,34 @@ main {
     flex-shrink: 0;
 }
 
+/* Getränk mit Zuzahlung suchbar ausblenden (Suche nutzt [hidden]). */
+.drink-card[hidden] {
+    display: none;
+}
+
 /* ═══════════════════════════════════════════════════════════════
    DASHBOARD
 ═══════════════════════════════════════════════════════════════ */
 
-/* Status Badges */
-.badge-amber {
-    background-color: #fef3c7;
-    color: #b45309;
+/* Status-Badges – gemeinsame Basis, Farbvarianten als Modifier. */
+.badge-amber,
+.badge-blue {
     padding: 6px 14px;
-    border-radius: 999px;
+    border-radius: var(--radius-full);
     font-size: 0.75rem;
     font-weight: 700;
     margin-top: 16px;
     white-space: nowrap;
+}
+
+.badge-amber {
+    background-color: #fef3c7;
+    color: #b45309;
+}
+
+.badge-blue {
+    background-color: var(--primary-fixed);
+    color: var(--primary-container);
 }
 
 /* Stats Grid (Dashboard + Summary) */
@@ -800,10 +838,15 @@ main {
     gap: var(--space-md);
 }
 
+/* KPI-Kacheln teilen denselben Radius (gleiche Boxen → gleiche Ecken). */
+.stat-item,
+.stat-item-mini {
+    border-radius: var(--radius-xl);
+}
+
 .stat-item {
     background-color: var(--surface-container-low);
     padding: 1.25rem;
-    border-radius: var(--radius-xl);
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
@@ -817,6 +860,17 @@ main {
 }
 
 /* Social Table */
+.social-section-header {
+    justify-content: space-between;
+    width: 100%;
+}
+
+.social-section-title {
+    display: flex;
+    gap: var(--space-sm);
+    align-items: center;
+}
+
 .social-table {
     width: 100%;
     border-collapse: collapse;
@@ -841,6 +895,10 @@ main {
     background-color: var(--surface-container-low);
 }
 
+.social-table tr.is-me {
+    background-color: var(--surface-container-highest);
+}
+
 .drink-stack {
     display: flex;
     flex-direction: column;
@@ -851,7 +909,7 @@ main {
 .danger-zone {
     margin-top: var(--space-3xl);
     padding: var(--space-lg);
-    border: 1.5px dashed rgba(186, 26, 26, 0.2);
+    border: 1.5px dashed var(--error-tint-20);
     border-radius: var(--radius-xl);
     text-align: center;
 }
@@ -861,7 +919,7 @@ main {
     width: 100%;
     background: none;
     color: var(--color-error);
-    border: 1.5px solid rgba(186, 26, 26, 0.3);
+    border: 1.5px solid var(--error-tint-30);
     border-radius: var(--radius-sm);
     padding: 0.75rem;
     font-weight: 700;
@@ -874,7 +932,7 @@ main {
 }
 
 .tertiary-btn-outline:active {
-    background-color: rgba(186, 26, 26, 0.05);
+    background-color: var(--error-tint-05);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -898,6 +956,11 @@ main {
     gap: 4px;
 }
 
+/* Abstand unter den Tabs im Sync-Modal (ersetzt Inline-Style). */
+.sync-tabs {
+    margin-bottom: var(--space-md);
+}
+
 .tab-item {
     flex: 1;
     border: none;
@@ -905,7 +968,7 @@ main {
     padding: 8px;
     font-size: 0.85rem;
     font-weight: 600;
-    border-radius: 10px;
+    border-radius: var(--radius-lg);
     color: var(--on-surface-variant);
     cursor: pointer;
 }
@@ -931,49 +994,11 @@ main {
     line-height: 1.2;
 }
 
-/* History Cards */
-.history-item-card {
-    background-color: var(--surface-container-lowest);
-    margin-bottom: var(--space-xs);
-}
-
-.card-row-main {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.drink-name-primary {
-    font-family: 'Inter', sans-serif;
-    font-weight: 700;
-    font-size: 1rem;
-    color: var(--on-surface);
-}
-
-.card-row-details {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-left: calc(28px + 0.75rem);
-}
-
-.history-time-stamp {
-    font-size: 0.8rem;
-    color: var(--on-surface-variant);
-    opacity: 0.7;
-}
-
-.history-price-tag {
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-weight: 800;
-    color: var(--primary);
-}
-
 .category-icon-wrapper-sm {
     width: 28px;
     height: 28px;
     background-color: var(--surface-container);
-    border-radius: 6px;
+    border-radius: var(--radius-default);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -993,7 +1018,6 @@ main {
 .stat-item-mini {
     background-color: var(--surface-container-lowest);
     padding: 0 1rem 1rem 1rem;
-    border-radius: var(--radius-default);
 }
 
 .stat-number {
@@ -1005,13 +1029,21 @@ main {
     line-height: 1;
 }
 
-/* Einheit inline hinter der Zahl ("Stück") */
 .stat-unit {
     font-family: var(--font-body);
     font-size: 0.75rem;
     font-weight: 600;
     color: var(--on-surface-variant);
     margin-left: 0.25rem;
+}
+
+/* Zusatz-Zeile "Zuzahlung heute" unter dem Tages-Limit. */
+.limit-extra {
+    display: block;
+    margin-top: 2px;
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--outline);
 }
 
 .budget-summary {
@@ -1028,7 +1060,7 @@ main {
 .budget-bar-track {
     height: 6px;
     background-color: var(--surface-container);
-    border-radius: 3px;
+    border-radius: var(--radius-full);
     overflow: hidden;
 }
 
@@ -1036,6 +1068,7 @@ main {
     height: 100%;
     background-color: var(--primary);
     width: 0%;
+    border-radius: var(--radius-full);
     transition: width 0.6s ease;
 }
 
@@ -1054,20 +1087,9 @@ main {
     transition: all 0.1s ease-out !important;
 }
 
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: var(--space-xs);
-}
-
-.icon-btn {
-    background: none;
-    border: none;
-    color: var(--primary);
-    cursor: pointer;
-    padding: 8px;
-    display: flex;
-}
+/* ═══════════════════════════════════════════════════════════════
+   PROFIL
+═══════════════════════════════════════════════════════════════ */
 
 .profile-form {
     display: flex;
@@ -1101,7 +1123,10 @@ main {
     width: 100%;
 }
 
-/* --- MODAL --- */
+/* ═══════════════════════════════════════════════════════════════
+   MODAL (SOCIAL SYNC)
+═══════════════════════════════════════════════════════════════ */
+
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -1118,10 +1143,12 @@ main {
     opacity: 1;
     transition: opacity 0.2s;
 }
+
 .modal-overlay.hidden {
     display: none;
     opacity: 0;
 }
+
 .modal-content {
     width: 100%;
     max-width: 24rem;
@@ -1129,18 +1156,36 @@ main {
     overflow-y: auto;
     position: relative;
 }
+
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: var(--space-md);
 }
+
 .qr-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 100%;
 }
+
+/* Hinweistext über QR-Code / Scanner (ersetzt Inline-Style). */
+.qr-hint {
+    text-align: center;
+    margin-bottom: var(--space-md);
+}
+
+/* Scanner-Feld (ersetzt großen Inline-Style-Block). */
+.qr-reader {
+    width: 100%;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    background-color: var(--surface-container-highest);
+    min-height: 250px;
+}
+
 #my-qr-code {
     max-width: 200px;
     border-radius: var(--radius-sm);
