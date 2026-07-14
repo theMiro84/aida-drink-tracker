@@ -654,6 +654,25 @@ main {
     display: none;
 }
 
+/* ─── Suchmodus ──────────────────────────────────────────────────
+   Aktiv, sobald das Suchfeld fokussiert ist oder eine Eingabe steht
+   (body.is-searching wird per JS gesetzt). Ring, Favoriten und
+   Bottom-Nav treten zurück, damit die Treffer den vollen Raum über der
+   Tastatur bekommen; das Suchfeld dockt unter dem Header an. */
+body.is-searching .ring-section,
+body.is-searching .favorites-section,
+body.is-searching .bottom-nav {
+    display: none;
+}
+
+body.is-searching .search-section {
+    position: sticky;
+    top: 64px; /* Höhe fixed-header */
+    z-index: 10;
+    background-color: var(--surface);
+    padding-top: var(--space-sm);
+}
+
 /* ═══════════════════════════════════════════════════════════════
    KATEGORIEN (NATIVE <details>-AKKORDEON)
 ═══════════════════════════════════════════════════════════════ */
