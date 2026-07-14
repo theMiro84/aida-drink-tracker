@@ -232,7 +232,11 @@ body {
     color: var(--on-surface);
     margin: 0;
     line-height: 1.5;
+    /* 100dvh statt 100vh: folgt dem sichtbaren Viewport, damit iOS Safari die
+       Seite nicht künstlich scrollbar macht und die Toolbar (und damit die
+       Bottom-Nav samt safe-area) beim Laden nicht springt. Fallback 100vh. */
     min-height: 100vh;
+    min-height: 100dvh;
     padding-bottom: calc(80px + env(safe-area-inset-bottom));
 }
 
