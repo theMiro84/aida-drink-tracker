@@ -284,13 +284,17 @@
 
         <script src="app.js"></script>
         <script>
-            /* Safari Bottom-Nav Fix (bewährt):
-               Der moderne CSS-Ansatz (100dvh + env(safe-area-inset-bottom),
-               siehe styles.css) funktioniert auf iOS Safari derzeit nicht
-               zuverlässig – die Nav sitzt dadurch zu weit oben. Bis das greift,
-               schiebt dieser UA-Sniff die Leiste wie früher um 0.75rem nach
-               unten. In Zukunft erneut ohne diesen Fix testen. */
-            if (/iPhone|iPad/.test(navigator.userAgent) && !/CriOS/.test(navigator.userAgent)) {
+            /* Bottom-Nav-Verhalten je nach Modus:
+               - Installierte PWA (Home-Bildschirm): keine Adressleiste, hier
+                 greift das safe-area-Padding aus styles.css
+                 (@media display-mode: standalone). KEIN Versatz.
+               - iOS-Safari-Browser: dynamische Adressleiste macht env() unzu-
+                 verlässig, daher schiebt dieser bewährte UA-Sniff die Leiste
+                 um 0.75rem nach unten (wie früher). */
+            const isStandalone =
+                window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+            const isIOSSafari = /iPhone|iPad/.test(navigator.userAgent) && !/CriOS/.test(navigator.userAgent);
+            if (!isStandalone && isIOSSafari) {
                 document.querySelector('.bottom-nav').style.bottom = '-0.75rem';
             }
         </script>

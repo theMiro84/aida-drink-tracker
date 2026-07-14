@@ -298,10 +298,19 @@ main {
     box-shadow: var(--shadow-float);
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
     padding: 0.75rem 1rem;
-    /* Zukunfts-Versuch (aktuell auf iOS Safari nicht zuverlässig – die Nav
-       sitzt dadurch zu weit oben). Solange greift der bewährte UA-Sniff-Fix
-       in index.html (bottom: -0.75rem auf iPhone/iPad). Später erneut testen:
-       padding-bottom: calc(0.75rem + env(safe-area-inset-bottom)); */
+    /* iOS-Safari-Browser: hier KEIN safe-area-Padding. In diesem Modus ist
+       env(safe-area-inset-bottom) wegen der dynamischen Adressleiste
+       unzuverlässig; stattdessen schiebt der UA-Sniff in index.html die
+       Leiste um -0.75rem nach unten (nur im Browser, nicht in der PWA). */
+}
+
+/* Installierte PWA (Home-Bildschirm): keine Adressleiste, daher ist
+   env(safe-area-inset-bottom) zuverlässig. Hier halten wir die Nav sauber
+   über dem Home-Indicator – ganz ohne den UA-Sniff-Versatz. */
+@media (display-mode: standalone) {
+    .bottom-nav {
+        padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+    }
 }
 
 .nav-item {
