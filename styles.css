@@ -232,7 +232,11 @@ body {
     color: var(--on-surface);
     margin: 0;
     line-height: 1.5;
+    /* 100dvh statt 100vh: folgt dem sichtbaren Viewport, damit iOS Safari die
+       Seite nicht künstlich scrollbar macht und die Toolbar (und damit die
+       Bottom-Nav samt safe-area) beim Laden nicht springt. Fallback 100vh. */
     min-height: 100vh;
+    min-height: 100dvh;
     padding-bottom: calc(80px + env(safe-area-inset-bottom));
 }
 
@@ -294,8 +298,19 @@ main {
     box-shadow: var(--shadow-float);
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
     padding: 0.75rem 1rem;
-    /* Safari: Home-Indicator-Bereich freihalten – ersetzt UA-Sniff-Script */
-    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+    /* iOS-Safari-Browser: hier KEIN safe-area-Padding. In diesem Modus ist
+       env(safe-area-inset-bottom) wegen der dynamischen Adressleiste
+       unzuverlässig; stattdessen schiebt der UA-Sniff in index.html die
+       Leiste um -0.75rem nach unten (nur im Browser, nicht in der PWA). */
+}
+
+/* Installierte PWA (Home-Bildschirm): keine Adressleiste, daher ist
+   env(safe-area-inset-bottom) zuverlässig. Hier halten wir die Nav sauber
+   über dem Home-Indicator – ganz ohne den UA-Sniff-Versatz. */
+@media (display-mode: standalone) {
+    .bottom-nav {
+        padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+    }
 }
 
 .nav-item {
@@ -637,6 +652,25 @@ main {
 /* Clear-Button nur zeigen, wenn Eingabe vorhanden – ersetzt JS-Toggle. */
 .search-input:placeholder-shown ~ .clear-icon {
     display: none;
+}
+
+/* ─── Suchmodus ──────────────────────────────────────────────────
+   Aktiv, sobald das Suchfeld fokussiert ist oder eine Eingabe steht
+   (body.is-searching wird per JS gesetzt). Ring, Favoriten und
+   Bottom-Nav treten zurück, damit die Treffer den vollen Raum über der
+   Tastatur bekommen; das Suchfeld dockt unter dem Header an. */
+body.is-searching .ring-section,
+body.is-searching .favorites-section,
+body.is-searching .bottom-nav {
+    display: none;
+}
+
+body.is-searching .search-section {
+    position: sticky;
+    top: 64px; /* Höhe fixed-header */
+    z-index: 10;
+    background-color: var(--surface);
+    padding-top: var(--space-sm);
 }
 
 /* ═══════════════════════════════════════════════════════════════

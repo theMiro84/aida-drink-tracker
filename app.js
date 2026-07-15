@@ -273,11 +273,17 @@ function initSearch() {
     const clearBtn = document.getElementById('clear-search');
     if (!searchInput) return;
 
-    // Sichtbarkeit des Clear-Buttons regelt CSS (:placeholder-shown).
-    searchInput.addEventListener('input', (e) => {
-        const searchTerm = e.target.value.toLowerCase();
-        const categories = document.querySelectorAll('.category-item');
+    // Suchmodus aktiv, solange das Feld fokussiert ist ODER eine Eingabe steht.
+    // Im Suchmodus (CSS: body.is-searching) treten Ring, Favoriten und die
+    // Bottom-Nav zurück, damit die Treffer den ganzen Raum über der Tastatur
+    // bekommen – kein Einklemmen, kein Höhensprung.
+    function updateSearchMode() {
+        const active = document.activeElement === searchInput || searchInput.value.trim() !== '';
+        document.body.classList.toggle('is-searching', active);
+    }
 
+    function applyFilter(term) {
+        const categories = document.querySelectorAll('#category-list .category-item');
         categories.forEach((category) => {
             const drinks = category.querySelectorAll('.drink-card');
             let hasVisibleDrink = false;
@@ -285,23 +291,39 @@ function initSearch() {
             drinks.forEach((drink) => {
                 const nameNode = drink.querySelector('.drink-card-name');
                 if (!nameNode) return;
-
-                const matches = nameNode.textContent.toLowerCase().includes(searchTerm);
+                const matches = nameNode.textContent.toLowerCase().includes(term);
                 drink.hidden = !matches;
                 if (matches) hasVisibleDrink = true;
             });
 
-            // <details>-Element: native Attribute statt Inline-Styles
+            // <details>-Element: native Attribute statt Inline-Styles.
+            // Solange Treffer da sind, offen halten (auch bei leerem Feld im
+            // Suchmodus) – vermeidet das ruckartige Zuklappen der langen Liste.
             category.hidden = !hasVisibleDrink;
-            category.open = searchTerm !== '' && hasVisibleDrink;
+            category.open = hasVisibleDrink;
         });
+    }
+
+    searchInput.addEventListener('input', (e) => {
+        applyFilter(e.target.value.toLowerCase());
+        updateSearchMode();
     });
+
+    searchInput.addEventListener('focus', updateSearchMode);
+    searchInput.addEventListener('blur', updateSearchMode);
 
     if (clearBtn) {
         clearBtn.addEventListener('click', () => {
             searchInput.value = '';
-            searchInput.dispatchEvent(new Event('input'));
-            searchInput.focus();
+            // Liste in den ruhigen Ausgangszustand zurücksetzen: alles sichtbar,
+            // Akkordeon geschlossen. Kein Refokus -> Tastatur schliesst sich.
+            document.querySelectorAll('#category-list .drink-card').forEach((d) => (d.hidden = false));
+            document.querySelectorAll('#category-list .category-item').forEach((c) => {
+                c.hidden = false;
+                c.open = false;
+            });
+            updateSearchMode();
+            window.scrollTo({ top: 0 });
         });
     }
 }
