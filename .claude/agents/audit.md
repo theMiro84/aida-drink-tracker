@@ -15,7 +15,8 @@ Du prüfst, du korrigierst nicht.
 
 - Basis nennt der Haupt-Agent; ohne Angabe: `git diff origin/main...HEAD`.
 - Du siehst nur committete Änderungen. Uncommittetes ist für dich unsichtbar – weise im Report darauf hin.
-- Checks: `npm test` (Syntax-Check plus Tests in `tests/`), Abgleich mit den Regeln der `README.md`.
+- Checks: `npm test` (Syntax-Check plus Tests in `tests/`), bei Änderungen an `app.js`, `index.html` oder
+  `styles.css` zusätzlich `npm run test:e2e` (Browser-Test), Abgleich mit den Regeln der `README.md`.
 - Neue Funktionen müssen abgesichert sein: Neue oder geänderte Rechen- und Auswertungslogik ohne
   passende Tests in `tests/` ist ein Befund mit hohem Schweregrad, ebenso Rechenlogik außerhalb von `calc.js`.
 - Kein Commit, kein Push, keine Änderung an Dateien.

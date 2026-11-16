@@ -18,6 +18,9 @@ Details stehen in den jeweiligen Dateien (`search.md`, `grep.md`, `audit.md`,
 
 ## Regeln
 
+- **Advisor hinzuziehen:** bevor ein Plan festgelegt wird, nach demselben
+  Fehler zum zweiten Mal und bevor eine Aufgabe als erledigt gemeldet wird
+  (siehe `CLAUDE.md`).
 - **Jede Repo-Suche und jeder Testlauf wird delegiert** (`search`, `grep`,
   `audit`), siehe `CLAUDE.md`. Die Haupt-Session liest nur die Reports.
 - **`audit` sieht nur Committetes.** Der Worktree zweigt vom lokalen `HEAD` ab
@@ -25,7 +28,9 @@ Details stehen in den jeweiligen Dateien (`search.md`, `grep.md`, `audit.md`,
   sichtbar. Vor dem Audit also committen.
 - **Neue Funktionen werden abgesichert.** Neue oder geänderte Rechen- und
   Auswertungslogik gehört in `calc.js` und bekommt im selben Schritt Tests in
-  `tests/`. `audit` führt `npm test` aus und meldet fehlende Tests als Befund.
+  `tests/`; neue Bedienabläufe bekommen einen Fall im Browser-Test
+  `e2e/app.e2e.js`. `audit` führt `npm test` und bei Änderungen an der
+  Oberfläche `npm run test:e2e` aus und meldet fehlende Tests als Befund.
 - **`audit` korrigiert nicht.** Befunde gehen zurück an die Haupt-Session bzw.
   den `executor`.
 

@@ -1,0 +1,256 @@
+// Browser-Test der Bedienabläufe. Start: npm run test:e2e
+// Die Fälle bauen aufeinander auf und teilen sich eine Seite, wie eine echte Reise.
+const { test, before, after } = require('node:test');
+const assert = require('node:assert/strict');
+const http = require('node:http');
+const fs = require('node:fs');
+const path = require('node:path');
+const { chromium } = require('playwright');
+
+const ROOT = path.join(__dirname, '..');
+const STORAGE_KEY = 'aida_drink_tracker_v1';
+const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.csv': 'text/csv' };
+
+let server;
+let baseUrl;
+let browser;
+let page;
+const pageErrors = [];
+const dialogs = [];
+
+function startServer() {
+    return new Promise((resolve) => {
+        server = http.createServer((req, res) => {
+            const urlPath = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+            const file = path.join(ROOT, urlPath === '/' ? 'index.html' : urlPath);
+            if (!file.startsWith(ROOT) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) {
+                res.writeHead(404).end();
+                return;
+            }
+            res.writeHead(200, { 'Content-Type': `${MIME[path.extname(file)] || 'application/octet-stream'}; charset=utf-8` });
+            fs.createReadStream(file).pipe(res);
+        });
+        server.listen(0, '127.0.0.1', () => resolve(`http://127.0.0.1:${server.address().port}`));
+    });
+}
+
+// Öffnet die App in einem frischen Browser-Profil. Externe Adressen (Schriften,
+// QR-Bibliotheken) werden blockiert, damit der Test ohne Internet gleich läuft.
+async function openApp(savedState) {
+    const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    await context.route(/^https?:\/\/(?!127\.0\.0\.1)/, (route) => route.abort());
+    if (savedState) {
+        await context.addInitScript(
+            ([key, value]) => {
+                if (!localStorage.getItem(key)) localStorage.setItem(key, value);
+            },
+            [STORAGE_KEY, JSON.stringify(savedState)]
+        );
+    }
+    const newPage = await context.newPage();
+    newPage.on('pageerror', (error) => pageErrors.push(String(error)));
+    newPage.on('dialog', (dialog) => {
+        dialogs.push(dialog.message());
+        dialog.accept();
+    });
+    await newPage.goto(baseUrl, { waitUntil: 'domcontentloaded' });
+    await newPage.waitForSelector('#category-list .drink-card', { state: 'attached' });
+    return newPage;
+}
+
+async function expectText(selector, expected, target = page) {
+    await target
+        .waitForFunction(([s, e]) => document.querySelector(s)?.textContent.trim() === e, [selector, expected], { timeout: 4000 })
+        .catch(() => {});
+    assert.equal((await target.locator(selector).textContent()).trim(), expected, selector);
+}
+
+async function bookFromList(name) {
+    await page.fill('#drink-search', name);
+    await page.locator('#category-list .drink-card:not(.hidden)', { hasText: name }).first().click();
+    await page.click('#clear-search');
+}
+
+async function goTo(screen) {
+    await page.click(`.nav-item[data-screen="${screen}"]`);
+    await page.waitForSelector(`#view-${screen}:not(.hidden)`);
+}
+
+const savedState = () => page.evaluate((key) => JSON.parse(localStorage.getItem(key)), STORAGE_KEY);
+
+before(async () => {
+    baseUrl = await startServer();
+    browser = await chromium.launch();
+    page = await openApp();
+});
+
+after(async () => {
+    await browser?.close();
+    server?.close();
+});
+
+test('Start: leerer erster Tag mit Tagesziel 26,67 €', async () => {
+    await expectText('#day-label', 'Tag 1');
+    await expectText('#total-amount', '0,00 €');
+    await expectText('#limit-info', 'Limit verbleibend: 26,67 €');
+    assert.equal(await page.locator('#category-list .drink-card').count(), 231);
+    assert.ok(await page.locator('#undo-btn').isDisabled());
+});
+
+test('Getränk aus dem Paket buchen: Tagessumme steigt, Restbetrag sinkt', async () => {
+    await bookFromList('APPLE CRUMBLE');
+    await expectText('#total-amount', '5,50 €');
+    await expectText('#limit-info', 'Limit verbleibend: 21,17 €');
+});
+
+test('Sondergetränk buchen: Tagessumme bleibt, Zuzahlung wird ausgewiesen', async () => {
+    await bookFromList('OUZO 12 4 cl');
+    await expectText('#limit-info', 'Limit verbleibend: 21,17 €Zuzahlung heute: 4,90 €');
+    await expectText('#total-amount', '5,50 €');
+});
+
+test('Favoriten: gebuchte Getränke erscheinen als Kacheln und lassen sich erneut buchen', async () => {
+    await page.waitForSelector('.favorites-section:not(.hidden)');
+    assert.equal(await page.locator('#fav-grid .fav-card').count(), 2);
+    await page.locator('#fav-grid .fav-card', { hasText: 'APPLE CRUMBLE' }).click();
+    await expectText('#total-amount', '11,00 €');
+    await expectText('#limit-info', 'Limit verbleibend: 15,67 €Zuzahlung heute: 4,90 €');
+});
+
+test('Rückgängig: nimmt die letzte Buchung zurück', async () => {
+    await page.click('#undo-btn');
+    await expectText('#total-amount', '5,50 €');
+    await expectText('#limit-info', 'Limit verbleibend: 21,17 €Zuzahlung heute: 4,90 €');
+});
+
+test('Historie: zeigt Buchungen, Kennzeichen Zuzahlung und Tageszusammenfassung', async () => {
+    await goTo('history');
+    await expectText('#summary-count', '2');
+    await expectText('#summary-alcohol-count', '1');
+    await expectText('#summary-budget-total', '5,50 €');
+    const entries = page.locator('#history-groups-container .drink-card');
+    assert.equal(await entries.count(), 2);
+    assert.equal(await entries.filter({ hasText: '(Zuzahlung)' }).count(), 1);
+    assert.match(await entries.filter({ hasText: '(Zuzahlung)' }).textContent(), /OUZO 12 4 cl/);
+    const width = await page.locator('#summary-budget-fill').evaluate((el) => parseFloat(el.style.width));
+    assert.ok(Math.abs(width - (5.5 / 26.67) * 100) < 0.01, `Balkenbreite ${width}`);
+});
+
+test('Tag abschließen: neuer leerer Tag, Dashboard zeigt die Gesamtbeträge', async () => {
+    await goTo('tag');
+    dialogs.length = 0;
+    await page.click('#next-day-btn');
+    await expectText('#day-label', 'Tag 2');
+    assert.match(dialogs[0], /Tag 1 wirklich abschließen/);
+    await expectText('#total-amount', '0,00 €');
+    await expectText('#limit-info', 'Limit verbleibend: 26,67 €');
+
+    await goTo('dashboard');
+    await expectText('#grand-total-display', '5,50 €');
+    await expectText('#stats-extra', '4,90 €');
+    await expectText('#stats-remaining', '234,50 €');
+    await expectText('#status-badge', '2% erreicht');
+    await expectText('#total-drinks-count', 'Gesamtanzahl: 2');
+});
+
+test('Profil: ungültige Reisetage und Paketpreise werden abgelehnt', async () => {
+    await page.click('#profile-open-btn');
+    await page.waitForSelector('#view-profile:not(.hidden)');
+
+    for (const [duration, price] of [['0', '240'], ['9.5', '240'], ['', '240'], ['9', '0'], ['9', '-5'], ['9', '']]) {
+        dialogs.length = 0;
+        await page.fill('#prof-duration', duration);
+        await page.fill('#prof-price', price);
+        await page.click('#save-profile-btn');
+        assert.deepEqual(dialogs, ['Bitte ganze Reisetage (mindestens 1) und einen Paketpreis über 0 € angeben.'], `${duration} Tage / ${price} €`);
+        assert.ok(await page.locator('#view-profile').isVisible(), 'Profil bleibt offen');
+        const { profile } = await savedState();
+        assert.deepEqual([profile.duration, profile.packagePrice], [9, 240], 'gespeichertes Profil unverändert');
+    }
+});
+
+test('Profil: gültige Werte ändern Tagesziel und Restbetrag des Pakets', async () => {
+    dialogs.length = 0;
+    await page.fill('#prof-duration', '8');
+    await page.fill('#prof-price', '200');
+    await page.click('#save-profile-btn');
+    assert.deepEqual(dialogs, ['Profil aktualisiert!']);
+    await page.waitForSelector('#view-dashboard:not(.hidden)');
+    await expectText('#stats-remaining', '194,50 €');
+    await expectText('#status-badge', '3% erreicht');
+    await goTo('tag');
+    await expectText('#limit-info', 'Limit verbleibend: 25,00 €');
+});
+
+test('Vergleichstabelle: mehrere Mitreisende, sortiert, ohne Division durch 0', async () => {
+    await goTo('dashboard');
+    // Mitreisende kommen in der App nur per QR-Scan; der Test übergibt den gescannten Inhalt direkt.
+    const accepted = await page.evaluate(() => [
+        processScannedCompanion(JSON.stringify(['Anna', 240, 120, 10])),
+        processScannedCompanion(JSON.stringify(['Ben', 0, 50, 0])),
+        processScannedCompanion(JSON.stringify(['Cleo', 100, 250, 0])),
+        processScannedCompanion('kein json'),
+    ]);
+    assert.deepEqual(accepted, [true, true, true, false]);
+
+    await page.waitForSelector('#social-table-wrapper:not(.hidden)');
+    const rows = await page.locator('#social-ranking-body tr').evaluateAll((trs) =>
+        trs.map((tr) => [...tr.querySelectorAll('td')].map((td) => td.textContent.trim()).concat(tr.classList.contains('is-me') ? 'ich' : ''))
+    );
+    assert.deepEqual(rows, [
+        ['Cleo', '250,00 €', '250%', ''],
+        ['Anna', '120,00 €', '50%', ''],
+        ['Ben', '50,00 €', '0%', ''],
+        ['Gaston (Du)', '5,50 €', '3%', 'ich'],
+    ]);
+});
+
+test('Neustart: Buchungen, Profil und Mitreisende bleiben gespeichert', async () => {
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('#category-list .drink-card', { state: 'attached' });
+    await expectText('#day-label', 'Tag 2');
+    await expectText('#limit-info', 'Limit verbleibend: 25,00 €');
+    await goTo('dashboard');
+    await expectText('#grand-total-display', '5,50 €');
+    await expectText('#stats-extra', '4,90 €');
+    assert.equal(await page.locator('#social-ranking-body tr').count(), 4);
+
+    const state = await savedState();
+    assert.deepEqual(state.archive[0].drinks.map((drink) => drink.id), ['G0001', 'G0013']);
+    assert.deepEqual([state.archive[0].total, state.archive[0].totalExtra], [5.5, 4.9]);
+});
+
+test('Tag zurückholen: Rückgängig am leeren Tag öffnet den Vortag wieder', async () => {
+    await goTo('tag');
+    dialogs.length = 0;
+    await page.click('#undo-btn');
+    await expectText('#day-label', 'Tag 1');
+    assert.match(dialogs[0], /Tag 1 wieder aus dem Archiv holen/);
+    await expectText('#total-amount', '5,50 €');
+});
+
+test('Alte gespeicherte Daten: Zeilennummern-IDs werden übernommen, Favoriten bleiben', async () => {
+    const legacyPage = await openApp({
+        profile: { name: 'Alt', nickname: 'Alt', duration: 9, packagePrice: 240 },
+        archive: [],
+        currentDay: {
+            day: 3,
+            total: 999,
+            drinks: [
+                { id: 'csv-0', name: 'APPLE CRUMBLE', price: 5.5, isNonAlcoholic: true, isAI: true },
+                { id: 'csv-12', name: 'OUZO 12 4 cl', price: 4.9, isAI: false },
+            ],
+        },
+        companions: [],
+    });
+    await expectText('#day-label', 'Tag 3', legacyPage);
+    await expectText('#total-amount', '5,50 €', legacyPage);
+    await expectText('#limit-info', 'Limit verbleibend: 21,17 €Zuzahlung heute: 4,90 €', legacyPage);
+    const favorites = await legacyPage.locator('#fav-grid .fav-name').allTextContents();
+    assert.deepEqual(favorites.map((name) => name.trim()).sort(), ['APPLE CRUMBLE', 'OUZO 12 4 cl']);
+    await legacyPage.context().close();
+});
+
+test('Keine Skriptfehler während des gesamten Ablaufs', () => {
+    assert.deepEqual(pageErrors, []);
+});

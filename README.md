@@ -195,6 +195,7 @@ Die konkrete Struktur kann sich im Refactoring noch verändern. Der aktuelle ode
 ├── data/
 │   └── getraenke.csv
 ├── tests/          # Tests für Rechenkern und Getränkedaten
+├── e2e/            # Browser-Test der Bedienabläufe (Playwright)
 ├── package.json    # nur Befehle für Checks und Tests, keine Abhängigkeiten
 ├── assets/
 └── README.md
@@ -212,7 +213,11 @@ Abgesichert sind:
 - keine Division durch 0
 - Getränkedaten: Schema, eindeutige IDs, gültige Preise und Kennzeichen
 
-Neue Rechenlogik gehört in `calc.js` und bekommt im selben Schritt Tests.
+`npm run test:e2e` bedient die App in einem echten Browser (Chromium über Playwright): Getränke buchen, Sondergetränk, Favoriten, Rückgängig, Historie, Tagesabschluss, Dashboard, Profil-Prüfung, Vergleichstabelle, Speichern über einen Neustart und die Übernahme alter gespeicherter Daten. Einmalige Einrichtung: `npm install` und `npx playwright install chromium`. Externe Schriften und QR-Bibliotheken werden im Test blockiert; Kamera und QR-Scan sind nicht abgedeckt.
+
+`npm run test:all` führt beides aus.
+
+Neue Rechenlogik gehört in `calc.js` und bekommt im selben Schritt Tests. Neue Bedienabläufe bekommen einen Fall in `e2e/app.e2e.js`.
 
 ## Getränkedaten
 

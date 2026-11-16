@@ -5,9 +5,14 @@
   "description": "Tägliches Tracking des Getränkekonsums auf Reisen mit Getränkepaket.",
   "scripts": {
     "check": "node --check calc.js && node --check app.js",
-    "test": "npm run check && node --test"
+    "test": "npm run check && node --test",
+    "test:e2e": "node --test e2e/app.e2e.js",
+    "test:all": "npm test && npm run test:e2e"
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
   }
 }

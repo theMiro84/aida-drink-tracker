@@ -27,12 +27,12 @@ function renderProfile() {
 function saveProfileData() {
     state.profile.name = document.getElementById('prof-name').value || 'Gast';
     state.profile.nickname = document.getElementById('prof-nickname').value || 'Seebär';
-    const duration = Math.floor(Number(document.getElementById('prof-duration').value));
+    const duration = Number(document.getElementById('prof-duration').value);
     const packagePrice = Number(document.getElementById('prof-price').value);
 
-    // Ohne mindestens einen Reisetag und einen positiven Paketpreis lässt sich kein Tagesziel berechnen.
-    if (!(duration >= 1) || !(packagePrice > 0)) {
-        alert('Bitte mindestens 1 Reisetag und einen Paketpreis über 0 € angeben.');
+    // Ohne ganze Reisetage (mindestens einen) und einen positiven Paketpreis lässt sich kein Tagesziel berechnen.
+    if (!Number.isInteger(duration) || duration < 1 || !(packagePrice > 0)) {
+        alert('Bitte ganze Reisetage (mindestens 1) und einen Paketpreis über 0 € angeben.');
         return;
     }
 
