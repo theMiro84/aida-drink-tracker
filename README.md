@@ -188,14 +188,38 @@ Die konkrete Struktur kann sich im Refactoring noch verändern. Der aktuelle ode
 .
 ├── index.html
 ├── styles.css
-├── app.js
+├── app.js          # Oberfläche, Zustand, Speicherung
+├── calc.js         # Rechenkern (reine Funktionen, im Browser und in Node nutzbar)
 ├── manifest.json
 ├── sw.js
 ├── data/
 │   └── getraenke.csv
+├── tests/          # Tests für Rechenkern und Getränkedaten
+├── package.json    # nur Befehle für Checks und Tests, keine Abhängigkeiten
 ├── assets/
 └── README.md
 ```
+
+## Tests
+
+`npm test` prüft die Syntax und führt die Tests in `tests/` aus (Node ab Version 20, keine Abhängigkeiten).
+
+Abgesichert sind:
+- Tagesziel = Paketpreis / Reisetage, auf Cent gerundet (240 € / 9 Tage = 26,67 €)
+- Tagessummen und Gesamtbeträge sowie die Checks dagegen (Fortschritt, Restbetrag, Ampel)
+- Gesamtbilanz gegen den Paketpreis, nicht gegen die Summe der Tagesziele
+- Sondergetränke außerhalb des Pakets: voller Preis als Zuzahlung, kein Beitrag zum Paket
+- keine Division durch 0
+- Getränkedaten: Schema, eindeutige IDs, gültige Preise und Kennzeichen
+
+Neue Rechenlogik gehört in `calc.js` und bekommt im selben Schritt Tests.
+
+## Getränkedaten
+
+`data/getraenke.csv` hat die Spalten `ID;Name;Typ;Preis NEU;Alkoholfrei;AI;F`.
+- `ID`: eindeutig und stabil (`G0001` …). Bestehende IDs nie ändern oder neu vergeben; neue Getränke bekommen die nächste freie Nummer.
+- `AI`: im Paket „All Inclusive" enthalten.
+- `F`: im Paket „Fun" enthalten (alkoholfreie Getränke). Die Auswahl des Pakets beim Start einer Reise ist vorbereitet, aber noch nicht in der Oberfläche.
 
 Wenn mehrere Screens oder ausgelagerte Module im Refactoring sinnvoll werden, kann diese Struktur später angepasst werden.
 

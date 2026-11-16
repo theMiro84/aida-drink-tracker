@@ -23,6 +23,9 @@ Details stehen in den jeweiligen Dateien (`search.md`, `grep.md`, `audit.md`,
 - **`audit` sieht nur Committetes.** Der Worktree zweigt vom lokalen `HEAD` ab
   (`worktree.baseRef: "head"`); uncommittete Änderungen sind dort nicht
   sichtbar. Vor dem Audit also committen.
+- **Neue Funktionen werden abgesichert.** Neue oder geänderte Rechen- und
+  Auswertungslogik gehört in `calc.js` und bekommt im selben Schritt Tests in
+  `tests/`. `audit` führt `npm test` aus und meldet fehlende Tests als Befund.
 - **`audit` korrigiert nicht.** Befunde gehen zurück an die Haupt-Session bzw.
   den `executor`.
 
@@ -48,7 +51,7 @@ je nach anstehendem Feature.
 ## Erfolgsbedingung („Finish Line")
 
 Immer etwas **maschinell Prüfbares** angeben, nicht „mach es gut":
-- Tests grün / Lint sauber
+- `npm test` grün
 - Datei existiert / Ausgabe entspricht der Spezifikation
 - Seite verhält sich im Test wie beschrieben
 
