@@ -86,6 +86,18 @@
         };
     }
 
+    // Ring im Stil der Aktivitätsringe: läuft über 100 % hinaus.
+    // percent ist ungedeckelt, first/second sind die Anteile (0..1) der ersten
+    // und der zweiten Runde; ab 200 % bleibt die zweite Runde voll.
+    function ringProgress(spent, limit) {
+        const ratio = Math.max(safeRatio(spent, limit), 0);
+        return {
+            percent: Math.round(ratio * 100),
+            first: Math.min(ratio, 1),
+            second: Math.min(Math.max(ratio - 1, 0), 1),
+        };
+    }
+
     // Alte Einträge nutzten die CSV-Zeilennummer als ID (`csv-0` = erste Zeile).
     // Die stabilen IDs wurden in genau dieser Reihenfolge vergeben.
     function migrateDrinkId(id) {
@@ -318,6 +330,7 @@
         sumIncluded,
         sumExtra,
         progress,
+        ringProgress,
         migrateDrinkId,
         normalizeDay,
         aggregateStats,

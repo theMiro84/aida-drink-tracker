@@ -396,6 +396,56 @@ test('Alte gespeicherte Daten: Zeilennummern-IDs werden übernommen, Favoriten b
     await legacyPage.context().close();
 });
 
+test('Suchleiste steht im Tag-Reiter vor den Favoriten', async () => {
+    const searchFirst = await page.evaluate(() => {
+        const search = document.querySelector('#view-tag .search-section');
+        const favorites = document.querySelector('#view-tag .favorites-section');
+        return Boolean(search.compareDocumentPosition(favorites) & Node.DOCUMENT_POSITION_FOLLOWING);
+    });
+    assert.ok(searchFirst);
+});
+
+test('Ringe laufen über 100 % hinaus: zweite Runde und ungedeckelter Prozentwert', async () => {
+    // Paket 20 €, 1 Tag: Tagesziel 20 €. Prüft den Betrag der Buchung gegen beide Ringe.
+    const openRings = (price) =>
+        openApp({
+            profile: { name: 'Ring', nickname: 'Ring', duration: 1, packagePrice: 20 },
+            archive: [],
+            currentDay: { day: 1, total: 0, drinks: [{ id: 'G0001', name: 'APPLE CRUMBLE', price, isAI: true }] },
+            companions: [],
+        });
+    const offsets = (target, id) =>
+        target.locator(id).evaluate((el) => ({ offset: parseFloat(getComputedStyle(el).strokeDashoffset), full: parseFloat(getComputedStyle(el).strokeDasharray) }));
+    const near = (actual, expected, message) => assert.ok(Math.abs(actual - expected) < 1, `${message}: ${actual} statt ${expected}`);
+
+    // 46 € = 230 %: beide Runden voll, nur der Text zählt weiter.
+    const full = await openRings(46);
+    await full.waitForTimeout(1200);
+    near((await offsets(full, '#progress-ring')).offset, 0, 'Tag, erste Runde');
+    near((await offsets(full, '#progress-ring-2')).offset, 0, 'Tag, zweite Runde ab 200 %');
+    assert.ok(!(await full.locator('#view-tag .ring-info').textContent()).includes('%'));
+    await full.click('.nav-item[data-screen="dashboard"]');
+    await full.waitForSelector('#view-dashboard:not(.hidden)');
+    await expectText('#status-badge', '230% erreicht', full);
+    assert.equal(await full.locator('#status-badge').getAttribute('class'), 'badge-blue');
+    await full.waitForTimeout(1200);
+    near((await offsets(full, '#overall-progress-ring-2')).offset, 0, 'Paket, zweite Runde ab 200 %');
+    await full.context().close();
+
+    // 30 € = 150 %: zweite Runde zur Hälfte.
+    const half = await openRings(30);
+    await half.waitForTimeout(1200);
+    const day2 = await offsets(half, '#progress-ring-2');
+    near(day2.offset, day2.full * 0.5, 'Tag, zweite Runde bei 50 %');
+    await half.click('.nav-item[data-screen="dashboard"]');
+    await half.waitForSelector('#view-dashboard:not(.hidden)');
+    await expectText('#status-badge', '150% erreicht', half);
+    await half.waitForTimeout(1200);
+    const overall2 = await offsets(half, '#overall-progress-ring-2');
+    near(overall2.offset, overall2.full * 0.5, 'Paket, zweite Runde bei 50 %');
+    await half.context().close();
+});
+
 // Wartet, bis der Service Worker die Seite übernommen hat.
 const waitForServiceWorker = (target) => target.waitForFunction(() => navigator.serviceWorker.controller !== null, null, { timeout: 15000 });
 

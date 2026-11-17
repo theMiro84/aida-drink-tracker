@@ -455,6 +455,21 @@ main {
     stroke-dashoffset: var(--ring-circumference-lg);
 }
 
+#progress-ring-2 {
+    stroke-dasharray: var(--ring-circumference-sm);
+    stroke-dashoffset: var(--ring-circumference-sm);
+}
+
+#overall-progress-ring-2 {
+    stroke-dasharray: var(--ring-circumference-lg);
+    stroke-dashoffset: var(--ring-circumference-lg);
+}
+
+/* Zweite Runde: liegt über der ersten, der Schatten macht die Überlappung sichtbar. */
+.ring-overflow {
+    filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.55));
+}
+
 .ring-info {
     position: absolute;
     display: flex;

@@ -292,6 +292,7 @@ function renderOverview() {
     const remaining = overall.remaining;
     const circumference = 691; // Länge des SVG Rings
     const percentage = overall.ratio;
+    const ringState = DrinkCalc.ringProgress(spent, limit);
 
     document.getElementById('grand-total-display').textContent = formatCurrency(spent);
 
@@ -309,10 +310,16 @@ function renderOverview() {
         ring.style.stroke = `var(--color-${overall.status})`;
     }
 
+    const ring2 = document.getElementById('overall-progress-ring-2');
+    if (ring2) {
+        ring2.style.strokeDashoffset = circumference - ringState.second * circumference;
+        ring2.style.stroke = `var(--color-${overall.status})`;
+    }
+
     const badge = document.getElementById('status-badge');
     if (badge) {
         badge.className = percentage >= 1 ? 'badge-blue' : 'badge-amber';
-        badge.textContent = `${Math.round(percentage * 100)}% erreicht`;
+        badge.textContent = `${ringState.percent}% erreicht`;
     }
 
     document.getElementById('total-drinks-count').textContent = `Gesamtanzahl: ${stats.totalDrinks}`;
@@ -866,6 +873,11 @@ function updateUI() {
         const offset = 477 - percentage * 477;
         ring.style.strokeDashoffset = offset;
         ring.style.stroke = `var(--color-${today.status})`;
+    }
+    const ring2 = document.getElementById('progress-ring-2');
+    if (ring2) {
+        ring2.style.strokeDashoffset = 477 - DrinkCalc.ringProgress(total, goal).second * 477;
+        ring2.style.stroke = `var(--color-${today.status})`;
     }
 
     const remaining = today.remaining;
