@@ -254,7 +254,7 @@ const setShareSupport = (enabled) =>
             configurable: true,
             value: on
                 ? async (data) => {
-                      window.__geteilt = { name: data.files[0].name, text: await data.files[0].text() };
+                      window.__geteilt = { name: data.files[0].name, text: await data.files[0].text(), felder: Object.keys(data).sort() };
                   }
                 : undefined,
         });
@@ -280,6 +280,8 @@ test('Datensicherung: Stand als Datei sichern, nach dem Zurücksetzen wieder ein
     await page.waitForFunction(() => window.__geteilt !== null);
     const shared = await page.evaluate(() => window.__geteilt);
     assert.match(shared.name, /^drink-tracker-sicherung-.*\.json$/);
+    // Nur die Datei wird geteilt, kein Titel oder Text (der würde als zweite Textdatei erscheinen).
+    assert.deepEqual(shared.felder, ['files']);
     assert.deepEqual(JSON.parse(shared.text).data, before);
     await expectText('#backup-status', 'Sicherung übergeben (2 Reisetage, 2 Getränke). Bitte an einem sicheren Ort ablegen.');
     await setShareSupport(false);

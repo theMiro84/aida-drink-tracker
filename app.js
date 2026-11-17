@@ -963,7 +963,8 @@ async function exportBackup() {
     try {
         const file = new File([text], fileName, { type: 'application/json' });
         if (typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
-            await navigator.share({ files: [file], title: 'Drink Tracker Sicherung' });
+            // Nur die Datei teilen: Ein Titel oder Text würde auf manchen Geräten als zweite Textdatei landen.
+            await navigator.share({ files: [file] });
             setBackupStatus(`Sicherung übergeben (${summary}). Bitte an einem sicheren Ort ablegen.`);
             return;
         }
