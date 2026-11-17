@@ -417,12 +417,24 @@ test('Ringe laufen über 100 % hinaus: zweite Runde und ungedeckelter Prozentwer
     const offsets = (target, id) =>
         target.locator(id).evaluate((el) => ({ offset: parseFloat(getComputedStyle(el).strokeDashoffset), full: parseFloat(getComputedStyle(el).strokeDasharray) }));
     const near = (actual, expected, message) => assert.ok(Math.abs(actual - expected) < 1, `${message}: ${actual} statt ${expected}`);
+    const visibility = (target, id) => target.locator(id).evaluate((el) => getComputedStyle(el).visibility);
+
+    // 0 % und genau 100 %: zweite Runde ausgeblendet.
+    for (const [price, label] of [[0, '0 %'], [20, '100 %']]) {
+        const idle = await openRings(price);
+        assert.equal(await visibility(idle, '#progress-ring-2'), 'hidden', `Tag, zweite Runde bei ${label}`);
+        await idle.click('.nav-item[data-screen="dashboard"]');
+        await idle.waitForSelector('#view-dashboard:not(.hidden)');
+        assert.equal(await visibility(idle, '#overall-progress-ring-2'), 'hidden', `Paket, zweite Runde bei ${label}`);
+        await idle.context().close();
+    }
 
     // 46 € = 230 %: beide Runden voll, nur der Text zählt weiter.
     const full = await openRings(46);
     await full.waitForTimeout(1200);
     near((await offsets(full, '#progress-ring')).offset, 0, 'Tag, erste Runde');
     near((await offsets(full, '#progress-ring-2')).offset, 0, 'Tag, zweite Runde ab 200 %');
+    assert.equal(await visibility(full, '#progress-ring-2'), 'visible');
     assert.ok(!(await full.locator('#view-tag .ring-info').textContent()).includes('%'));
     await full.click('.nav-item[data-screen="dashboard"]');
     await full.waitForSelector('#view-dashboard:not(.hidden)');
@@ -437,12 +449,14 @@ test('Ringe laufen über 100 % hinaus: zweite Runde und ungedeckelter Prozentwer
     await half.waitForTimeout(1200);
     const day2 = await offsets(half, '#progress-ring-2');
     near(day2.offset, day2.full * 0.5, 'Tag, zweite Runde bei 50 %');
+    assert.equal(await visibility(half, '#progress-ring-2'), 'visible');
     await half.click('.nav-item[data-screen="dashboard"]');
     await half.waitForSelector('#view-dashboard:not(.hidden)');
     await expectText('#status-badge', '150% erreicht', half);
     await half.waitForTimeout(1200);
     const overall2 = await offsets(half, '#overall-progress-ring-2');
     near(overall2.offset, overall2.full * 0.5, 'Paket, zweite Runde bei 50 %');
+    assert.equal(await visibility(half, '#overall-progress-ring-2'), 'visible');
     await half.context().close();
 });
 

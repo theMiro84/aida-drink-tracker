@@ -470,6 +470,11 @@ main {
     filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.55));
 }
 
+/* Ohne zweite Runde ganz ausblenden: runde Enden und Schatten ließen sonst einen Fleck am Bogenanfang stehen. */
+.ring-overflow.ring-idle {
+    visibility: hidden;
+}
+
 .ring-info {
     position: absolute;
     display: flex;

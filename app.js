@@ -313,6 +313,7 @@ function renderOverview() {
     const ring2 = document.getElementById('overall-progress-ring-2');
     if (ring2) {
         ring2.style.strokeDashoffset = circumference - ringState.second * circumference;
+        ring2.classList.toggle('ring-idle', ringState.second === 0);
         ring2.style.stroke = `var(--color-${overall.status})`;
     }
 
@@ -876,7 +877,9 @@ function updateUI() {
     }
     const ring2 = document.getElementById('progress-ring-2');
     if (ring2) {
-        ring2.style.strokeDashoffset = 477 - DrinkCalc.ringProgress(total, goal).second * 477;
+        const second = DrinkCalc.ringProgress(total, goal).second;
+        ring2.style.strokeDashoffset = 477 - second * 477;
+        ring2.classList.toggle('ring-idle', second === 0);
         ring2.style.stroke = `var(--color-${today.status})`;
     }
 

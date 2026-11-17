@@ -91,7 +91,10 @@ test('Ring über 100 %: ungedeckelter Prozentwert, erste und zweite Runde', () =
     assert.equal(over.percent, 230);
     assert.deepEqual(over, { percent: 230, first: 1, second: 1 });
     assert.deepEqual(calc.ringProgress(30, 20), { percent: 150, first: 1, second: 0.5 });
-    assert.deepEqual(calc.ringProgress(20.2, 20), { percent: 101, first: 1, second: 0.010000000000000009 });
+    const barelyOver = calc.ringProgress(20.2, 20);
+    assert.equal(barelyOver.percent, 101);
+    assert.equal(barelyOver.first, 1);
+    assert.ok(Math.abs(barelyOver.second - 0.01) < 1e-9, `second ${barelyOver.second}`);
     assert.deepEqual(calc.ringProgress(40, 20), { percent: 200, first: 1, second: 1 });
     assert.deepEqual(calc.ringProgress(500, 20), { percent: 2500, first: 1, second: 1 });
     // progress() bleibt gedeckelt
