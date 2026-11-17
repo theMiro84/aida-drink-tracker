@@ -1,6 +1,6 @@
 # AIDA Drink Tracker
 
-Kleine mobile Web-App bzw. perspektivisch PWA zur Erfassung des täglichen Getränkekonsums auf Reisen mit Getränkepaket.
+Kleine mobile Web-App (PWA) zur Erfassung des täglichen Getränkekonsums auf Reisen mit Getränkepaket.
 
 Die App ist zunächst für eine konkrete Test- und Produktionsphase mit festen Standardwerten ausgelegt, wird aber technisch so weiterentwickelt, dass später individuelle Reisen, Reisedauern, Paketpreise und Nutzerprofile sauber unterstützt werden können.
 
@@ -17,18 +17,20 @@ Im Fokus stehen:
 
 ## Aktueller Stand
 
-Die bestehende Version 1 kann bereits:
-- Getränke hinzufügen
-- Getränke reduzieren
-- neue Tage starten
-- echte Anbindung der CSV-Datenquelle
+Die App kann:
+- Getränke aus der CSV per Suche oder Favoriten buchen, Buchungen zurücknehmen
+- Tage abschließen und wieder öffnen, Historie und Tageszusammenfassung anzeigen
+- Tagesziel, Restbetrag und Gesamtbilanz gegen den Paketpreis berechnen
+- Sondergetränke außerhalb des Pakets getrennt als Zuzahlung führen
+- Reisedauer und Paketpreis im Profil einstellen
+- Stände per QR-Code mit Mitreisenden vergleichen
+- ohne Netz laufen und sich mit Netz selbst aktualisieren
 
-Damit ist eine erste lokale Basis zum täglichen Tracking vorhanden.
-
-Noch nicht vollständig umgesetzt sind derzeit:
+Noch nicht umgesetzt:
+- Datensicherung (Export und Import der eigenen Daten)
+- Auswahl des Pakets (All Inclusive oder Fun) beim Start einer Reise
+- mehrere Reisen getrennt verwalten
 - saubere Mehrnutzer-Struktur
-- Datenaustausch zwischen Geräten
-- konsolidierte Weiterentwicklung aller Screens nach dem verbindlichen Designsystem
 
 ## Testphase und spätere Live-Nutzung
 
@@ -79,36 +81,23 @@ Diese Bereiche sollen als zusammenhängendes mobiles System wirken, nicht wie ge
 
 Die Weiterentwicklung erfolgt bewusst in kleinen, kontrollierten Schritten.
 
-### 1. Codebasis konsolidieren
-- bestehende HTML-, CSS- und JS-Struktur analysieren
-- funktionierende Logik erhalten
-- wiederkehrende UI-Bausteine vereinheitlichen
-- Tagesansicht, Dashboard und Historie zu einem konsistenten System zusammenführen
+### 1. Datensicherung (vor der Reise im Januar)
+- eigene Daten als Datei exportieren und wieder importieren
+- Schutz davor, dass das Handy den Browser-Speicher leert
 
-### 2. Designsystem verbindlich anwenden
-- Farben, Surfaces, Typografie, Komponentenstil, Abstände und Navigation konsistent übernehmen
-- wiederkehrende Elemente wie Header, KPI-Karten, Suchfeld, Kategorien, Listen, Summary-Blöcke und Bottom Navigation angleichen
+### 2. Paket-Auswahl beim Start einer Reise
+- All Inclusive oder Fun wählen; der Rechenkern unterstützt beide bereits
+- Reisedauer und Paketpreis beim Start der Reise abfragen
 
-### 3. Datenmodell stabilisieren
-- aktuelles Datenmodell dokumentieren
-- prüfen, ob es Tageswechsel, Undo, CSV-Anbindung, Profil, Reise, Export und spätere Synchronisierung sauber tragen kann
-- falls nötig, kleine nachvollziehbare Refaktorierungen vornehmen
+### 3. Feedback der ersten Reise einarbeiten
 
-### 4. CSV-Datenquelle anbinden
-- echte Getränkedaten aus CSV einlesen
-- harte Testdaten schrittweise ersetzen
-- Namen, Kategorien, Preise und Paketinformationen aus der CSV speisen
+### 4. Reisen und Nutzerprofil
+- neue Reisen anlegen und getrennt verwalten, je Reise eigene Dauer, Preise und Statistiken
+- lokales Profilmodell mit Kürzel, Avatar und Nutzer-ID
 
-### 5. Nutzerprofil vorbereiten
-- lokales Profilmodell mit Kürzel, Avatar und Nutzer-ID vorbereiten
-- Onboarding für spätere Versionen mit Reisedauer und Paketpreis mitdenken
-- in der Testphase weiterhin mit den festen Standardwerten 9 Tage / 240 Euro arbeiten
-
-### 6. Mehrere Nutzer und Datenaustausch vorbereiten
+### 5. Mehrere Nutzer und Datenaustausch
 - Daten pro Nutzer logisch trennen
-- JSON-Export der Statistikdaten vorbereiten
-- QR-Code-basierten Austausch als einfache Offline-/Low-Tech-Option mitdenken
-- optionale spätere Server-Synchronisierung nur als spätere Ausbaustufe vorsehen
+- optionale Server-Synchronisierung nur als spätere Ausbaustufe
 
 ## Priorisierung
 
@@ -127,9 +116,9 @@ Die App soll bewusst einfach und wartbar bleiben:
 - HTML, CSS und Vanilla JavaScript
 - mobile-first
 - Progressive Enhancement
-- perspektivisch PWA
-- lokale Speicherung zunächst einfach und robust
-- später optional IndexedDB und Service Worker, falls für den tatsächlichen Entwicklungsstand sinnvoll
+- PWA: installierbar, offline nutzbar über einen Service Worker
+- lokale Speicherung zunächst einfach und robust (`localStorage`), später optional IndexedDB
+- keine Abhängigkeiten zur Laufzeit; Schriften und Bibliotheken liegen im Repo
 
 Wichtige Architekturidee:
 Das Datenmodell soll schon jetzt so vorbereitet werden, dass später nicht nur ein einzelner Reisetag, sondern Reisen, Tage, Nutzerprofile und Exporte logisch abgebildet werden können, ohne die aktuelle App unnötig zu verkomplizieren.
@@ -194,6 +183,7 @@ Die konkrete Struktur kann sich im Refactoring noch verändern. Der aktuelle ode
 ├── sw.js           # Service Worker: Offline-Betrieb und automatische Updates
 ├── data/
 │   └── getraenke.csv
+├── icons/          # App-Icons für den Startbildschirm
 ├── tests/          # Tests für Rechenkern und Getränkedaten
 ├── e2e/            # Browser-Test der Bedienabläufe (Playwright)
 ├── scripts/        # Hilfsskripte (Fingerabdruck für den Service Worker)
@@ -215,7 +205,7 @@ Abgesichert sind:
 - keine Division durch 0
 - Getränkedaten: Schema, eindeutige IDs, gültige Preise und Kennzeichen
 
-`npm run test:e2e` bedient die App in einem echten Browser (Chromium über Playwright): Getränke buchen, Sondergetränk, Favoriten, Rückgängig, Historie, Tagesabschluss, Dashboard, Profil-Prüfung, Vergleichstabelle, Speichern über einen Neustart und die Übernahme alter gespeicherter Daten. Einmalige Einrichtung: `npm install` und `npx playwright install chromium`. Dazu kommen der Start ohne Netz und das automatische Update auf eine neue Version. Anfragen an fremde Server lässt der Test nicht zu; Kamera und QR-Scan sind nicht abgedeckt.
+`npm run test:e2e` bedient die App in einem echten Browser (Chromium über Playwright): Getränke buchen, Sondergetränk, Favoriten, Rückgängig, Historie, Tagesabschluss, Dashboard, Profil-Prüfung, Vergleichstabelle, Speichern über einen Neustart und die Übernahme alter gespeicherter Daten. Einmalige Einrichtung: `npm install` und `npx playwright install chromium`. Dazu kommen der Start ohne Netz, das automatische Update auf eine neue Version und das Einlesen des eigenen QR-Codes. Mit `BROWSER=webkit npm run test:e2e` läuft derselbe Test mit der Technik von Safari (einmalig `npx playwright install webkit`). Anfragen an fremde Server lässt der Test nicht zu; Kamera und QR-Scan sind nicht abgedeckt.
 
 `npm run test:all` führt beides aus.
 

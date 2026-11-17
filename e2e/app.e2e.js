@@ -5,7 +5,10 @@ const assert = require('node:assert/strict');
 const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
-const { chromium } = require('playwright');
+const playwright = require('playwright');
+
+// BROWSER=webkit testet mit der Technik von Safari, Standard ist Chromium.
+const browserType = playwright[process.env.BROWSER || 'chromium'];
 
 const ROOT = path.join(__dirname, '..');
 const STORAGE_KEY = 'aida_drink_tracker_v1';
@@ -91,7 +94,7 @@ const savedState = () => page.evaluate((key) => JSON.parse(localStorage.getItem(
 
 before(async () => {
     baseUrl = await startServer();
-    browser = await chromium.launch();
+    browser = await browserType.launch();
     page = await openApp();
 });
 
@@ -238,6 +241,17 @@ test('Tag zurückholen: Rückgängig am leeren Tag öffnet den Vortag wieder', a
     await expectText('#day-label', 'Tag 1');
     assert.match(dialogs[0], /Tag 1 wieder aus dem Archiv holen/);
     await expectText('#total-amount', '5,50 €');
+});
+
+test('Sicherheit: HTML in einem gescannten Spitznamen wird als Text angezeigt, nicht ausgeführt', async () => {
+    await goTo('dashboard');
+    const attack = '<img src=x onerror="window.__xss = true">';
+    assert.equal(await page.evaluate((name) => processScannedCompanion(JSON.stringify([name, 240, 1, 0])), attack), true);
+    await page.waitForFunction(() => document.querySelectorAll('#social-ranking-body tr').length === 5);
+    assert.equal(await page.locator('#social-ranking-body tr', { hasText: attack }).count(), 1);
+    assert.equal(await page.locator('#social-ranking-body img').count(), 0);
+    assert.equal(await page.evaluate(() => window.__xss), undefined);
+    await goTo('tag');
 });
 
 test('Alte gespeicherte Daten: Zeilennummern-IDs werden übernommen, Favoriten bleiben', async () => {

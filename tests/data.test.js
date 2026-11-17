@@ -29,6 +29,7 @@ test('Getränke-CSV: Name und Typ sind gefüllt, Preise sind positive Zahlen', (
     rows.forEach((cols, index) => {
         const where = `Zeile ${index + 2}`;
         assert.notEqual(cols[1].trim(), '', `${where}: Name fehlt`);
+        assert.match(cols[1], /^[^|<>]*[^|<>\s]$/, `${where}: Name enthält Sonderzeichen oder endet auf Leerzeichen`);
         assert.notEqual(cols[2].trim(), '', `${where}: Typ fehlt`);
         assert.match(cols[3].trim(), /^\d+([.,]\d{1,2})?$/, `${where}: Preis`);
         assert.ok(drinks[index].price > 0, `${where}: Preis > 0`);

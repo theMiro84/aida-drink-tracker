@@ -173,6 +173,14 @@ test('Formatierung: deutsches Dezimalkomma, zwei Nachkommastellen', () => {
     assert.equal(calc.formatMoney(NaN), '0,00 €');
 });
 
+test('HTML-Ausgabe: fremder Text wird unschädlich gemacht', () => {
+    assert.equal(calc.escapeHtml('<img src=x onerror="alert(1)">'), '&lt;img src=x onerror=&quot;alert(1)&quot;&gt;');
+    assert.equal(calc.escapeHtml("Tom & Jerry's"), 'Tom &amp; Jerry&#39;s');
+    assert.equal(calc.escapeHtml('Jürgen Müßig'), 'Jürgen Müßig');
+    assert.equal(calc.escapeHtml(undefined), '');
+    assert.equal(calc.escapeHtml(42), '42');
+});
+
 test('CSV-Parser: liest Spalten über den Kopf, mit BOM, CRLF und Dezimalkomma', () => {
     const csv = '﻿ID;Name;Typ;Preis NEU;Alkoholfrei;AI;F\r\nG0001;COLA;Soft;3,5;Ja;Ja;Ja\r\nG0002; OUZO ;Anises;4.9;;;\r\n\r\n';
     assert.deepEqual(calc.parseDrinksCsv(csv), [

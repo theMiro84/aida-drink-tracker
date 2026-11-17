@@ -18,11 +18,27 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Rechenkern, Getränkedaten, Service Worker
+      - name: Rechenkern, Getränkedaten, Service Worker, Konfiguration
         run: npm test
+
+  browser:
+    # chromium entspricht Chrome auf Android, webkit der Technik von Safari auf dem iPhone.
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - name: Browser einrichten
         run: |
           npm install --no-audit --no-fund
-          npx playwright install --with-deps chromium
-      - name: Browser-Test
+          npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Browser-Test (${{ matrix.browser }})
         run: npm run test:e2e
+        env:
+          BROWSER: ${{ matrix.browser }}

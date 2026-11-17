@@ -7,7 +7,7 @@ description: >-
   es nur noch um die Ausführung geht – NICHT für offene Architektur-, Produkt-
   oder Designentscheidungen. Planung und Bewertung bleiben beim Haupt-Agenten
   (Planner/Judge auf Sonnet 5.5 mit Opus 5.5 als Advisor).
-model: sonnet
+model: claude-sonnet-5-5
 tools: Read, Edit, Write, Glob, Grep, Bash, TaskCreate, TaskUpdate, TaskList, TaskGet
 ---
 
@@ -25,7 +25,7 @@ konkreten Korrekturhinweisen für eine weitere Runde zurück.
   auf **Sonnet 5.5** mit **Opus 5.5** als Advisor). Dort entstehen Plan, Zielbild und
   Priorisierung; dort wird nach jeder Runde geprüft, ob die Erfolgsbedingung
   erfüllt ist.
-- **Ausführung** liegt bei dir (läuft auf **Sonnet**): Du bekommst einen Plan­
+- **Ausführung** liegt bei dir (läuft auf **Sonnet 5.5**): Du bekommst einen Plan­
   schritt oder eine Spezifikation und setzt sie zuverlässig, schnell und
   konventionstreu um.
 

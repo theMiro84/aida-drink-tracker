@@ -29,6 +29,12 @@
         return toAmount(part) / divisor;
     }
 
+    // Macht Text aus fremden Quellen (gescannte QR-Codes, importierte Daten) für
+    // die Ausgabe in HTML unschädlich.
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+    }
+
     function formatMoney(amount, currency = '€') {
         return `${roundMoney(amount).toFixed(2).replace('.', ',')} ${currency}`;
     }
@@ -178,6 +184,7 @@
         roundMoney,
         safeRatio,
         formatMoney,
+        escapeHtml,
         dailyGoal,
         isIncluded,
         sumIncluded,

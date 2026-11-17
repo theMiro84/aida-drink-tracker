@@ -11,10 +11,32 @@ Haupt-Session klein und die Kosten niedrig zu halten. Die Modelle sind in
 | **`search`** (Subagent) | Haiku 5.5 | Repo kartieren: Struktur, Dateien, Einstiegspunkte. Nur lesend |
 | **`grep`** (Subagent) | Haiku 5.5 | Aufrufstellen und Verwendungen eines Symbols finden. Nur lesend |
 | **`audit`** (Subagent) | Haiku 5.5 | Committeten Diff prüfen, Checks und Testläufe ausführen – isoliert im eigenen Worktree |
-| **`executor`** (Subagent) | Sonnet | Praktische Umsetzung nach Plan: Edits, Befehle, Verifikation, Fleißarbeit |
+| **`executor`** (Subagent) | Sonnet 5.5 | Praktische Umsetzung nach Plan: Edits, Befehle, Verifikation, Fleißarbeit |
 
 Details stehen in den jeweiligen Dateien (`search.md`, `grep.md`, `audit.md`,
 `executor.md`).
+
+## Modell-Updates
+
+Alle Modelle sind mit voller ID gepinnt, damit es keine stillen Wechsel gibt.
+Bei einer neuen Modellgeneration müssen diese Stellen **gemeinsam** angepasst
+werden:
+
+| Stelle | Feld | Aktuell |
+|--------|------|---------|
+| `.claude/settings.json` | `model` | `claude-sonnet-5-5` |
+| `.claude/settings.json` | `advisorModel` | `claude-opus-5-5` |
+| `.claude/agents/search.md`, `grep.md`, `audit.md` | `model` | `claude-haiku-5-5` |
+| `.claude/agents/executor.md` | `model` | `claude-sonnet-5-5` |
+| diese Datei, `executor.md`, `CLAUDE.md` | Modellnamen im Text | Sonnet 5.5, Opus 5.5, Haiku 5.5 |
+
+Dabei gilt:
+- Der Advisor muss stärker sein als das Hauptmodell, die Helfer günstiger.
+- Nach der Änderung in einer neuen Session mit `/model` und `/advisor` prüfen,
+  ob die Einstellungen greifen, und einmal `audit` laufen lassen.
+- `npm test` prüft, dass überall volle Modell-IDs stehen und dass die Tabelle
+  oben zu den Dateien passt. Ob ein Modell noch angeboten wird, prüft der Test
+  nicht.
 
 ## Regeln
 

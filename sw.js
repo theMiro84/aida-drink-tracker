@@ -5,7 +5,7 @@
 //
 // VERSION ist ein Fingerabdruck über die Dateien in PRECACHE und wird mit
 // `npm run sw:version` aktualisiert. `npm test` schlägt fehl, wenn er veraltet ist.
-const VERSION = '94b9592cf09d';
+const VERSION = 'c0168b575792';
 const CACHE_PREFIX = 'drink-tracker-';
 const CACHE_NAME = `${CACHE_PREFIX}${VERSION}`;
 const PRECACHE = [
@@ -16,6 +16,9 @@ const PRECACHE = [
     'app.js',
     'manifest.json',
     'data/getraenke.csv',
+    'icons/icon-192.png',
+    'icons/icon-512.png',
+    'icons/apple-touch-icon.png',
     'vendor/qrcode-generator.js',
     'vendor/html5-qrcode.min.js',
     'vendor/fonts/fonts.css',

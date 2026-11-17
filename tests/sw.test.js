@@ -25,6 +25,7 @@ test('Service Worker: jede gespeicherte Datei existiert', () => {
 
 test('Service Worker: alle von der App geladenen Dateien werden offline gespeichert', () => {
     const needed = new Set(['index.html', 'data/getraenke.csv']);
+    JSON.parse(read('manifest.json')).icons.forEach((icon) => needed.add(icon.src));
     for (const file of ['index.html', 'styles.css', 'vendor/fonts/fonts.css']) {
         localReferences(file).forEach((ref) => needed.add(ref));
     }

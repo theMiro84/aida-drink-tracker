@@ -1,12 +1,13 @@
 const CONFIG = {
     CURRENCY: '€',
+    DEFAULT_NICKNAME: 'Gaston',
     STORAGE_KEY: 'aida_drink_tracker_v1',
 };
 
 let state = {
     profile: {
         name: 'Gast',
-        nickname: 'Gaston',
+        nickname: CONFIG.DEFAULT_NICKNAME,
         duration: 9,
         packagePrice: 240,
     },
@@ -26,7 +27,7 @@ function renderProfile() {
 
 function saveProfileData() {
     state.profile.name = document.getElementById('prof-name').value || 'Gast';
-    state.profile.nickname = document.getElementById('prof-nickname').value || 'Seebär';
+    state.profile.nickname = document.getElementById('prof-nickname').value || CONFIG.DEFAULT_NICKNAME;
     const duration = Number(document.getElementById('prof-duration').value);
     const packagePrice = Number(document.getElementById('prof-price').value);
 
@@ -107,7 +108,7 @@ function loadState() {
 
             state.profile = {
                 name: parsedData.profile?.name || 'Gast',
-                nickname: parsedData.profile?.nickname || 'Seebär',
+                nickname: parsedData.profile?.nickname || CONFIG.DEFAULT_NICKNAME,
                 duration: Number(parsedData.profile?.duration) || 9,
                 packagePrice: Number(parsedData.profile?.packagePrice) || 240,
             };
@@ -335,7 +336,7 @@ function renderOverview() {
                  <span class="material-symbols-outlined">${iconName}</span>
                 </div>
             <div class="drink-card-info">
-                <span class="drink-card-name">${drink.latestName}</span>
+                <span class="drink-card-name">${DrinkCalc.escapeHtml(drink.latestName)}</span>
                 <span class="drink-card-sub">${drink.count}x bestellt</span>
             </div>
         </div>
@@ -385,7 +386,7 @@ function renderFavorites() {
         const extraSymbol = !drink.isAI ? '<span class="fav-extra">*</span>' : '';
 
         btn.innerHTML = `
-            <span class="fav-name">${drink.name}</span>
+            <span class="fav-name">${DrinkCalc.escapeHtml(drink.name)}</span>
             <span class="fav-price">${formatCurrency(drink.price)}${extraSymbol}</span>
         `;
 
@@ -443,7 +444,7 @@ function renderDrinkList(drinksToRender = drinksData) {
         drinkDiv.innerHTML = `
             <div class="drink-card-main">
               <div class="drink-card-info">
-                <span class="drink-card-name">${drink.name} ${extraBadge}</span>
+                <span class="drink-card-name">${DrinkCalc.escapeHtml(drink.name)} ${extraBadge}</span>
               </div>
             </div>
             <span class="drink-card-value">${formatCurrency(drink.price)}</span>
@@ -562,7 +563,7 @@ function renderHistory() {
                         <span class="material-symbols-outlined">${iconName}</span>
                     </div>
                     <div class="drink-card-info">
-                        <span class="drink-card-name">${entry.name} ${extraBadge}</span>
+                        <span class="drink-card-name">${DrinkCalc.escapeHtml(entry.name)} ${extraBadge}</span>
                         <span class="drink-card-sub">${time} Uhr</span>
                     </div>
                 </div>
@@ -688,7 +689,7 @@ function renderSocialTable() {
         if (user.isMe) tr.classList.add('is-me');
 
         tr.innerHTML = `
-            <td class="font-bold">${user.nickname}</td>
+            <td class="font-bold">${DrinkCalc.escapeHtml(user.nickname)}</td>
             <td class="text-right">${formatCurrency(user.spent)}</td>
             <td class="text-right font-bold ${statusClass}">${Math.round(percentage)}%</td>
         `;
