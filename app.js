@@ -1,12 +1,13 @@
 const CONFIG = {
     CURRENCY: '€',
+    DEFAULT_NICKNAME: 'Gaston',
     STORAGE_KEY: 'aida_drink_tracker_v1',
 };
 
 let state = {
     profile: {
         name: 'Gast',
-        nickname: 'Gaston',
+        nickname: CONFIG.DEFAULT_NICKNAME,
         duration: 9,
         packagePrice: 240,
     },
@@ -26,9 +27,18 @@ function renderProfile() {
 
 function saveProfileData() {
     state.profile.name = document.getElementById('prof-name').value || 'Gast';
-    state.profile.nickname = document.getElementById('prof-nickname').value || 'Seebär';
-    state.profile.duration = Number(document.getElementById('prof-duration').value) || 1;
-    state.profile.packagePrice = Number(document.getElementById('prof-price').value) || 0;
+    state.profile.nickname = document.getElementById('prof-nickname').value || CONFIG.DEFAULT_NICKNAME;
+    const duration = Number(document.getElementById('prof-duration').value);
+    const packagePrice = Number(document.getElementById('prof-price').value);
+
+    // Ohne ganze Reisetage (mindestens einen) und einen positiven Paketpreis lässt sich kein Tagesziel berechnen.
+    if (!Number.isInteger(duration) || duration < 1 || !(packagePrice > 0)) {
+        alert('Bitte ganze Reisetage (mindestens 1) und einen Paketpreis über 0 € angeben.');
+        return;
+    }
+
+    state.profile.duration = duration;
+    state.profile.packagePrice = packagePrice;
 
     saveState();
     updateUI();
@@ -41,8 +51,8 @@ function saveProfileData() {
 
 // Hilfsfunktion: Berechnet das dynamische Tagesziel
 function getDailyGoal() {
-    if (!state.profile || state.profile.duration <= 0) return 0;
-    return state.profile.packagePrice / state.profile.duration;
+    if (!state.profile) return 0;
+    return DrinkCalc.dailyGoal(state.profile.packagePrice, state.profile.duration);
 }
 
 // --- 1. STAMMDATEN & CSV PARSER ---
@@ -55,22 +65,7 @@ async function loadCSVData() {
         if (!response.ok) throw new Error(`HTTP Fehler! Status: ${response.status}`);
 
         const csvText = await response.text();
-        const lines = csvText.split('\n').filter((line) => line.trim() !== '');
-
-        // Erste Zeile (Header) überspringen
-        drinksData = lines.slice(1).map((line, index) => {
-            const cols = line.split(';');
-            return {
-                id: `csv-${index}`,
-                name: cols[0]?.trim() || 'Unbekannt',
-                category: cols[1]?.trim() || 'Sonstiges',
-                price: parseFloat((cols[2] || '0').replace(',', '.')),
-                isNonAlcoholic: cols[3]?.trim() === 'Ja',
-                isAI: cols[4]?.trim() === 'Ja', // Spalte E
-                isF: cols[5]?.trim() === 'Ja', // Spalte F (vorbereitet für später)
-            };
-        });
-
+        drinksData = DrinkCalc.parseDrinksCsv(csvText);
     } catch (error) {
         console.error('Fehler beim Laden der CSV:', error);
         alert('Konnte Getränkedaten nicht laden. Bitte Live Server nutzen.');
@@ -78,48 +73,19 @@ async function loadCSVData() {
 }
 
 // --- 1. DATEN-NORMALISIERUNG & ZENTRALE BERECHNUNG ---
+// Die Rechenlogik liegt in calc.js (DrinkCalc) und ist dort getestet.
 function normalizeDay(dayData, fallbackDayNumber = 1) {
-    if (!dayData) dayData = {};
-
-    const normalized = {
-        day: Number(dayData.day) || fallbackDayNumber,
-        date: dayData.date || new Date().toISOString(),
-        drinks: [],
-        total: 0, // Paket-Erreichung (nur AI-Getränke)
-        totalExtra: 0, // Zusatzkosten (Nicht-AI-Getränke)
-    };
-
-    if (Array.isArray(dayData.drinks)) {
-        normalized.drinks = dayData.drinks.map((drink) => {
-            return {
-                id: String(drink.id || 'unknown'),
-                name: String(drink.name || 'Unbekanntes Getränk'),
-                category: drink.category || 'Sonstiges',
-                price: Number(drink.price) || 0,
-                isNonAlcoholic: drink.isNonAlcoholic === true,
-                isAI: drink.isAI === true,
-                isF: drink.isF === true,
-                timestamp: drink.timestamp || new Date().toISOString(),
-            };
-        });
-    }
-
-    normalized.total = calculateTotal(normalized.drinks);
-    normalized.totalExtra = calculateTotalExtra(normalized.drinks);
-
-    return normalized;
+    return DrinkCalc.normalizeDay(dayData, fallbackDayNumber);
 }
 
+// Paket-Erreichung (nur Getränke aus dem Paket)
 function calculateTotal(drinks) {
-    if (!Array.isArray(drinks)) return 0;
-
-    return drinks.filter((item) => item.isAI).reduce((sum, item) => sum + item.price, 0);
+    return DrinkCalc.sumIncluded(drinks);
 }
 
+// Zuzahlung (Getränke außerhalb des Pakets)
 function calculateTotalExtra(drinks) {
-    if (!Array.isArray(drinks)) return 0;
-
-    return drinks.filter((item) => !item.isAI).reduce((sum, item) => sum + item.price, 0);
+    return DrinkCalc.sumExtra(drinks);
 }
 
 function createNewDay(dayNumber) {
@@ -129,35 +95,7 @@ function createNewDay(dayNumber) {
 // --- 2. AGGREGATION FÜR SPÄTERE AUSWERTUNGEN ---
 
 function getAggregatedStats() {
-    const allDays = [...state.archive, state.currentDay].filter(Boolean);
-    const stats = {
-        grandTotal: 0,
-        grandTotalExtra: 0,
-        totalDrinks: 0,
-        byDrink: {},
-    };
-
-    allDays.forEach((day) => {
-        stats.grandTotal += day.total || 0;
-        stats.grandTotalExtra += day.totalExtra || 0;
-        stats.totalDrinks += day.drinks.length;
-
-        day.drinks.forEach((drink) => {
-            if (!stats.byDrink[drink.id]) {
-                stats.byDrink[drink.id] = {
-                    id: drink.id,
-                    latestName: drink.name,
-                    category: drink.category,
-                    count: 0,
-                    totalSpent: 0,
-                };
-            }
-            stats.byDrink[drink.id].count += 1;
-            stats.byDrink[drink.id].totalSpent += drink.price;
-        });
-    });
-
-    return stats;
+    return DrinkCalc.aggregateStats([...state.archive, state.currentDay]);
 }
 
 // --- 3. STATE MANAGEMENT ---
@@ -170,7 +108,7 @@ function loadState() {
 
             state.profile = {
                 name: parsedData.profile?.name || 'Gast',
-                nickname: parsedData.profile?.nickname || 'Seebär',
+                nickname: parsedData.profile?.nickname || CONFIG.DEFAULT_NICKNAME,
                 duration: Number(parsedData.profile?.duration) || 9,
                 packagePrice: Number(parsedData.profile?.packagePrice) || 240,
             };
@@ -265,7 +203,7 @@ function startNewDay() {
 }
 
 function formatCurrency(amount) {
-    return `${amount.toFixed(2).replace('.', ',')} ${CONFIG.CURRENCY}`;
+    return DrinkCalc.formatMoney(amount, CONFIG.CURRENCY);
 }
 
 function initSearch() {
@@ -350,9 +288,10 @@ function renderOverview() {
     const limit = state.profile.packagePrice;
     const spent = stats.grandTotal; // Nur AI-Getränke
     const extra = stats.grandTotalExtra; // Zuzahlungen
-    const remaining = Math.max(limit - spent, 0);
+    const overall = DrinkCalc.progress(spent, limit);
+    const remaining = overall.remaining;
     const circumference = 691; // Länge des SVG Rings
-    const percentage = Math.min(spent / limit, 1);
+    const percentage = overall.ratio;
 
     document.getElementById('grand-total-display').textContent = formatCurrency(spent);
 
@@ -367,13 +306,7 @@ function renderOverview() {
         const offset = circumference - percentage * circumference;
         ring.style.strokeDashoffset = offset;
 
-        if (spent < limit * 0.75) {
-            ring.style.stroke = 'var(--color-error)';
-        } else if (spent < limit) {
-            ring.style.stroke = 'var(--color-warning)';
-        } else {
-            ring.style.stroke = 'var(--color-safe)';
-        }
+        ring.style.stroke = `var(--color-${overall.status})`;
     }
 
     const badge = document.getElementById('status-badge');
@@ -403,7 +336,7 @@ function renderOverview() {
                  <span class="material-symbols-outlined">${iconName}</span>
                 </div>
             <div class="drink-card-info">
-                <span class="drink-card-name">${drink.latestName}</span>
+                <span class="drink-card-name">${DrinkCalc.escapeHtml(drink.latestName)}</span>
                 <span class="drink-card-sub">${drink.count}x bestellt</span>
             </div>
         </div>
@@ -453,7 +386,7 @@ function renderFavorites() {
         const extraSymbol = !drink.isAI ? '<span class="fav-extra">*</span>' : '';
 
         btn.innerHTML = `
-            <span class="fav-name">${drink.name}</span>
+            <span class="fav-name">${DrinkCalc.escapeHtml(drink.name)}</span>
             <span class="fav-price">${formatCurrency(drink.price)}${extraSymbol}</span>
         `;
 
@@ -511,7 +444,7 @@ function renderDrinkList(drinksToRender = drinksData) {
         drinkDiv.innerHTML = `
             <div class="drink-card-main">
               <div class="drink-card-info">
-                <span class="drink-card-name">${drink.name} ${extraBadge}</span>
+                <span class="drink-card-name">${DrinkCalc.escapeHtml(drink.name)} ${extraBadge}</span>
               </div>
             </div>
             <span class="drink-card-value">${formatCurrency(drink.price)}</span>
@@ -630,7 +563,7 @@ function renderHistory() {
                         <span class="material-symbols-outlined">${iconName}</span>
                     </div>
                     <div class="drink-card-info">
-                        <span class="drink-card-name">${entry.name} ${extraBadge}</span>
+                        <span class="drink-card-name">${DrinkCalc.escapeHtml(entry.name)} ${extraBadge}</span>
                         <span class="drink-card-sub">${time} Uhr</span>
                     </div>
                 </div>
@@ -664,7 +597,7 @@ function updateSummary(count, alcoholicCount, total) {
     document.getElementById('summary-budget-total').textContent = formatCurrency(total);
 
     const goal = getDailyGoal();
-    const percentage = goal > 0 ? Math.min((total / goal) * 100, 100) : 0;
+    const percentage = DrinkCalc.progress(total, goal).ratio * 100;
     document.getElementById('summary-budget-fill').style.width = `${percentage}%`;
 }
 
@@ -746,7 +679,7 @@ function renderSocialTable() {
     allUsers.sort((a, b) => b.spent - a.spent);
 
     allUsers.forEach((user) => {
-        const percentage = user.limit > 0 ? (user.spent / user.limit) * 100 : 0;
+        const percentage = DrinkCalc.safeRatio(user.spent, user.limit) * 100;
         let statusClass = 'text-primary';
         if (percentage >= 100) statusClass = 'text-primary';
         else if (percentage >= 75) statusClass = 'text-warning';
@@ -756,7 +689,7 @@ function renderSocialTable() {
         if (user.isMe) tr.classList.add('is-me');
 
         tr.innerHTML = `
-            <td class="font-bold">${user.nickname}</td>
+            <td class="font-bold">${DrinkCalc.escapeHtml(user.nickname)}</td>
             <td class="text-right">${formatCurrency(user.spent)}</td>
             <td class="text-right font-bold ${statusClass}">${Math.round(percentage)}%</td>
         `;
@@ -803,18 +736,33 @@ function switchSyncTab(tab) {
 
 function renderMyQRCode() {
     const canvas = document.getElementById('my-qr-code');
-    if (!canvas || typeof QRious === 'undefined') return;
+    if (!canvas || typeof qrcode === 'undefined') return;
 
     try {
         const payload = getSocialPayload();
-        new QRious({
-            element: canvas,
-            value: payload,
-            size: 250,
-            background: '#ffffff',
-            foreground: '#004e8b',
-            level: 'M',
-        });
+
+        // Umlaute im Spitznamen brauchen UTF-8; Fehlerkorrektur-Stufe M.
+        qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
+        const qr = qrcode(0, 'M');
+        qr.addData(payload);
+        qr.make();
+
+        // Weißer Rand von 4 Feldern, damit Scanner den Code sicher erkennen.
+        const quietZone = 4;
+        const modules = qr.getModuleCount() + quietZone * 2;
+        const cell = Math.max(1, Math.floor(500 / modules));
+        canvas.width = modules * cell;
+        canvas.height = modules * cell;
+
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#004e8b';
+        for (let row = 0; row < qr.getModuleCount(); row += 1) {
+            for (let col = 0; col < qr.getModuleCount(); col += 1) {
+                if (qr.isDark(row, col)) ctx.fillRect((col + quietZone) * cell, (row + quietZone) * cell, cell, cell);
+            }
+        }
     } catch (err) {
         console.error('Fehler beim QR-Rendering:', err);
     }
@@ -911,21 +859,16 @@ function updateUI() {
 
     const goal = getDailyGoal();
     const total = state.currentDay.total;
-    const percentage = Math.min(total / goal, 1);
+    const today = DrinkCalc.progress(total, goal);
+    const percentage = today.ratio;
     const ring = document.getElementById('progress-ring');
     if (ring) {
         const offset = 477 - percentage * 477;
         ring.style.strokeDashoffset = offset;
-        if (total < goal * 0.75) {
-            ring.style.stroke = 'var(--color-error)';
-        } else if (total < goal) {
-            ring.style.stroke = 'var(--color-warning)';
-        } else {
-            ring.style.stroke = 'var(--color-safe)';
-        }
+        ring.style.stroke = `var(--color-${today.status})`;
     }
 
-    const remaining = Math.max(goal - total, 0);
+    const remaining = today.remaining;
     const limitInfo = document.getElementById('limit-info');
     if (limitInfo) {
         limitInfo.textContent = `Limit verbleibend: ${formatCurrency(remaining)}`;
@@ -1016,4 +959,23 @@ async function init() {
     updateUI();
 }
 
+// Offline-Betrieb: Der Service Worker (sw.js) speichert die App auf dem Gerät.
+// Übernimmt eine neue Version, wird die Seite einmal neu geladen. Der Zustand
+// liegt in localStorage und geht dabei nicht verloren.
+function registerServiceWorker() {
+    if (!('serviceWorker' in navigator)) return;
+
+    const hadController = Boolean(navigator.serviceWorker.controller);
+    let reloading = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        // Beim allerersten Start gibt es noch keine alte Version, die ersetzt wird.
+        if (!hadController || reloading) return;
+        reloading = true;
+        window.location.reload();
+    });
+
+    navigator.serviceWorker.register('sw.js').catch((err) => console.warn('Offline-Modus nicht verfügbar:', err));
+}
+
+registerServiceWorker();
 init().catch((err) => console.error('Kritischer Fehler beim Start:', err));

@@ -1,31 +1,72 @@
-# Subagenten – Planner / Executor / Judge
+# Subagenten – Haupt-Session, Advisor und Haiku-Helfer
 
-Dieses Projekt trennt **Planung**, **Ausführung** und **Bewertung** auf zwei
-Modell-Ebenen, um Qualität hochzuhalten und das Limit des teuren Modells zu
-schonen. (Bild: Der Star-Architekt zeichnet die Pläne und nimmt den fertigen
-Bau ab – der schnelle Junior mauert. Man bezahlt den Architekten nicht fürs
-Mauern.)
+Dieses Projekt verteilt die Arbeit auf drei Modell-Ebenen, um den Kontext der
+Haupt-Session klein und die Kosten niedrig zu halten. Die Modelle sind in
+`.claude/settings.json` und im Frontmatter der Agenten-Dateien gepinnt.
 
 | Rolle | Modell | Aufgabe |
 |-------|--------|---------|
-| **Planner + Judge** (Haupt-Agent) | Opus 4.8 oder Fable 5 | Aufgabe zerlegen, kurzen nummerierten Plan schreiben, jeden Schritt delegieren, nach jeder Runde gegen die Erfolgsbedingung prüfen und freigeben – plus nach-außen wirkende Schritte (Commit/Push/PR) |
-| **`executor`** (Subagent) | Sonnet 5 | Die praktische Umsetzung: Edits, Befehle, Tests, Verifikation, wiederkehrende Fleißarbeit |
+| **Haupt-Session** (Planner + Judge) | Sonnet 5.5 | Aufgabe zerlegen, kurzen nummerierten Plan schreiben, delegieren, nach jeder Runde gegen die Erfolgsbedingung prüfen – plus nach außen wirkende Schritte (Commit/Push/PR) |
+| **Advisor** | Opus 5.5 | Wird von der Haupt-Session bei Planung, unklaren Fehlern und Abnahme hinzugezogen (`advisorModel`). Wann, entscheidet die Haupt-Session; erzwingen lässt es sich nicht |
+| **`search`** (Subagent) | Haiku 5.5 | Repo kartieren: Struktur, Dateien, Einstiegspunkte. Nur lesend |
+| **`grep`** (Subagent) | Haiku 5.5 | Aufrufstellen und Verwendungen eines Symbols finden. Nur lesend |
+| **`audit`** (Subagent) | Haiku 5.5 | Committeten Diff prüfen, Checks und Testläufe ausführen – isoliert im eigenen Worktree |
+| **`executor`** (Subagent) | Sonnet 5.5 | Praktische Umsetzung nach Plan: Edits, Befehle, Verifikation, Fleißarbeit |
 
-Details und Regeln des Executors stehen in `executor.md`.
+Details stehen in den jeweiligen Dateien (`search.md`, `grep.md`, `audit.md`,
+`executor.md`).
+
+## Modell-Updates
+
+Alle Modelle sind mit voller ID gepinnt, damit es keine stillen Wechsel gibt.
+Bei einer neuen Modellgeneration müssen diese Stellen **gemeinsam** angepasst
+werden:
+
+| Stelle | Feld | Aktuell |
+|--------|------|---------|
+| `.claude/settings.json` | `model` | `claude-sonnet-5-5` |
+| `.claude/settings.json` | `advisorModel` | `claude-opus-5-5` |
+| `.claude/agents/search.md`, `grep.md`, `audit.md` | `model` | `claude-haiku-5-5` |
+| `.claude/agents/executor.md` | `model` | `claude-sonnet-5-5` |
+| diese Datei, `executor.md`, `CLAUDE.md` | Modellnamen im Text | Sonnet 5.5, Opus 5.5, Haiku 5.5 |
+
+Dabei gilt:
+- Der Advisor muss stärker sein als das Hauptmodell, die Helfer günstiger.
+- Nach der Änderung in einer neuen Session mit `/model` und `/advisor` prüfen,
+  ob die Einstellungen greifen, und einmal `audit` laufen lassen.
+- `npm test` prüft, dass überall volle Modell-IDs stehen und dass die Tabelle
+  oben zu den Dateien passt. Ob ein Modell noch angeboten wird, prüft der Test
+  nicht.
+
+## Regeln
+
+- **Advisor hinzuziehen:** bevor ein Plan festgelegt wird, nach demselben
+  Fehler zum zweiten Mal und bevor eine Aufgabe als erledigt gemeldet wird
+  (siehe `CLAUDE.md`).
+- **Jede Repo-Suche und jeder Testlauf wird delegiert** (`search`, `grep`,
+  `audit`), siehe `CLAUDE.md`. Die Haupt-Session liest nur die Reports.
+- **`audit` sieht nur Committetes.** Der Worktree zweigt vom lokalen `HEAD` ab
+  (`worktree.baseRef: "head"`); uncommittete Änderungen sind dort nicht
+  sichtbar. Vor dem Audit also committen.
+- **Neue Funktionen werden abgesichert.** Neue oder geänderte Rechen- und
+  Auswertungslogik gehört in `calc.js` und bekommt im selben Schritt Tests in
+  `tests/`; neue Bedienabläufe bekommen einen Fall im Browser-Test
+  `e2e/app.e2e.js`. `audit` führt `npm test` und bei Änderungen an der
+  Oberfläche `npm run test:e2e` aus und meldet fehlende Tests als Befund.
+- **`audit` korrigiert nicht.** Befunde gehen zurück an die Haupt-Session bzw.
+  den `executor`.
 
 ## Der Loop
 
-1. **Planen** – Der Planner (Opus/Fable) zerlegt das aktuelle Ziel in einen
-   kurzen, nummerierten Plan.
-2. **Delegieren** – Jeder Schritt geht an den `executor`-Subagenten (Sonnet).
-   Der teure Denker tippt nicht selbst.
-3. **Prüfen (Judge)** – Nach jeder Runde prüft der Planner: *Ist die
-   Erfolgsbedingung erfüllt – ja oder nein?* Nur bei **ja** wird gestoppt.
+1. **Planen** – Die Haupt-Session (Sonnet 5.5) zerlegt das aktuelle Ziel in
+   einen kurzen, nummerierten Plan und zieht bei Bedarf den Advisor (Opus 5.5)
+   hinzu. Was sie über das Repo wissen muss, holen `search` und `grep`.
+2. **Delegieren** – Umsetzungsschritte gehen an den `executor`.
+3. **Prüfen (Judge)** – Nach dem Commit prüft `audit` den Diff. Die
+   Haupt-Session entscheidet: *Ist die Erfolgsbedingung erfüllt – ja oder nein?*
+   Nur bei **ja** wird gestoppt.
 4. **Zurückgeben** – Bei **nein** bekommt der Executor konkret gesagt, was zu
    korrigieren ist, und die nächste Runde startet.
-
-Die anspruchsvolle Denkarbeit bleibt so auf dem stärksten Modell, die
-mechanische Arbeit läuft effizient auf Sonnet.
 
 ## Das Ziel ist bewusst flexibel
 
@@ -37,7 +78,7 @@ je nach anstehendem Feature.
 ## Erfolgsbedingung („Finish Line")
 
 Immer etwas **maschinell Prüfbares** angeben, nicht „mach es gut":
-- Tests grün / Lint sauber
+- `npm test` grün
 - Datei existiert / Ausgabe entspricht der Spezifikation
 - Seite verhält sich im Test wie beschrieben
 
@@ -57,15 +98,17 @@ startet **keine** Dauerschleife von sich aus.
 Faustregel: lokal starten, erst in die Cloud gehen, wenn ein Job wirklich über
 Nacht laufen muss.
 
-## Planer-Anweisung (zum Einfügen in die Opus/Fable-Session)
+## Planer-Anweisung (zum Einfügen in die Haupt-Session)
 
 ```text
-Du bist Planner und Judge und läufst auf Opus 4.8 (oder Fable 5).
+Du bist Planner und Judge und läufst auf Sonnet 5.5 mit Opus 5.5 als Advisor.
 Mach die Hände-Arbeit NICHT selbst.
 
 1. Zerlege dieses Ziel in einen kurzen, nummerierten Plan: [ZIEL / AKTUELLES FEATURE].
+   Repo-Fragen gehen an search und grep.
 2. Gib jeden Schritt zur Umsetzung an den executor-Subagenten.
-3. Prüfe nach jeder Runde die Erfolgsbedingung und antworte ja oder nein.
+3. Lass nach jeder Runde audit den committeten Diff prüfen, bewerte die
+   Erfolgsbedingung und antworte ja oder nein.
 4. Bei nein: sag dem executor genau, was zu korrigieren ist, dann nächste Runde.
    Stoppe nur bei ja.
 
@@ -78,12 +121,12 @@ zusätzlich `/loop` (oder ein Limit) für die Runden.
 
 ## Pro-Tipps
 
-- **Modell zur Aufgabe passend wählen:** Sonnet 5 für ordentliche Coding-Fleiß­
-  arbeit; Haiku 4.5 für ganz einfaches, günstiges Grinden; Opus 4.8 / Fable 5
-  nur für Planung und Bewertung.
+- **Modell zur Aufgabe passend wählen:** Haiku 5.5 für Suchen, Aufrufstellen
+  und Checks; Sonnet für Planung, Bewertung und Umsetzung; Opus 5.5 nur als
+  Advisor für die schwierigen Entscheidungen.
 - **Jeden Executor-Report kurz lesen** – der Fünf-Sekunden-Blick ist das Lenkrad
   und fängt einen Irrweg ab, bevor er zehn Runden kostet.
-- **Modell eindeutig pinnen** (z. B. `model: claude-sonnet-5`), wenn es über
+- **Modell eindeutig pinnen** (z. B. `model: claude-haiku-5-5`), wenn es über
   Geräte/Teammitglieder hinweg keine Zweideutigkeit geben soll. Leeres
   `model`-Feld bedeutet `inherit` – dann läuft der Worker still auf dem teuren
   Hauptmodell.
