@@ -286,13 +286,23 @@ test('Offline: App startet ohne Netz mit Getränken, Schriften, Icons und QR-Cod
     const iconWidth = await offlinePage.locator('.nav-item .material-symbols-outlined').first().evaluate((el) => el.getBoundingClientRect().width);
     assert.ok(iconWidth > 0 && iconWidth <= 32, `Icon-Breite ${iconWidth}`);
 
-    assert.deepEqual(await offlinePage.evaluate(() => [typeof QRious, typeof Html5Qrcode]), ['function', 'function']);
+    assert.deepEqual(await offlinePage.evaluate(() => [typeof qrcode, typeof Html5Qrcode]), ['function', 'function']);
+
+    // Eigenen QR-Code erzeugen und mit dem Scanner der App wieder einlesen (ohne Kamera).
+    await offlinePage.evaluate(() => {
+        state.profile.nickname = 'Jürgen Müßig';
+    });
     await offlinePage.click('.nav-item[data-screen="dashboard"]');
     await offlinePage.click('#open-sync-btn');
-    await offlinePage.waitForFunction(() => {
-        const qr = document.getElementById('my-qr-code');
-        return qr && (qr.tagName === 'CANVAS' ? qr.width > 0 : Boolean(qr.getAttribute('src')));
+    await offlinePage.waitForFunction(() => document.getElementById('my-qr-code').width >= 250);
+    const [decoded, payload] = await offlinePage.evaluate(async () => {
+        const canvas = document.getElementById('my-qr-code');
+        const blob = await new Promise((resolve) => canvas.toBlob(resolve));
+        const scanner = new Html5Qrcode('qr-reader');
+        return [await scanner.scanFile(new File([blob], 'qr.png', { type: 'image/png' }), false), getSocialPayload()];
     });
+    assert.equal(decoded, payload);
+    assert.deepEqual(JSON.parse(decoded), ['Jürgen Müßig', 240, 0, 0]);
 
     await offlinePage.context().close();
 });

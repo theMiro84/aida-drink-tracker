@@ -5,7 +5,7 @@ Repo, damit die App offline funktioniert. Sie sind unverändert übernommen.
 
 | Datei | Quelle | Version | Lizenz |
 |-------|--------|---------|--------|
-| `qrious.min.js` | npm-Paket `qrious` | 4.0.2 | GPL-3.0 (`licenses/qrious-LICENSE.md`) |
+| `qrcode-generator.js` | npm-Paket `qrcode-generator` (`dist/qrcode.js`) | 2.0.4 | MIT (Hinweis im Dateikopf) |
 | `html5-qrcode.min.js` | npm-Paket `html5-qrcode` | 2.3.8 | Apache-2.0 (`licenses/html5-qrcode-LICENSE`) |
 | `fonts/material-symbols-outlined-*.woff2` | Google Fonts, Material Symbols Outlined | Stand 2026-11 | Apache-2.0 |
 | `fonts/inter-*.woff2` | Google Fonts, Inter | Stand 2026-11 | SIL Open Font License 1.1 |

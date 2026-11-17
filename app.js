@@ -735,18 +735,33 @@ function switchSyncTab(tab) {
 
 function renderMyQRCode() {
     const canvas = document.getElementById('my-qr-code');
-    if (!canvas || typeof QRious === 'undefined') return;
+    if (!canvas || typeof qrcode === 'undefined') return;
 
     try {
         const payload = getSocialPayload();
-        new QRious({
-            element: canvas,
-            value: payload,
-            size: 250,
-            background: '#ffffff',
-            foreground: '#004e8b',
-            level: 'M',
-        });
+
+        // Umlaute im Spitznamen brauchen UTF-8; Fehlerkorrektur-Stufe M.
+        qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
+        const qr = qrcode(0, 'M');
+        qr.addData(payload);
+        qr.make();
+
+        // Weißer Rand von 4 Feldern, damit Scanner den Code sicher erkennen.
+        const quietZone = 4;
+        const modules = qr.getModuleCount() + quietZone * 2;
+        const cell = Math.max(1, Math.floor(500 / modules));
+        canvas.width = modules * cell;
+        canvas.height = modules * cell;
+
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#004e8b';
+        for (let row = 0; row < qr.getModuleCount(); row += 1) {
+            for (let col = 0; col < qr.getModuleCount(); col += 1) {
+                if (qr.isDark(row, col)) ctx.fillRect((col + quietZone) * cell, (row + quietZone) * cell, cell, cell);
+            }
+        }
     } catch (err) {
         console.error('Fehler beim QR-Rendering:', err);
     }
