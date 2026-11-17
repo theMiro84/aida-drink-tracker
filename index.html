@@ -229,6 +229,29 @@
                 </div>
 
                 <div id="history-groups-container" class="history-stack"></div>
+
+                <section class="backup-section tonal-card">
+                    <div class="section-header-icon">
+                        <span class="material-symbols-outlined text-primary">save</span>
+                        <h2 class="headline-md font-headline">Datensicherung</h2>
+                    </div>
+                    <p class="body-sm text-outline">
+                        Alle Buchungen liegen nur im Browser dieses Geräts. Sichere sie regelmäßig als Datei, zum Beispiel einmal am Tag.
+                        Mit der Datei lässt sich der Stand hier oder auf einem anderen Gerät wiederherstellen.
+                    </p>
+                    <div class="backup-actions">
+                        <button id="backup-export-btn" class="primary-btn" type="button">
+                            <span class="material-symbols-outlined">download</span>
+                            Sichern
+                        </button>
+                        <button id="backup-import-btn" class="secondary-btn" type="button">
+                            <span class="material-symbols-outlined">upload</span>
+                            Einspielen
+                        </button>
+                    </div>
+                    <input id="backup-import-file" class="hidden" type="file" accept="application/json,.json" />
+                    <p id="backup-status" class="body-sm backup-status" role="status" aria-live="polite"></p>
+                </section>
             </section>
 
             <div id="sync-modal" class="modal-overlay hidden">

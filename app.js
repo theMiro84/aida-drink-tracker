@@ -914,6 +914,140 @@ function resetApp() {
     alert('App wurde erfolgreich zurückgesetzt.');
 }
 
+// --- DATENSICHERUNG (Export und Import im Reiter Historie) ---
+// Aufbau und Prüfung der Sicherungsdatei liegen in calc.js (DrinkCalc).
+
+// Mehr passt ohnehin nicht in den Browser-Speicher; größere Dateien sind keine Sicherung.
+const BACKUP_MAX_BYTES = 5 * 1024 * 1024;
+
+// Meldungen erscheinen als reiner Text (textContent), nie als HTML.
+function setBackupStatus(message, isError = false) {
+    const status = document.getElementById('backup-status');
+    if (!status) return;
+    status.textContent = message;
+    status.classList.toggle('text-error', isError);
+}
+
+function describeBackup(summary) {
+    const days = summary.days === 1 ? '1 Reisetag' : `${summary.days} Reisetage`;
+    const drinks = summary.drinks === 1 ? '1 Getränk' : `${summary.drinks} Getränke`;
+    return `${days}, ${drinks}`;
+}
+
+function formatBackupDate(isoString) {
+    const date = new Date(isoString || '');
+    if (Number.isNaN(date.getTime())) return 'unbekanntem Datum';
+    return date.toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function downloadBackupFile(text, fileName) {
+    const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+// Schreibt den aktuellen Stand in eine Datei. Auf dem iPhone läuft das über
+// "Teilen" (dort z. B. "In Dateien sichern"), weil Apps auf dem
+// Startbildschirm keine Downloads anbieten; sonst als normaler Download.
+async function exportBackup() {
+    const backup = DrinkCalc.createBackup(state);
+    const text = JSON.stringify(backup, null, 2);
+    const fileName = DrinkCalc.backupFileName(new Date());
+    const summary = describeBackup(DrinkCalc.backupSummary(backup.data));
+
+    try {
+        const file = new File([text], fileName, { type: 'application/json' });
+        if (typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file], title: 'Drink Tracker Sicherung' });
+            setBackupStatus(`Sicherung übergeben (${summary}). Bitte an einem sicheren Ort ablegen.`);
+            return;
+        }
+    } catch (error) {
+        if (error && error.name === 'AbortError') {
+            setBackupStatus('Sicherung abgebrochen. Es wurde keine Datei erstellt.', true);
+            return;
+        }
+        // Teilen nicht möglich: weiter mit dem Download.
+    }
+
+    try {
+        downloadBackupFile(text, fileName);
+        setBackupStatus(`Sicherung erstellt: ${fileName} (${summary}).`);
+    } catch (error) {
+        console.error('Fehler beim Erstellen der Sicherung:', error);
+        setBackupStatus('Die Sicherung konnte nicht erstellt werden.', true);
+    }
+}
+
+// Prüft den Inhalt einer Sicherungsdatei und ersetzt nach Rückfrage den
+// aktuellen Stand. Ungültige Dateien ändern nichts.
+function applyBackupText(text) {
+    const result = DrinkCalc.parseBackup(text);
+    if (!result.ok) {
+        setBackupStatus(result.error, true);
+        return false;
+    }
+
+    const current = describeBackup(DrinkCalc.backupSummary(state));
+    const incoming = describeBackup(result.summary);
+    const question =
+        `Sicherung vom ${formatBackupDate(result.createdAt)} einspielen?\n\n` +
+        `Inhalt der Sicherung: ${incoming}.\n` +
+        `Der aktuelle Stand auf diesem Gerät (${current}) wird dabei ersetzt.`;
+    if (!confirm(question)) {
+        setBackupStatus('Einspielen abgebrochen. Es wurde nichts geändert.');
+        return false;
+    }
+
+    state.profile = result.state.profile;
+    state.currentDay = result.state.currentDay;
+    state.archive = result.state.archive;
+    state.companions = result.state.companions;
+
+    saveState();
+    updateUI();
+    setBackupStatus(`Sicherung eingespielt (${incoming}).`);
+    return true;
+}
+
+function importBackupFile(file) {
+    if (!file) return;
+    if (file.size > BACKUP_MAX_BYTES) {
+        setBackupStatus('Die Datei ist zu groß für eine Sicherung des Drink Trackers.', true);
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => applyBackupText(String(reader.result));
+    reader.onerror = () => setBackupStatus('Die Datei konnte nicht gelesen werden.', true);
+    reader.readAsText(file);
+}
+
+function initBackup() {
+    const fileInput = document.getElementById('backup-import-file');
+
+    document.getElementById('backup-export-btn')?.addEventListener('click', exportBackup);
+    document.getElementById('backup-import-btn')?.addEventListener('click', () => fileInput?.click());
+    fileInput?.addEventListener('change', () => {
+        importBackupFile(fileInput.files[0]);
+        // Zurücksetzen, damit dieselbe Datei erneut gewählt werden kann.
+        fileInput.value = '';
+    });
+
+    // Bittet den Browser, den Speicher dieser App nicht von sich aus zu leeren.
+    // Eine Zusage ist das nicht; die Datei-Sicherung bleibt der eigentliche Schutz.
+    try {
+        navigator.storage?.persist?.()?.catch?.(() => {});
+    } catch (error) {
+        // Ohne diese Funktion läuft die App unverändert weiter.
+    }
+}
+
 async function init() {
     await loadCSVData();
     loadState();
@@ -947,6 +1081,7 @@ async function init() {
 
     initSearch();
     initHistoryFilters();
+    initBackup();
 
     // Modal & QR Events binden
     document.getElementById('open-sync-btn')?.addEventListener('click', openSyncModal);

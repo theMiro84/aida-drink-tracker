@@ -178,9 +178,131 @@
         });
     }
 
+    // --- Datensicherung ---
+    // Eine Sicherung ist eine JSON-Datei mit Kennung, Formatversion und dem
+    // vollständigen Zustand der App. Die Version steigt nur, wenn sich der
+    // Aufbau so ändert, dass ältere App-Versionen ihn nicht mehr lesen können.
+    const BACKUP_FORMAT = 'drink-tracker-backup';
+    const BACKUP_VERSION = 1;
+    const PROFILE_DEFAULTS = { name: 'Gast', nickname: 'Gaston', duration: 9, packagePrice: 240 };
+
+    function isPlainObject(value) {
+        return typeof value === 'object' && value !== null && !Array.isArray(value);
+    }
+
+    // Reisetage sind ganze Zahlen ab 1, der Paketpreis ist größer als 0;
+    // alles andere fällt auf den Standardwert zurück.
+    function normalizeProfile(profile, defaults = PROFILE_DEFAULTS) {
+        const source = isPlainObject(profile) ? profile : {};
+        const duration = Number(source.duration);
+        const packagePrice = Number(source.packagePrice);
+        return {
+            name: String(source.name || defaults.name),
+            nickname: String(source.nickname || defaults.nickname),
+            duration: Number.isInteger(duration) && duration >= 1 ? duration : defaults.duration,
+            packagePrice: Number.isFinite(packagePrice) && packagePrice > 0 ? packagePrice : defaults.packagePrice,
+        };
+    }
+
+    function normalizeCompanions(companions, now = new Date().toISOString()) {
+        if (!Array.isArray(companions)) return [];
+        return companions
+            .filter((companion) => isPlainObject(companion) && String(companion.nickname ?? '').trim() !== '')
+            .map((companion) => ({
+                nickname: String(companion.nickname),
+                limit: toAmount(companion.limit),
+                spent: toAmount(companion.spent),
+                extra: toAmount(companion.extra),
+                lastUpdate: typeof companion.lastUpdate === 'string' ? companion.lastUpdate : now,
+            }));
+    }
+
+    // Bringt einen kompletten Zustand (aus einer Sicherung) in die aktuelle Form.
+    // Summen werden aus den Getränken neu berechnet, unbekannte Felder entfallen.
+    function normalizeState(raw, packageType, now = new Date().toISOString()) {
+        const source = isPlainObject(raw) ? raw : {};
+        const archive = Array.isArray(source.archive)
+            ? source.archive.filter(isPlainObject).map((day, index) => normalizeDay(day, index + 1, packageType, now))
+            : [];
+        return {
+            profile: normalizeProfile(source.profile),
+            currentDay: normalizeDay(isPlainObject(source.currentDay) ? source.currentDay : null, archive.length + 1, packageType, now),
+            archive,
+            companions: normalizeCompanions(source.companions, now),
+        };
+    }
+
+    // Kennzahlen für Rückfragen und Meldungen ("3 Reisetage, 12 Getränke").
+    function backupSummary(state) {
+        const source = isPlainObject(state) ? state : {};
+        const days = [...(Array.isArray(source.archive) ? source.archive : []), source.currentDay].filter(Boolean);
+        return { days: days.length, drinks: aggregateStats(days).totalDrinks };
+    }
+
+    function createBackup(state, now = new Date().toISOString()) {
+        return {
+            format: BACKUP_FORMAT,
+            version: BACKUP_VERSION,
+            createdAt: now,
+            data: normalizeState(state, undefined, now),
+        };
+    }
+
+    // Dateiname mit lokalem Datum und Uhrzeit, z. B. drink-tracker-sicherung-2027-01-14-0930.json
+    function backupFileName(date = new Date()) {
+        const pad = (number) => String(number).padStart(2, '0');
+        const day = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+        return `drink-tracker-sicherung-${day}-${pad(date.getHours())}${pad(date.getMinutes())}.json`;
+    }
+
+    // Prüft den Text einer Sicherungsdatei. Ergebnis: { ok: true, state, createdAt,
+    // summary } oder { ok: false, error } mit einer Meldung für die Anzeige.
+    // Wirft nie; eine fremde oder beschädigte Datei verändert nichts.
+    function parseBackup(text, now = new Date().toISOString()) {
+        const fail = (error) => ({ ok: false, error });
+
+        let parsed;
+        try {
+            parsed = JSON.parse(String(text ?? '').replace(/^﻿/, ''));
+        } catch (error) {
+            return fail('Die Datei ist keine lesbare Sicherung (kein gültiges JSON).');
+        }
+
+        if (!isPlainObject(parsed) || parsed.format !== BACKUP_FORMAT) {
+            return fail('Die Datei ist keine Sicherung des Drink Trackers.');
+        }
+        if (!Number.isInteger(parsed.version) || parsed.version < 1) {
+            return fail('Die Sicherung hat keine gültige Formatversion.');
+        }
+        if (parsed.version > BACKUP_VERSION) {
+            return fail('Die Sicherung stammt aus einer neueren App-Version. Bitte die App zuerst aktualisieren.');
+        }
+
+        const data = parsed.data;
+        if (!isPlainObject(data) || !isPlainObject(data.profile) || !isPlainObject(data.currentDay) || !Array.isArray(data.archive)) {
+            return fail('Die Sicherung ist unvollständig (Profil, aktueller Tag oder Archiv fehlen).');
+        }
+
+        const state = normalizeState(data, undefined, now);
+        return {
+            ok: true,
+            state,
+            createdAt: typeof parsed.createdAt === 'string' ? parsed.createdAt : null,
+            summary: backupSummary(state),
+        };
+    }
+
     return {
         PACKAGE_TYPES,
         CSV_COLUMNS,
+        BACKUP_FORMAT,
+        BACKUP_VERSION,
+        normalizeProfile,
+        normalizeState,
+        backupSummary,
+        createBackup,
+        backupFileName,
+        parseBackup,
         roundMoney,
         safeRatio,
         formatMoney,

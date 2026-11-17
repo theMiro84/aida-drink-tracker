@@ -25,9 +25,9 @@ Die App kann:
 - Reisedauer und Paketpreis im Profil einstellen
 - Stände per QR-Code mit Mitreisenden vergleichen
 - ohne Netz laufen und sich mit Netz selbst aktualisieren
+- alle eigenen Daten als Datei sichern und wieder einspielen (Reiter Historie, Abschnitt Datensicherung)
 
 Noch nicht umgesetzt:
-- Datensicherung (Export und Import der eigenen Daten)
 - Auswahl des Pakets (All Inclusive oder Fun) beim Start einer Reise
 - mehrere Reisen getrennt verwalten
 - saubere Mehrnutzer-Struktur
@@ -81,21 +81,17 @@ Diese Bereiche sollen als zusammenhängendes mobiles System wirken, nicht wie ge
 
 Die Weiterentwicklung erfolgt bewusst in kleinen, kontrollierten Schritten.
 
-### 1. Datensicherung (vor der Reise im Januar)
-- eigene Daten als Datei exportieren und wieder importieren
-- Schutz davor, dass das Handy den Browser-Speicher leert
-
-### 2. Paket-Auswahl beim Start einer Reise
+### 1. Paket-Auswahl beim Start einer Reise
 - All Inclusive oder Fun wählen; der Rechenkern unterstützt beide bereits
 - Reisedauer und Paketpreis beim Start der Reise abfragen
 
-### 3. Feedback der ersten Reise einarbeiten
+### 2. Feedback der ersten Reise einarbeiten
 
-### 4. Reisen und Nutzerprofil
+### 3. Reisen und Nutzerprofil
 - neue Reisen anlegen und getrennt verwalten, je Reise eigene Dauer, Preise und Statistiken
 - lokales Profilmodell mit Kürzel, Avatar und Nutzer-ID
 
-### 5. Mehrere Nutzer und Datenaustausch
+### 4. Mehrere Nutzer und Datenaustausch
 - Daten pro Nutzer logisch trennen
 - optionale Server-Synchronisierung nur als spätere Ausbaustufe
 

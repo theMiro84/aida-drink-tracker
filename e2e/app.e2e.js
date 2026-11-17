@@ -241,6 +241,114 @@ test('Neustart: Buchungen, Profil und Mitreisende bleiben gespeichert', async ()
     assert.deepEqual([state.archive[0].total, state.archive[0].totalExtra], [5.5, 4.9]);
 });
 
+// Wählt im Reiter Historie eine Datei zum Einspielen aus.
+const chooseBackupFile = (text, name = 'sicherung.json') =>
+    page.setInputFiles('#backup-import-file', { name, mimeType: 'application/json', buffer: Buffer.from(text, 'utf8') });
+
+// Legt fest, ob der Browser Dateien teilen kann (iPhone) oder nicht (Download).
+const setShareSupport = (enabled) =>
+    page.evaluate((on) => {
+        window.__geteilt = null;
+        Object.defineProperty(navigator, 'canShare', { configurable: true, value: on ? () => true : undefined });
+        Object.defineProperty(navigator, 'share', {
+            configurable: true,
+            value: on
+                ? async (data) => {
+                      window.__geteilt = { name: data.files[0].name, text: await data.files[0].text() };
+                  }
+                : undefined,
+        });
+    }, enabled);
+
+test('Datensicherung: Stand als Datei sichern, nach dem Zurücksetzen wieder einspielen', async () => {
+    await goTo('history');
+    const before = await savedState();
+
+    // Sichern als Download.
+    await setShareSupport(false);
+    const [download] = await Promise.all([page.waitForEvent('download'), page.click('#backup-export-btn')]);
+    assert.match(download.suggestedFilename(), /^drink-tracker-sicherung-\d{4}-\d{2}-\d{2}-\d{4}\.json$/);
+    const backupText = fs.readFileSync(await download.path(), 'utf8');
+    const backup = JSON.parse(backupText);
+    assert.deepEqual([backup.format, backup.version], ['drink-tracker-backup', 1]);
+    assert.deepEqual(backup.data, before);
+    await expectText('#backup-status', `Sicherung erstellt: ${download.suggestedFilename()} (2 Reisetage, 2 Getränke).`);
+
+    // Sichern über "Teilen" (Weg auf dem iPhone).
+    await setShareSupport(true);
+    await page.click('#backup-export-btn');
+    await page.waitForFunction(() => window.__geteilt !== null);
+    const shared = await page.evaluate(() => window.__geteilt);
+    assert.match(shared.name, /^drink-tracker-sicherung-.*\.json$/);
+    assert.deepEqual(JSON.parse(shared.text).data, before);
+    await expectText('#backup-status', 'Sicherung übergeben (2 Reisetage, 2 Getränke). Bitte an einem sicheren Ort ablegen.');
+    await setShareSupport(false);
+
+    // Fremde und beschädigte Dateien ändern nichts.
+    dialogs.length = 0;
+    await chooseBackupFile('kein json');
+    await expectText('#backup-status', 'Die Datei ist keine lesbare Sicherung (kein gültiges JSON).');
+    await chooseBackupFile(JSON.stringify({ hallo: 'welt' }));
+    await expectText('#backup-status', 'Die Datei ist keine Sicherung des Drink Trackers.');
+    assert.equal(await page.locator('#backup-status.text-error').count(), 1);
+    assert.deepEqual(dialogs, []);
+    assert.deepEqual(await savedState(), before);
+
+    // Daten gehen verloren (hier: Zurücksetzen) ...
+    await goTo('dashboard');
+    await page.click('#reset-app-btn');
+    await expectText('#day-label', 'Tag 1');
+    assert.equal((await savedState()).archive.length, 0);
+
+    // ... und kommen aus der Datei zurück, nach einer Rückfrage.
+    await goTo('history');
+    dialogs.length = 0;
+    await chooseBackupFile(backupText);
+    await expectText('#backup-status', 'Sicherung eingespielt (2 Reisetage, 2 Getränke).');
+    assert.equal(await page.locator('#backup-status.text-error').count(), 0);
+    assert.match(dialogs[0], /^Sicherung vom \d{2}\.\d{2}\.\d{4}, \d{2}:\d{2} einspielen\?/);
+    assert.match(dialogs[0], /Inhalt der Sicherung: 2 Reisetage, 2 Getränke\./);
+    assert.match(dialogs[0], /\(1 Reisetag, 0 Getränke\) wird dabei ersetzt/);
+    assert.deepEqual(await savedState(), before);
+
+    // Die Anzeige zeigt den eingespielten Stand, auch nach einem Neustart.
+    await page.locator('#view-history .tab-item', { hasText: 'Alle' }).click();
+    assert.equal(await page.locator('#history-groups-container .drink-card').count(), 2);
+    await page.locator('#view-history .tab-item', { hasText: 'Heute' }).click();
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('#category-list .drink-card', { state: 'attached' });
+    await expectText('#day-label', 'Tag 2');
+    await goTo('dashboard');
+    await expectText('#grand-total-display', '5,50 €');
+    assert.equal(await page.locator('#social-ranking-body tr').count(), 4);
+});
+
+test('Datensicherung: HTML in einer eingespielten Sicherung wird als Text angezeigt, nicht ausgeführt', async () => {
+    const original = await savedState();
+    const attack = '<img src=x onerror="window.__xssBackup = true">';
+    const manipulated = JSON.parse(JSON.stringify(original));
+    manipulated.archive[0].drinks[0].name = attack;
+    manipulated.companions.push({ nickname: attack, limit: 240, spent: 1, extra: 0 });
+    const file = (data) => JSON.stringify({ format: 'drink-tracker-backup', version: 1, createdAt: attack, data });
+
+    await goTo('history');
+    await chooseBackupFile(file(manipulated));
+    await expectText('#backup-status', 'Sicherung eingespielt (2 Reisetage, 2 Getränke).');
+    await page.locator('#view-history .tab-item', { hasText: 'Alle' }).click();
+    assert.equal(await page.locator('#history-groups-container .drink-card', { hasText: attack }).count(), 1);
+    await goTo('dashboard');
+    assert.equal(await page.locator('#social-ranking-body tr', { hasText: attack }).count(), 1);
+    assert.equal(await page.locator('#view-history img, #view-dashboard img, #backup-status img').count(), 0);
+    assert.equal(await page.evaluate(() => window.__xssBackup), undefined);
+
+    // Ursprünglichen Stand wiederherstellen.
+    await goTo('history');
+    await chooseBackupFile(file(original));
+    await page.waitForFunction(([key, name]) => !localStorage.getItem(key).includes(name), [STORAGE_KEY, 'onerror']);
+    assert.deepEqual(await savedState(), original);
+    await page.locator('#view-history .tab-item', { hasText: 'Heute' }).click();
+});
+
 test('Tag zurückholen: Rückgängig am leeren Tag öffnet den Vortag wieder', async () => {
     await goTo('tag');
     dialogs.length = 0;

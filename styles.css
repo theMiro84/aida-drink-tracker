@@ -973,6 +973,27 @@ body.is-searching .search-section {
    HISTORIE
 ═══════════════════════════════════════════════════════════════ */
 
+/* Datensicherung am Ende des Verlaufs. */
+.backup-section {
+    margin-top: var(--space-lg);
+}
+
+.backup-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: var(--space-md);
+}
+
+.backup-status {
+    margin-top: var(--space-md);
+    min-height: 1.25em;
+    color: var(--color-safe);
+}
+
+.backup-status.text-error {
+    color: var(--color-error);
+}
+
 .screen-title {
     margin-bottom: var(--space-xl);
 }
