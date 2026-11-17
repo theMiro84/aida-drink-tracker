@@ -943,4 +943,23 @@ async function init() {
     updateUI();
 }
 
+// Offline-Betrieb: Der Service Worker (sw.js) speichert die App auf dem Gerät.
+// Übernimmt eine neue Version, wird die Seite einmal neu geladen. Der Zustand
+// liegt in localStorage und geht dabei nicht verloren.
+function registerServiceWorker() {
+    if (!('serviceWorker' in navigator)) return;
+
+    const hadController = Boolean(navigator.serviceWorker.controller);
+    let reloading = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        // Beim allerersten Start gibt es noch keine alte Version, die ersetzt wird.
+        if (!hadController || reloading) return;
+        reloading = true;
+        window.location.reload();
+    });
+
+    navigator.serviceWorker.register('sw.js').catch((err) => console.warn('Offline-Modus nicht verfügbar:', err));
+}
+
+registerServiceWorker();
 init().catch((err) => console.error('Kritischer Fehler beim Start:', err));

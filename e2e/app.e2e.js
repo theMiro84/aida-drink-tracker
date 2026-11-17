@@ -17,12 +17,20 @@ let browser;
 let page;
 const pageErrors = [];
 const dialogs = [];
+const externalRequests = [];
+// Dateien, die der Testserver mit anderem Inhalt ausliefert (simuliert eine neue Version).
+const overrides = new Map();
 
 function startServer() {
     return new Promise((resolve) => {
         server = http.createServer((req, res) => {
             const urlPath = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
             const file = path.join(ROOT, urlPath === '/' ? 'index.html' : urlPath);
+            if (overrides.has(urlPath)) {
+                res.writeHead(200, { 'Content-Type': `${MIME[path.extname(file)]}; charset=utf-8` });
+                res.end(overrides.get(urlPath));
+                return;
+            }
             if (!file.startsWith(ROOT) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) {
                 res.writeHead(404).end();
                 return;
@@ -34,11 +42,14 @@ function startServer() {
     });
 }
 
-// Öffnet die App in einem frischen Browser-Profil. Externe Adressen (Schriften,
-// QR-Bibliotheken) werden blockiert, damit der Test ohne Internet gleich läuft.
+// Öffnet die App in einem frischen Browser-Profil. Anfragen an fremde Server
+// werden blockiert und protokolliert; die App darf keine brauchen.
 async function openApp(savedState) {
     const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
-    await context.route(/^https?:\/\/(?!127\.0\.0\.1)/, (route) => route.abort());
+    await context.route(/^https?:\/\/(?!127\.0\.0\.1)/, (route) => {
+        externalRequests.push(route.request().url());
+        return route.abort();
+    });
     if (savedState) {
         await context.addInitScript(
             ([key, value]) => {
@@ -251,6 +262,64 @@ test('Alte gespeicherte Daten: Zeilennummern-IDs werden übernommen, Favoriten b
     await legacyPage.context().close();
 });
 
-test('Keine Skriptfehler während des gesamten Ablaufs', () => {
+// Wartet, bis der Service Worker die Seite übernommen hat.
+const waitForServiceWorker = (target) => target.waitForFunction(() => navigator.serviceWorker.controller !== null, null, { timeout: 15000 });
+
+test('Offline: App startet ohne Netz mit Getränken, Schriften, Icons und QR-Code', async () => {
+    const offlinePage = await openApp();
+    await waitForServiceWorker(offlinePage);
+    await offlinePage.context().setOffline(true);
+    await offlinePage.reload({ waitUntil: 'domcontentloaded' });
+    await offlinePage.waitForSelector('#category-list .drink-card', { state: 'attached' });
+
+    assert.equal(await offlinePage.locator('#category-list .drink-card').count(), 231);
+    await expectText('#limit-info', 'Limit verbleibend: 26,67 €', offlinePage);
+
+    const fonts = await offlinePage.evaluate(async () => {
+        await document.fonts.ready;
+        const loaded = [...document.fonts].filter((font) => font.status === 'loaded').map((font) => font.family.replace(/["']/g, ''));
+        return [...new Set(loaded)].sort();
+    });
+    assert.deepEqual(fonts, ['Inter', 'Material Symbols Outlined', 'Plus Jakarta Sans']);
+
+    // Ein Icon ist ein einzelnes Zeichen der Icon-Schrift; ohne Schrift stünde dort breiter Klartext.
+    const iconWidth = await offlinePage.locator('.nav-item .material-symbols-outlined').first().evaluate((el) => el.getBoundingClientRect().width);
+    assert.ok(iconWidth > 0 && iconWidth <= 32, `Icon-Breite ${iconWidth}`);
+
+    assert.deepEqual(await offlinePage.evaluate(() => [typeof QRious, typeof Html5Qrcode]), ['function', 'function']);
+    await offlinePage.click('.nav-item[data-screen="dashboard"]');
+    await offlinePage.click('#open-sync-btn');
+    await offlinePage.waitForFunction(() => {
+        const qr = document.getElementById('my-qr-code');
+        return qr && (qr.tagName === 'CANVAS' ? qr.width > 0 : Boolean(qr.getAttribute('src')));
+    });
+
+    await offlinePage.context().close();
+});
+
+test('Update: eine neue Version wird automatisch geladen und ersetzt die alte', async () => {
+    const updatePage = await openApp();
+    await waitForServiceWorker(updatePage);
+    const oldCaches = await updatePage.evaluate(() => caches.keys());
+    assert.equal(oldCaches.length, 1);
+    assert.equal(await updatePage.evaluate(() => window.__neueVersion), undefined);
+
+    // Neue Version bereitstellen: geänderte Datei plus neuer Fingerabdruck in sw.js.
+    overrides.set('/calc.js', `${fs.readFileSync(path.join(ROOT, 'calc.js'), 'utf8')}\nglobalThis.__neueVersion = true;\n`);
+    overrides.set('/sw.js', fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8').replace(/const VERSION = '[^']*';/, "const VERSION = 'e2e-neu';"));
+    try {
+        // Beim nächsten Öffnen prüft der Browser sw.js; die Seite lädt sich danach selbst neu.
+        await updatePage.reload({ waitUntil: 'domcontentloaded' });
+        await updatePage.waitForFunction(() => window.__neueVersion === true, null, { timeout: 20000 });
+        await updatePage.waitForFunction(async () => (await caches.keys()).join() === 'drink-tracker-e2e-neu', null, { timeout: 10000 });
+        await expectText('#day-label', 'Tag 1', updatePage);
+    } finally {
+        overrides.clear();
+        await updatePage.context().close();
+    }
+});
+
+test('Keine Skriptfehler und keine Anfragen an fremde Server während des gesamten Ablaufs', () => {
     assert.deepEqual(pageErrors, []);
+    assert.deepEqual(externalRequests, []);
 });

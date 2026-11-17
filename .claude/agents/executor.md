@@ -50,7 +50,9 @@ konkreten Korrekturhinweisen für eine weitere Runde zurück.
 6. **Neue Funktionen absichern.** Jede neue oder geänderte Rechen- und
    Auswertungslogik gehört in `calc.js` (reine Funktionen, ohne DOM) und bekommt
    im selben Schritt Tests in `tests/`. Neue Bedienabläufe in der Oberfläche
-   bekommen einen Fall im Browser-Test `e2e/app.e2e.js`. Eine Änderung ohne passende Tests gilt
+   bekommen einen Fall im Browser-Test `e2e/app.e2e.js`. Nach Änderungen an App-Dateien
+   `npm run sw:version` ausführen und `sw.js` mit committen, sonst erreicht die Änderung
+   installierte Geräte nicht. Eine Änderung ohne passende Tests gilt
    als nicht fertig. Testläufe (`npm test`) übernimmt der `audit`-Subagent.
 7. **Keine irreversiblen/nach-außen wirkenden Aktionen ohne Auftrag** (Push,
    Deploy, Löschen, PR). Solche Schritte bleiben beim Haupt-Agenten bzw.

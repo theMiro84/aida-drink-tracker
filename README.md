@@ -191,11 +191,13 @@ Die konkrete Struktur kann sich im Refactoring noch verändern. Der aktuelle ode
 ├── app.js          # Oberfläche, Zustand, Speicherung
 ├── calc.js         # Rechenkern (reine Funktionen, im Browser und in Node nutzbar)
 ├── manifest.json
-├── sw.js
+├── sw.js           # Service Worker: Offline-Betrieb und automatische Updates
 ├── data/
 │   └── getraenke.csv
 ├── tests/          # Tests für Rechenkern und Getränkedaten
 ├── e2e/            # Browser-Test der Bedienabläufe (Playwright)
+├── scripts/        # Hilfsskripte (Fingerabdruck für den Service Worker)
+├── vendor/         # mitgelieferte Schriften und QR-Bibliotheken samt Lizenzen
 ├── package.json    # nur Befehle für Checks und Tests, keine Abhängigkeiten
 ├── assets/
 └── README.md
@@ -213,11 +215,21 @@ Abgesichert sind:
 - keine Division durch 0
 - Getränkedaten: Schema, eindeutige IDs, gültige Preise und Kennzeichen
 
-`npm run test:e2e` bedient die App in einem echten Browser (Chromium über Playwright): Getränke buchen, Sondergetränk, Favoriten, Rückgängig, Historie, Tagesabschluss, Dashboard, Profil-Prüfung, Vergleichstabelle, Speichern über einen Neustart und die Übernahme alter gespeicherter Daten. Einmalige Einrichtung: `npm install` und `npx playwright install chromium`. Externe Schriften und QR-Bibliotheken werden im Test blockiert; Kamera und QR-Scan sind nicht abgedeckt.
+`npm run test:e2e` bedient die App in einem echten Browser (Chromium über Playwright): Getränke buchen, Sondergetränk, Favoriten, Rückgängig, Historie, Tagesabschluss, Dashboard, Profil-Prüfung, Vergleichstabelle, Speichern über einen Neustart und die Übernahme alter gespeicherter Daten. Einmalige Einrichtung: `npm install` und `npx playwright install chromium`. Dazu kommen der Start ohne Netz und das automatische Update auf eine neue Version. Anfragen an fremde Server lässt der Test nicht zu; Kamera und QR-Scan sind nicht abgedeckt.
 
 `npm run test:all` führt beides aus.
 
 Neue Rechenlogik gehört in `calc.js` und bekommt im selben Schritt Tests. Neue Bedienabläufe bekommen einen Fall in `e2e/app.e2e.js`.
+
+## Offline-Betrieb und Updates
+
+Die App funktioniert ohne Netz. Der Service Worker (`sw.js`) speichert beim ersten Öffnen alle Dateien auf dem Gerät; Schriften, Icons und QR-Bibliotheken liegen dafür in `vendor/` und werden nicht mehr von fremden Servern geladen.
+
+- **Vor der Reise:** die App einmal mit Netz öffnen und zum Startbildschirm hinzufügen. Danach läuft sie offline.
+- **Updates:** Beim Öffnen mit Netz prüft der Browser, ob es eine neue Version gibt. Sie wird im Hintergrund geladen, die Seite lädt sich einmal neu. Gespeicherte Buchungen bleiben erhalten.
+- **Nach jeder Änderung an App-Dateien:** `npm run sw:version` ausführen und `sw.js` mit committen. Der Befehl erneuert den Fingerabdruck, an dem Geräte eine neue Version erkennen. `npm test` schlägt fehl, wenn er veraltet ist.
+- **Neue Dateien**, die die App lädt, gehören in die Liste `PRECACHE` in `sw.js`; auch das prüft `npm test`.
+- Die Daten liegen im Browser des Geräts und hängen an der Adresse der App. Ein Umzug auf eine andere Adresse nimmt sie nicht mit.
 
 ## Getränkedaten
 
