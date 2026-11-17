@@ -88,13 +88,21 @@
 
     // Ring im Stil der Aktivitätsringe: läuft über 100 % hinaus.
     // percent ist ungedeckelt, first/second sind die Anteile (0..1) der ersten
-    // und der zweiten Runde; ab 200 % bleibt die zweite Runde voll.
+    // und der Überlauf-Runde: second ist der Nachkommaanteil des Verhältnisses
+    // (der Kopf wandert mit jeder Runde weiter), bei ganzen Vielfachen ab 200 %
+    // steht er auf voller Runde (1).
     function ringProgress(spent, limit) {
         const ratio = Math.max(safeRatio(spent, limit), 0);
+        let second = 0;
+        if (ratio > 1) {
+            // Gleitkomma-Rauschen (z. B. 2,3000000000000003) auf 9 Stellen glätten
+            second = Math.round((ratio - Math.floor(ratio)) * 1e9) / 1e9;
+            if (second === 0 || second === 1) second = 1;
+        }
         return {
             percent: Math.round(ratio * 100),
             first: Math.min(ratio, 1),
-            second: Math.min(Math.max(ratio - 1, 0), 1),
+            second,
         };
     }
 

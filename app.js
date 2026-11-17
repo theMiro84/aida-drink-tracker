@@ -317,6 +317,13 @@ function renderOverview() {
         ring2.style.stroke = `var(--color-${overall.status})`;
     }
 
+    const head = document.getElementById('overall-progress-ring-head');
+    if (head) {
+        head.style.strokeDashoffset = circumference - ringState.second * circumference;
+        head.classList.toggle('ring-idle', ringState.second === 0);
+        head.style.stroke = `var(--color-${overall.status})`;
+    }
+
     const badge = document.getElementById('status-badge');
     if (badge) {
         badge.className = percentage >= 1 ? 'badge-blue' : 'badge-amber';
@@ -875,12 +882,13 @@ function updateUI() {
         ring.style.strokeDashoffset = offset;
         ring.style.stroke = `var(--color-${today.status})`;
     }
-    const ring2 = document.getElementById('progress-ring-2');
-    if (ring2) {
-        const second = DrinkCalc.ringProgress(total, goal).second;
-        ring2.style.strokeDashoffset = 477 - second * 477;
-        ring2.classList.toggle('ring-idle', second === 0);
-        ring2.style.stroke = `var(--color-${today.status})`;
+    const second = DrinkCalc.ringProgress(total, goal).second;
+    for (const id of ['progress-ring-2', 'progress-ring-head']) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        el.style.strokeDashoffset = 477 - second * 477;
+        el.classList.toggle('ring-idle', second === 0);
+        el.style.stroke = `var(--color-${today.status})`;
     }
 
     const remaining = today.remaining;

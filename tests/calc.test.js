@@ -83,19 +83,21 @@ test('Check gegen das Ziel: Übererfüllung wird bei 100 % gedeckelt', () => {
     assert.deepEqual(calc.progress(500, 240), { ratio: 1, percent: 100, remaining: 0, status: 'safe' });
 });
 
-test('Ring über 100 %: ungedeckelter Prozentwert, erste und zweite Runde', () => {
+test('Ring über 100 %: ungedeckelter Prozentwert, Kopf wandert mit jeder Runde weiter', () => {
     assert.deepEqual(calc.ringProgress(0, 20), { percent: 0, first: 0, second: 0 });
     assert.deepEqual(calc.ringProgress(10, 20), { percent: 50, first: 0.5, second: 0 });
     assert.deepEqual(calc.ringProgress(20, 20), { percent: 100, first: 1, second: 0 });
     const over = calc.ringProgress(46, 20);
     assert.equal(over.percent, 230);
-    assert.deepEqual(over, { percent: 230, first: 1, second: 1 });
+    assert.equal(over.first, 1);
+    assert.ok(Math.abs(over.second - 0.3) < 1e-9, `second ${over.second}`);
     assert.deepEqual(calc.ringProgress(30, 20), { percent: 150, first: 1, second: 0.5 });
     const barelyOver = calc.ringProgress(20.2, 20);
     assert.equal(barelyOver.percent, 101);
     assert.equal(barelyOver.first, 1);
     assert.ok(Math.abs(barelyOver.second - 0.01) < 1e-9, `second ${barelyOver.second}`);
     assert.deepEqual(calc.ringProgress(40, 20), { percent: 200, first: 1, second: 1 });
+    assert.deepEqual(calc.ringProgress(60, 20), { percent: 300, first: 1, second: 1 });
     assert.deepEqual(calc.ringProgress(500, 20), { percent: 2500, first: 1, second: 1 });
     // progress() bleibt gedeckelt
     assert.equal(calc.progress(46, 20).percent, 100);

@@ -465,13 +465,30 @@ main {
     stroke-dashoffset: var(--ring-circumference-lg);
 }
 
-/* Zweite Runde: liegt über der ersten, der Schatten macht die Überlappung sichtbar. */
-.ring-overflow {
-    filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.55));
+#progress-ring-head {
+    stroke-dasharray: 0.01 var(--ring-circumference-sm);
+    stroke-dashoffset: var(--ring-circumference-sm);
 }
 
-/* Ohne zweite Runde ganz ausblenden: runde Enden und Schatten ließen sonst einen Fleck am Bogenanfang stehen. */
-.ring-overflow.ring-idle {
+#overall-progress-ring-head {
+    stroke-dasharray: 0.01 var(--ring-circumference-lg);
+    stroke-dashoffset: var(--ring-circumference-lg);
+}
+
+/* Überlauf-Runde: etwas heller als die erste. */
+.ring-overflow {
+    filter: brightness(1.15);
+}
+
+/* Kopf der Überlauf-Runde: winziges Segment mit runden Enden am Bogenende;
+   nur es wirft Schatten, damit der Kopf über der ersten Runde zu liegen scheint. */
+.ring-head {
+    filter: brightness(1.15) drop-shadow(0 0 3px rgba(0, 0, 0, 0.6));
+}
+
+/* Ohne Überlauf ganz ausblenden: runde Enden und Schatten ließen sonst einen Fleck am Bogenanfang stehen. */
+.ring-overflow.ring-idle,
+.ring-head.ring-idle {
     visibility: hidden;
 }
 

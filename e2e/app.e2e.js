@@ -419,45 +419,46 @@ test('Ringe laufen über 100 % hinaus: zweite Runde und ungedeckelter Prozentwer
     const near = (actual, expected, message) => assert.ok(Math.abs(actual - expected) < 1, `${message}: ${actual} statt ${expected}`);
     const visibility = (target, id) => target.locator(id).evaluate((el) => getComputedStyle(el).visibility);
 
-    // 0 % und genau 100 %: zweite Runde ausgeblendet.
+    // Kopf der Überlauf-Runde: Offset = Umfang × (1 − Nachkommaanteil).
+    const checkSecond = async (target, prefix, fraction, label) => {
+        const arc = await offsets(target, `#${prefix}-2`);
+        near(arc.offset, arc.full * (1 - fraction), `${label}, zweite Runde`);
+        const head = await offsets(target, `#${prefix}-head`);
+        near(head.offset, arc.full * (1 - fraction), `${label}, Kopf`);
+        assert.equal(await visibility(target, `#${prefix}-2`), 'visible', `${label}, zweite Runde sichtbar`);
+        assert.equal(await visibility(target, `#${prefix}-head`), 'visible', `${label}, Kopf sichtbar`);
+    };
+
+    // 0 % und genau 100 %: zweite Runde und Kopf ausgeblendet.
     for (const [price, label] of [[0, '0 %'], [20, '100 %']]) {
         const idle = await openRings(price);
-        assert.equal(await visibility(idle, '#progress-ring-2'), 'hidden', `Tag, zweite Runde bei ${label}`);
+        for (const id of ['#progress-ring-2', '#progress-ring-head']) {
+            assert.equal(await visibility(idle, id), 'hidden', `Tag, ${id} bei ${label}`);
+        }
         await idle.click('.nav-item[data-screen="dashboard"]');
         await idle.waitForSelector('#view-dashboard:not(.hidden)');
-        assert.equal(await visibility(idle, '#overall-progress-ring-2'), 'hidden', `Paket, zweite Runde bei ${label}`);
+        for (const id of ['#overall-progress-ring-2', '#overall-progress-ring-head']) {
+            assert.equal(await visibility(idle, id), 'hidden', `Paket, ${id} bei ${label}`);
+        }
         await idle.context().close();
     }
 
-    // 46 € = 230 %: beide Runden voll, nur der Text zählt weiter.
-    const full = await openRings(46);
-    await full.waitForTimeout(1200);
-    near((await offsets(full, '#progress-ring')).offset, 0, 'Tag, erste Runde');
-    near((await offsets(full, '#progress-ring-2')).offset, 0, 'Tag, zweite Runde ab 200 %');
-    assert.equal(await visibility(full, '#progress-ring-2'), 'visible');
-    assert.ok(!(await full.locator('#view-tag .ring-info').textContent()).includes('%'));
-    await full.click('.nav-item[data-screen="dashboard"]');
-    await full.waitForSelector('#view-dashboard:not(.hidden)');
-    await expectText('#status-badge', '230% erreicht', full);
-    assert.equal(await full.locator('#status-badge').getAttribute('class'), 'badge-blue');
-    await full.waitForTimeout(1200);
-    near((await offsets(full, '#overall-progress-ring-2')).offset, 0, 'Paket, zweite Runde ab 200 %');
-    await full.context().close();
-
-    // 30 € = 150 %: zweite Runde zur Hälfte.
-    const half = await openRings(30);
-    await half.waitForTimeout(1200);
-    const day2 = await offsets(half, '#progress-ring-2');
-    near(day2.offset, day2.full * 0.5, 'Tag, zweite Runde bei 50 %');
-    assert.equal(await visibility(half, '#progress-ring-2'), 'visible');
-    await half.click('.nav-item[data-screen="dashboard"]');
-    await half.waitForSelector('#view-dashboard:not(.hidden)');
-    await expectText('#status-badge', '150% erreicht', half);
-    await half.waitForTimeout(1200);
-    const overall2 = await offsets(half, '#overall-progress-ring-2');
-    near(overall2.offset, overall2.full * 0.5, 'Paket, zweite Runde bei 50 %');
-    assert.equal(await visibility(half, '#overall-progress-ring-2'), 'visible');
-    await half.context().close();
+    // Je Betrag: [Preis, Badge, Anteil der zweiten Runde]. 230 % = Kopf bei 30 %, 150 % = 50 %, 200 % = volle Runde.
+    for (const [price, badge, fraction] of [[46, '230% erreicht', 0.3], [30, '150% erreicht', 0.5], [40, '200% erreicht', 1]]) {
+        const target = await openRings(price);
+        await target.waitForTimeout(1200);
+        near((await offsets(target, '#progress-ring')).offset, 0, `Tag, erste Runde bei ${badge}`);
+        await checkSecond(target, 'progress-ring', fraction, `Tag bei ${badge}`);
+        if (price === 46) assert.ok(!(await target.locator('#view-tag .ring-info').textContent()).includes('%'));
+        await target.click('.nav-item[data-screen="dashboard"]');
+        await target.waitForSelector('#view-dashboard:not(.hidden)');
+        await expectText('#status-badge', badge, target);
+        assert.equal(await target.locator('#status-badge').getAttribute('class'), 'badge-blue');
+        await target.waitForTimeout(1200);
+        near((await offsets(target, '#overall-progress-ring')).offset, 0, `Paket, erste Runde bei ${badge}`);
+        await checkSecond(target, 'overall-progress-ring', fraction, `Paket bei ${badge}`);
+        await target.context().close();
+    }
 });
 
 // Wartet, bis der Service Worker die Seite übernommen hat.
