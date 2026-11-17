@@ -329,6 +329,9 @@ test('Datensicherung: HTML in einer eingespielten Sicherung wird als Text angeze
     const manipulated = JSON.parse(JSON.stringify(original));
     manipulated.archive[0].drinks[0].name = attack;
     manipulated.companions.push({ nickname: attack, limit: 240, spent: 1, extra: 0 });
+    // Falsche Typen dürfen die Anzeige nicht zum Absturz bringen.
+    manipulated.archive[0].drinks[1].category = 5;
+    manipulated.archive[0].drinks[1].timestamp = { kaputt: true };
     const file = (data) => JSON.stringify({ format: 'drink-tracker-backup', version: 1, createdAt: attack, data });
 
     await goTo('history');

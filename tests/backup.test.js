@@ -153,6 +153,46 @@ test('Import: Mitreisende werden bereinigt, Text bleibt Text', () => {
     assert.equal(calc.escapeHtml(state.companions[0].nickname).includes('<'), false);
 });
 
+test('Import: Felder mit falschem Typ werden ersetzt, damit die Anzeige nie daran scheitert', () => {
+    const broken = { id: { a: 1 }, name: ['x'], category: 5, price: {}, timestamp: 12345, isAI: 'ja' };
+    const data = { ...sampleState(), currentDay: { day: '2', date: { jahr: 2027 }, drinks: [broken, { id: 7, category: {}, name: true }] } };
+    const { ok, state } = calc.parseBackup(fileText({ data }), NOW);
+    assert.equal(ok, true);
+    assert.equal(state.currentDay.date, NOW);
+    assert.deepEqual(state.currentDay.drinks, [
+        { id: 'unknown', name: 'Unbekanntes Getränk', category: 'Sonstiges', price: 0, isNonAlcoholic: false, isAI: false, isF: false, timestamp: NOW },
+        { id: '7', name: 'Unbekanntes Getränk', category: 'Sonstiges', price: 0, isNonAlcoholic: false, isAI: false, isF: false, timestamp: NOW },
+    ]);
+    state.currentDay.drinks.forEach((entry) => Object.values(entry).forEach((value) => assert.notEqual(typeof value, 'object')));
+});
+
+test('Import: fehlender oder ungültiger Zeitpunkt der Sicherung wird als unbekannt geführt', () => {
+    assert.equal(calc.parseBackup(fileText({ createdAt: 5 }), NOW).createdAt, null);
+    assert.equal(calc.parseBackup(fileText({ createdAt: undefined }), NOW).createdAt, null);
+});
+
+test('Sicherung: unvollständiger Zustand ergibt trotzdem eine vollständige, ladbare Sicherung', () => {
+    [null, 'x', {}, { archive: 'x', companions: 'y' }].forEach((raw) => {
+        const backup = calc.createBackup(raw, NOW);
+        assert.deepEqual(backup.data, {
+            profile: { name: 'Gast', nickname: 'Gaston', duration: 9, packagePrice: 240 },
+            currentDay: { day: 1, date: NOW, drinks: [], total: 0, totalExtra: 0 },
+            archive: [],
+            companions: [],
+        });
+        assert.equal(calc.parseBackup(JSON.stringify(backup), NOW).ok, true);
+    });
+    assert.deepEqual(calc.backupSummary({}), { days: 0, drinks: 0 });
+    assert.deepEqual(calc.backupSummary({ currentDay: { drinks: [drink(1)] } }), { days: 1, drinks: 1 });
+    assert.match(calc.backupFileName(), /^drink-tracker-sicherung-\d{4}-\d{2}-\d{2}-\d{4}\.json$/);
+});
+
+test('Import: Mitreisende ohne erkennbaren Namen (nur Leerzeichen) entfallen', () => {
+    const companions = [{ nickname: '   ', limit: 1 }, { nickname: 42, limit: 1 }];
+    const { state } = calc.parseBackup(fileText({ data: { ...sampleState(), companions } }), NOW);
+    assert.deepEqual(state.companions.map((c) => c.nickname), ['42']);
+});
+
 test('Import: unbekannte Zusatzfelder werden nicht übernommen', () => {
     const data = { ...sampleState(), fremd: { a: 1 }, __proto__: { polluted: true } };
     const { state } = calc.parseBackup(fileText({ data, zusatz: 'x' }), NOW);

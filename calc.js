@@ -94,24 +94,30 @@
         return `G${String(Number(match[1]) + 1).padStart(4, '0')}`;
     }
 
+    // Text aus gespeicherten oder importierten Daten: nur echte, nicht leere
+    // Zeichenketten (IDs auch als Zahl) zählen, alles andere wird ersetzt.
+    function textOr(value, fallback) {
+        return typeof value === 'string' && value !== '' ? value : fallback;
+    }
+
     function normalizeDay(dayData, fallbackDayNumber = 1, packageType, now = new Date().toISOString()) {
         const source = dayData || {};
         const drinks = Array.isArray(source.drinks)
             ? source.drinks.filter(Boolean).map((drink) => ({
-                  id: migrateDrinkId(drink.id || 'unknown'),
-                  name: String(drink.name || 'Unbekanntes Getränk'),
-                  category: drink.category || 'Sonstiges',
+                  id: migrateDrinkId(textOr(typeof drink.id === 'number' ? String(drink.id) : drink.id, 'unknown')),
+                  name: textOr(drink.name, 'Unbekanntes Getränk'),
+                  category: textOr(drink.category, 'Sonstiges'),
                   price: toAmount(drink.price),
                   isNonAlcoholic: drink.isNonAlcoholic === true,
                   isAI: drink.isAI === true,
                   isF: drink.isF === true,
-                  timestamp: drink.timestamp || now,
+                  timestamp: textOr(drink.timestamp, now),
               }))
             : [];
 
         return {
             day: Number(source.day) || fallbackDayNumber,
-            date: source.date || now,
+            date: textOr(source.date, now),
             drinks,
             total: sumIncluded(drinks, packageType),
             totalExtra: sumExtra(drinks, packageType),
