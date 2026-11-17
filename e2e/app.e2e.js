@@ -23,10 +23,16 @@ const dialogs = [];
 const externalRequests = [];
 // Dateien, die der Testserver mit anderem Inhalt ausliefert (simuliert eine neue Version).
 const overrides = new Map();
+// true: Der Testserver kappt jede Verbindung, wie ein Gerät ohne Netz.
+let offline = false;
 
 function startServer() {
     return new Promise((resolve) => {
         server = http.createServer((req, res) => {
+            if (offline) {
+                req.socket.destroy();
+                return;
+            }
             const urlPath = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
             const file = path.join(ROOT, urlPath === '/' ? 'index.html' : urlPath);
             if (overrides.has(urlPath)) {
@@ -48,6 +54,7 @@ function startServer() {
 // Öffnet die App in einem frischen Browser-Profil. Anfragen an fremde Server
 // werden blockiert und protokolliert; die App darf keine brauchen.
 async function openApp(savedState) {
+    offline = false;
     const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
     await context.route(/^https?:\/\/(?!127\.0\.0\.1)/, (route) => {
         externalRequests.push(route.request().url());
@@ -282,7 +289,7 @@ const waitForServiceWorker = (target) => target.waitForFunction(() => navigator.
 test('Offline: App startet ohne Netz mit Getränken, Schriften, Icons und QR-Code', async () => {
     const offlinePage = await openApp();
     await waitForServiceWorker(offlinePage);
-    await offlinePage.context().setOffline(true);
+    offline = true;
     await offlinePage.reload({ waitUntil: 'domcontentloaded' });
     await offlinePage.waitForSelector('#category-list .drink-card', { state: 'attached' });
 
