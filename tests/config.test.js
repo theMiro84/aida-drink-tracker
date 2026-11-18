@@ -41,8 +41,8 @@ test('Repo-Karte in CLAUDE.md nennt jede Datei und jeden Ordner', () => {
     // Nur Dateien unter Versionskontrolle: lokale Reste (node_modules,
     // Testergebnisse) gehören nicht in die Karte.
     const tracked = require('node:child_process')
-        .execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' })
-        .split('\n')
+        .execFileSync('git', ['ls-files', '-z'], { cwd: ROOT, encoding: 'utf8' })
+        .split('\0')
         .filter(Boolean);
     const map = read('CLAUDE.md').split('## Aufbau')[1].split('\n## ')[0];
     const named = new Set([...map.matchAll(/`([^`\s]+)`/g)].map((match) => match[1]));
