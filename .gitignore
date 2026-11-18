@@ -45,3 +45,6 @@ backups/
 
 # Keep project folders even when empty
 # Add .gitkeep files manually where needed
+
+# Claude-Code-Worktrees (lokal)
+.claude/worktrees/
