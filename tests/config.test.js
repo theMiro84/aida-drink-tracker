@@ -36,3 +36,26 @@ test('Audit läuft isoliert und sieht den Arbeits-Branch', () => {
     assert.match(read('.claude/agents/audit.md'), /^isolation:\s*worktree\s*$/m);
     assert.equal(settings.worktree?.baseRef, 'head');
 });
+
+test('Repo-Karte in CLAUDE.md nennt jede Datei und jeden Ordner', () => {
+    // Nur Dateien unter Versionskontrolle: lokale Reste (node_modules,
+    // Testergebnisse) gehören nicht in die Karte.
+    const tracked = require('node:child_process')
+        .execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' })
+        .split('\n')
+        .filter(Boolean);
+    const map = read('CLAUDE.md').split('## Aufbau')[1].split('\n## ')[0];
+    const named = new Set([...map.matchAll(/`([^`\s]+)`/g)].map((match) => match[1]));
+
+    const required = new Set();
+    for (const file of tracked) {
+        const [top, ...rest] = file.split('/');
+        // Oberste Ebene: Dateien mit Namen, Ordner als `ordner/`.
+        required.add(rest.length ? `${top}/` : top);
+        // Tests und Skripte einzeln, weil dort jede Datei eine eigene Aufgabe hat.
+        if (['tests', 'e2e', 'scripts'].includes(top)) required.add(file);
+    }
+
+    const missing = [...required].filter((entry) => !named.has(entry));
+    assert.deepEqual(missing, [], `In der Repo-Karte (CLAUDE.md, Abschnitt "Aufbau") fehlen: ${missing.join(', ')}`);
+});
