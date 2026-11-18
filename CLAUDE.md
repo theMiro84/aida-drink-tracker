@@ -6,10 +6,11 @@ offline auf dem Handy; alle Daten liegen im Browser des Geräts.
 
 ## Arbeitsweise
 
-- Delegiere jede Repo-Suche und jeden Testlauf an die Haiku-5.5-Subagenten
-  (`search` für Struktur, `grep` für Aufrufstellen, `audit` für Diff-Checks und
-  Testläufe), um den Hauptkontext klein zu halten. Das gilt für die
-  Haupt-Session; Subagenten führen ihre Suchen und Testläufe selbst aus.
+- Orientierung über die Repo-Karte unten („Aufbau“), nicht über einen Scan.
+  Dateien und Bereiche, die dort stehen, liest die Haupt-Session direkt.
+- An die Haiku-5.5-Subagenten gehen nur breite Fragen: `search`, wenn die Karte
+  nicht reicht oder veraltet wirkt; `grep` für vollständige Listen von
+  Aufrufstellen über mehrere Dateien. Testläufe gehen weiter an `audit`.
 - `audit` läuft in einem eigenen Worktree und sieht nur Committetes: erst
   committen, dann prüfen lassen, erst nach grünem Ergebnis pushen.
 - Neue oder geänderte Rechenlogik gehört in `calc.js` und bekommt im selben
@@ -23,18 +24,62 @@ offline auf dem Handy; alle Daten liegen im Browser des Geräts.
 
 ## Aufbau
 
-- `index.html`, `styles.css`: Oberfläche. Vanilla JS, kein Build-Schritt.
+Repo-Karte. Neue Datei, neuer Ordner oder neuer Bereich: Karte im selben Commit
+anpassen. `tests/config.test.js` prüft, dass jede Datei und jeder Ordner hier
+vorkommt. Bereiche werden über Funktionsnamen benannt, nicht über Zeilennummern.
+
+App (Vanilla JS, kein Build-Schritt):
+
+- `index.html`: Oberfläche mit den Ansichten `view-tag` (Getränke buchen),
+  `view-dashboard` (Übersicht), `view-history` (Historie, Datensicherung),
+  `view-profile` (Profil), dazu das Sync-Modal für QR-Codes.
+- `styles.css`: Gestaltung.
 - `app.js`: Zustand, Speicherung (`localStorage`), Anzeige. Klassisches Skript
-  mit globalen Funktionen.
+  mit globalen Funktionen, in Abschnitte gegliedert:
+  - Profil: `renderProfile`, `saveProfileData`, `getDailyGoal`
+  - Stammdaten, Tage: `drinksData`, `favorites`, `normalizeDay`, `createNewDay`
+  - Laden/Speichern: `loadState`, `saveState`
+  - Aktionen: `addDrink`, `undoLastDrink`, `startNewDay`, `resetApp`
+  - Anzeige: `switchScreen`, `updateUI`, `initSearch`, `renderDrinkList`,
+    `renderFavorites`, `renderOverview`, `renderHistory` (Filter:
+    `initHistoryFilters`)
+  - Mitreisende per QR: `getSocialPayload`, `processScannedCompanion`,
+    `renderSocialTable`, Modal und Scanner (`openSyncModal`, `renderMyQRCode`,
+    `startScanner`, `onScanSuccess`)
+  - Datensicherung: `initBackup`, `applyBackupText`, `importBackupFile`,
+    `downloadBackupFile`
+  - Start: `registerServiceWorker`
 - `calc.js`: Rechenkern als reine Funktionen (`DrinkCalc`), läuft im Browser
-  und in Node. Hier liegt jede Formel.
+  und in Node. Hier liegt jede Formel:
+  - Geld und Text: `roundMoney`, `safeRatio`, `formatMoney`, `escapeHtml`
+  - Paket: `dailyGoal`, `isIncluded`, `sumIncluded`, `sumExtra`, `progress`
+  - Daten: `parseDrinksCsv`, `migrateDrinkId`, `normalizeDay`,
+    `normalizeState`, `aggregateStats`
+  - Datensicherung: `createBackup`, `parseBackup`, `backupSummary`,
+    `backupFileName` (Format `drink-tracker-backup`, `BACKUP_VERSION`)
 - `sw.js`: Service Worker für Offline-Betrieb und automatische Updates. Jede
-  Datei, die die App lädt, steht in `PRECACHE`.
-- `data/getraenke.csv`: Getränke. `ID` ist stabil und wird nie neu vergeben.
+  Datei, die die App lädt, steht in `PRECACHE`; `VERSION` erneuert
+  `npm run sw:version`.
+- `manifest.json`, `icons/`: Installation als App auf dem Startbildschirm.
+- `data/` mit `data/getraenke.csv`: Getränke. `ID` ist stabil und wird nie neu vergeben.
 - `vendor/`: mitgelieferte Schriften und QR-Bibliotheken. Die App lädt nichts
   von fremden Servern; neue Bibliotheken kommen hierher, mit Lizenzangabe in
   `vendor/README.md`. Keine GPL-Bibliotheken (das Repo steht unter MIT).
-- `tests/` (Node, ohne Abhängigkeiten), `e2e/` (Playwright).
+
+Tests und Werkzeuge:
+
+- `tests/` (Node, ohne Abhängigkeiten):
+  - `tests/calc.test.js`: Rechenkern
+  - `tests/backup.test.js`: Datensicherung
+  - `tests/data.test.js`: Getränkedaten
+  - `tests/sw.test.js`: Service Worker und `PRECACHE`
+  - `tests/config.test.js`: Modell-Konfiguration und diese Karte
+- `e2e/` (Playwright): `e2e/app.e2e.js` mit einem Fall pro Bedienablauf.
+- `scripts/` mit `scripts/sw-version.js`: erneuert den Fingerabdruck in `sw.js`.
+- `package.json`: npm-Befehle (siehe unten).
+- `.github/`: GitHub Action `Tests`.
+- `.claude/`: Modelle (`settings.json`) und Subagenten (`agents/`).
+- `CLAUDE.md` (diese Datei), `README.md`, `LICENSE` (MIT), `.gitignore`, `.gitattributes`.
 
 ## Befehle
 

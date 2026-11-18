@@ -43,8 +43,18 @@ Dabei gilt:
 - **Advisor hinzuziehen:** bevor ein Plan festgelegt wird, nach demselben
   Fehler zum zweiten Mal und bevor eine Aufgabe als erledigt gemeldet wird
   (siehe `CLAUDE.md`).
-- **Jede Repo-Suche und jeder Testlauf wird delegiert** (`search`, `grep`,
-  `audit`), siehe `CLAUDE.md`. Die Haupt-Session liest nur die Reports.
+- **Erst die Repo-Karte, dann gezielt lesen.** Die Karte steht in `CLAUDE.md`
+  (Abschnitt „Aufbau“) und wird bei jeder Session automatisch geladen. Was
+  dort steht, liest die Haupt-Session direkt; ein Scan zu Beginn entfällt.
+- **Delegiert werden nur breite Fragen und Testläufe:** `search`, wenn die
+  Karte nicht reicht oder veraltet wirkt; `grep` für vollständige Listen von
+  Aufrufstellen über mehrere Dateien; `audit` für jeden Testlauf. Grund: Das
+  Repo ist klein. Ein Subagent startet ohne Vorwissen und braucht länger als
+  ein direkter Blick in eine bekannte Datei. Wächst das Repo deutlich, wird
+  die Regel wieder verschärft.
+- **Die Karte bleibt aktuell.** Neue Datei, neuer Ordner oder neuer Bereich:
+  Karte im selben Commit anpassen. `tests/config.test.js` schlägt fehl, wenn
+  eine Datei oder ein Ordner in der Karte fehlt.
 - **`audit` sieht nur Committetes.** Der Worktree zweigt vom lokalen `HEAD` ab
   (`worktree.baseRef: "head"`); uncommittete Änderungen sind dort nicht
   sichtbar. Vor dem Audit also committen.
@@ -60,7 +70,8 @@ Dabei gilt:
 
 1. **Planen** – Die Haupt-Session (Sonnet 5.5) zerlegt das aktuelle Ziel in
    einen kurzen, nummerierten Plan und zieht bei Bedarf den Advisor (Opus 5.5)
-   hinzu. Was sie über das Repo wissen muss, holen `search` und `grep`.
+   hinzu. Was sie über das Repo wissen muss, steht in der Repo-Karte in
+   `CLAUDE.md`; nur breite Fragen gehen an `search` und `grep`.
 2. **Delegieren** – Umsetzungsschritte gehen an den `executor`.
 3. **Prüfen (Judge)** – Nach dem Commit prüft `audit` den Diff. Die
    Haupt-Session entscheidet: *Ist die Erfolgsbedingung erfüllt – ja oder nein?*
@@ -105,7 +116,8 @@ Du bist Planner und Judge und läufst auf Sonnet 5.5 mit Opus 5.5 als Advisor.
 Mach die Hände-Arbeit NICHT selbst.
 
 1. Zerlege dieses Ziel in einen kurzen, nummerierten Plan: [ZIEL / AKTUELLES FEATURE].
-   Repo-Fragen gehen an search und grep.
+   Orientiere dich an der Repo-Karte in CLAUDE.md und lies bekannte Dateien
+   direkt; nur breite Repo-Fragen gehen an search und grep.
 2. Gib jeden Schritt zur Umsetzung an den executor-Subagenten.
 3. Lass nach jeder Runde audit den committeten Diff prüfen, bewerte die
    Erfolgsbedingung und antworte ja oder nein.
