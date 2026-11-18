@@ -278,50 +278,50 @@ function switchScreen(screenId) {
 
     isOverviewVisible = screenId === 'dashboard';
 
-    if (isOverviewVisible) renderOverview();
+    if (isOverviewVisible) renderOverview(true);
+    if (screenId === 'tag') renderDayRing(true);
     if (screenId === 'history') renderHistory();
 }
 
-// Verlauf der Ringe (dunkel am Anfang, hell an der Spitze): Zu jedem Basisbogen
-// gehören RING_LAYER_COUNT gestufte Deckschichten. Schicht k deckt den Bogen von
-// k/N bis zum Ende der tatsächlichen Länge ab; spätere Schichten sind heller und
-// liegen oben. So passt der Verlauf zur gezeigten Länge, ohne Nähte (Überlappung).
-const RING_LAYER_COUNT = 24;
-const RING_LAYERS = {};
+// Fortschrittsringe: Der Bogen (index.html, .ring-arc) hängt an einem einzigen
+// Wert, dem absoluten Winkel --a (ungedeckelt). Alles andere leitet das CSS ab.
+// Die Füllanimation läuft hier als ein Tween dieses einen Werts.
+const RING_TWEEN_MS = 1000;
+const ringStates = new WeakMap();
 
-function buildRingLayers() {
-    for (const id of ['progress-ring', 'progress-ring-2', 'overall-progress-ring', 'overall-progress-ring-2']) {
-        const base = document.getElementById(id);
-        if (!base || RING_LAYERS[id]) continue;
-        const layers = [];
-        let anchor = base;
-        for (let k = 1; k < RING_LAYER_COUNT; k++) {
-            const layer = base.cloneNode(false);
-            layer.removeAttribute('id');
-            layer.classList.add('ring-layer', 'ring-idle');
-            const light = Math.round((k / (RING_LAYER_COUNT - 1)) * 100);
-            layer.style.stroke = `color-mix(in srgb, var(--ring-light) ${light}%, var(--ring-dark))`;
-            anchor.after(layer);
-            layers.push(layer);
-            anchor = layer;
-        }
-        RING_LAYERS[id] = layers;
+function setRingAngle(el, status, target, fromZero) {
+    const angle = Number.isFinite(target) && target > 0 ? target : 0;
+    const ring = ringStates.get(el) || { value: 0, frame: 0 };
+    ringStates.set(el, ring);
+    cancelAnimationFrame(ring.frame);
+    if (fromZero) ring.value = 0;
+
+    el.dataset.status = status;
+    el.dataset.angle = String(Math.round(angle));
+
+    const paint = (value) => {
+        ring.value = value;
+        el.style.setProperty('--a', value.toFixed(2));
+        el.classList.toggle('ring-idle', value <= 0);
+    };
+
+    const from = ring.value;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion || Math.abs(angle - from) < 0.01) {
+        paint(angle);
+        return;
     }
+    paint(from);
+    const start = performance.now();
+    const step = (now) => {
+        const t = Math.min((now - start) / RING_TWEEN_MS, 1);
+        paint(from + (angle - from) * (1 - Math.pow(1 - t, 3)));
+        if (t < 1) ring.frame = requestAnimationFrame(step);
+    };
+    ring.frame = requestAnimationFrame(step);
 }
 
-// Setzt Länge (Anteil 0..1 eines Umlaufs) und Status der Deckschichten eines Rings.
-function setRingLayers(id, fraction, circumference) {
-    const layers = RING_LAYERS[id] || [];
-    layers.forEach((layer, index) => {
-        const start = ((index + 1) / RING_LAYER_COUNT) * fraction * circumference;
-        const length = fraction * circumference - start;
-        layer.style.strokeDasharray = `${length} ${2 * circumference}`;
-        layer.style.strokeDashoffset = -start;
-        layer.classList.toggle('ring-idle', fraction === 0);
-    });
-}
-
-function renderOverview() {
+function renderOverview(replay = false) {
     const stats = getAggregatedStats();
 
     const limit = state.profile.packagePrice;
@@ -329,7 +329,6 @@ function renderOverview() {
     const extra = stats.grandTotalExtra; // Zuzahlungen
     const overall = DrinkCalc.progress(spent, limit);
     const remaining = overall.remaining;
-    const circumference = 691; // Länge des SVG Rings
     const percentage = overall.ratio;
     const ringState = DrinkCalc.ringProgress(spent, limit);
 
@@ -342,25 +341,7 @@ function renderOverview() {
     if (statsRemainingEl) statsRemainingEl.textContent = formatCurrency(remaining);
 
     const ring = document.getElementById('overall-progress-ring');
-    if (ring) {
-        const offset = circumference - percentage * circumference;
-        ring.style.strokeDashoffset = offset;
-        ring.closest('svg').dataset.status = overall.status;
-        setRingLayers('overall-progress-ring', ringState.first, circumference);
-    }
-
-    const ring2 = document.getElementById('overall-progress-ring-2');
-    if (ring2) {
-        ring2.style.strokeDashoffset = circumference - ringState.second * circumference;
-        ring2.classList.toggle('ring-idle', ringState.second === 0);
-        setRingLayers('overall-progress-ring-2', ringState.second, circumference);
-    }
-
-    const head = document.getElementById('overall-progress-ring-head');
-    if (head) {
-        head.style.strokeDashoffset = circumference - ringState.second * circumference;
-        head.classList.toggle('ring-idle', ringState.second === 0);
-    }
+    if (ring) setRingAngle(ring, overall.status, ringState.angle, replay);
 
     const badge = document.getElementById('status-badge');
     if (badge) {
@@ -895,6 +876,13 @@ function onScanFailure() {
     // Ignorieren, passiert bei jedem Frame ohne QR Code
 }
 
+function renderDayRing(replay = false) {
+    const total = state.currentDay.total;
+    const goal = getDailyGoal();
+    const ring = document.getElementById('progress-ring');
+    if (ring) setRingAngle(ring, DrinkCalc.progress(total, goal).status, DrinkCalc.ringProgress(total, goal).angle, replay);
+}
+
 function updateUI() {
     if (elements.dayLabel) elements.dayLabel.textContent = `Tag ${state.currentDay.day}`;
     elements.totalAmount.textContent = formatCurrency(state.currentDay.total);
@@ -910,26 +898,9 @@ function updateUI() {
     renderHistory();
     if (isOverviewVisible) renderOverview();
 
-    const goal = getDailyGoal();
-    const total = state.currentDay.total;
-    const today = DrinkCalc.progress(total, goal);
-    const percentage = today.ratio;
-    const ring = document.getElementById('progress-ring');
-    if (ring) {
-        const offset = 477 - percentage * 477;
-        ring.style.strokeDashoffset = offset;
-        ring.closest('svg').dataset.status = today.status;
-        setRingLayers('progress-ring', DrinkCalc.ringProgress(total, goal).first, 477);
-    }
-    const second = DrinkCalc.ringProgress(total, goal).second;
-    for (const id of ['progress-ring-2', 'progress-ring-head']) {
-        const el = document.getElementById(id);
-        if (!el) continue;
-        el.style.strokeDashoffset = 477 - second * 477;
-        el.classList.toggle('ring-idle', second === 0);
-    }
-    setRingLayers('progress-ring-2', second, 477);
+    renderDayRing();
 
+    const today = DrinkCalc.progress(state.currentDay.total, getDailyGoal());
     const remaining = today.remaining;
     const limitInfo = document.getElementById('limit-info');
     if (limitInfo) {
@@ -1153,7 +1124,6 @@ async function init() {
     document.getElementById('tab-scan-qr')?.addEventListener('click', () => switchSyncTab('scan'));
     document.getElementById('toggle-scan-btn')?.addEventListener('click', toggleScanner);
 
-    buildRingLayers();
     renderDrinkList();
     updateUI();
 }

@@ -83,28 +83,20 @@ test('Check gegen das Ziel: Übererfüllung wird bei 100 % gedeckelt', () => {
     assert.deepEqual(calc.progress(500, 240), { ratio: 1, percent: 100, remaining: 0, status: 'safe' });
 });
 
-test('Ring über 100 %: ungedeckelter Prozentwert, Kopf wandert mit jeder Runde weiter', () => {
-    assert.deepEqual(calc.ringProgress(0, 20), { percent: 0, first: 0, second: 0 });
-    assert.deepEqual(calc.ringProgress(10, 20), { percent: 50, first: 0.5, second: 0 });
-    assert.deepEqual(calc.ringProgress(20, 20), { percent: 100, first: 1, second: 0 });
-    const over = calc.ringProgress(46, 20);
-    assert.equal(over.percent, 230);
-    assert.equal(over.first, 1);
-    assert.ok(Math.abs(over.second - 0.3) < 1e-9, `second ${over.second}`);
-    assert.deepEqual(calc.ringProgress(30, 20), { percent: 150, first: 1, second: 0.5 });
-    const barelyOver = calc.ringProgress(20.2, 20);
-    assert.equal(barelyOver.percent, 101);
-    assert.equal(barelyOver.first, 1);
-    assert.ok(Math.abs(barelyOver.second - 0.01) < 1e-9, `second ${barelyOver.second}`);
-    assert.deepEqual(calc.ringProgress(40, 20), { percent: 200, first: 1, second: 1 });
-    assert.deepEqual(calc.ringProgress(60, 20), { percent: 300, first: 1, second: 1 });
-    assert.deepEqual(calc.ringProgress(500, 20), { percent: 2500, first: 1, second: 1 });
+test('Ring über 100 %: ungedeckelter Prozentwert und absoluter Winkel', () => {
+    assert.deepEqual(calc.ringProgress(0, 20), { percent: 0, angle: 0 });
+    assert.deepEqual(calc.ringProgress(10, 20), { percent: 50, angle: 180 });
+    assert.deepEqual(calc.ringProgress(20, 20), { percent: 100, angle: 360 });
+    assert.deepEqual(calc.ringProgress(20.2, 20), { percent: 101, angle: 363.6 });
+    assert.deepEqual(calc.ringProgress(30, 20), { percent: 150, angle: 540 });
+    assert.deepEqual(calc.ringProgress(46, 20), { percent: 230, angle: 828 });
+    assert.deepEqual(calc.ringProgress(500, 20), { percent: 2500, angle: 9000 });
     // progress() bleibt gedeckelt
     assert.equal(calc.progress(46, 20).percent, 100);
 });
 
 test('Ring über 100 %: nie durch 0 teilen, ungültige Eingaben ergeben 0', () => {
-    const empty = { percent: 0, first: 0, second: 0 };
+    const empty = { percent: 0, angle: 0 };
     for (const limit of [0, -5, NaN, undefined, null, 'abc']) {
         assert.deepEqual(calc.ringProgress(46, limit), empty, `Limit ${limit}`);
     }

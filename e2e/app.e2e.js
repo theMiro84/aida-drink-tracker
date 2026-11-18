@@ -405,7 +405,7 @@ test('Suchleiste steht im Tag-Reiter vor den Favoriten', async () => {
     assert.ok(searchFirst);
 });
 
-test('Ringe laufen über 100 % hinaus: zweite Runde und ungedeckelter Prozentwert', async () => {
+test('Ringe laufen über 100 % hinaus: ein Bogen mit absolutem Winkel und ungedeckelter Prozentwert', async () => {
     // Paket 20 €, 1 Tag: Tagesziel 20 €. Prüft den Betrag der Buchung gegen beide Ringe.
     const openRings = (price) =>
         openApp({
@@ -414,56 +414,86 @@ test('Ringe laufen über 100 % hinaus: zweite Runde und ungedeckelter Prozentwer
             currentDay: { day: 1, total: 0, drinks: [{ id: 'G0001', name: 'APPLE CRUMBLE', price, isAI: true }] },
             companions: [],
         });
-    const offsets = (target, id) =>
-        target.locator(id).evaluate((el) => ({ offset: parseFloat(getComputedStyle(el).strokeDashoffset), full: parseFloat(getComputedStyle(el).strokeDasharray) }));
-    const near = (actual, expected, message) => assert.ok(Math.abs(actual - expected) < 1, `${message}: ${actual} statt ${expected}`);
-    const visibility = (target, id) => target.locator(id).evaluate((el) => getComputedStyle(el).visibility);
+    const ringInfo = (target, id) =>
+        target.locator(id).evaluate((el) => ({
+            angle: el.dataset.angle,
+            a: parseFloat(el.style.getPropertyValue('--a')),
+            idle: el.classList.contains('ring-idle'),
+            visibility: getComputedStyle(el).visibility,
+            cap: getComputedStyle(el.querySelector('.ring-cap-head')).visibility,
+        }));
+    // Endzustand abwarten: Der Tween dauert 1 s.
+    const settle = (target) => target.waitForTimeout(1300);
 
-    // Kopf der Überlauf-Runde: Offset = Umfang × (1 − Nachkommaanteil).
-    const checkSecond = async (target, prefix, fraction, label) => {
-        const arc = await offsets(target, `#${prefix}-2`);
-        near(arc.offset, arc.full * (1 - fraction), `${label}, zweite Runde`);
-        const head = await offsets(target, `#${prefix}-head`);
-        near(head.offset, arc.full * (1 - fraction), `${label}, Kopf`);
-        assert.equal(await visibility(target, `#${prefix}-2`), 'visible', `${label}, zweite Runde sichtbar`);
-        assert.equal(await visibility(target, `#${prefix}-head`), 'visible', `${label}, Kopf sichtbar`);
-    };
+    // Kein Ring-Schichten-Aufbau mehr: ein Bogen je Ring, kein zweiter Ring.
+    const single = await openRings(20);
+    assert.equal(await single.locator('.ring-arc').count(), 2);
+    assert.equal(await single.locator('#progress-ring-2, #overall-progress-ring-2, .ring-layer, .ring-head').count(), 0);
+    await single.context().close();
 
-    // 0 % und genau 100 %: zweite Runde und Kopf ausgeblendet.
-    for (const [price, label] of [[0, '0 %'], [20, '100 %']]) {
-        const idle = await openRings(price);
-        for (const id of ['#progress-ring-2', '#progress-ring-head']) {
-            assert.equal(await visibility(idle, id), 'hidden', `Tag, ${id} bei ${label}`);
-        }
-        // Verlaufsschichten: vorhanden (23 je Bogen), ohne Überlauf ausgeblendet.
-        assert.equal(await idle.locator('#view-tag .ring-layer').count(), 46, `Tag, Verlaufsschichten bei ${label}`);
-        assert.equal(await idle.locator('#view-tag .ring-overflow.ring-layer:not(.ring-idle)').count(), 0, `Tag, Schichten Runde 2 bei ${label}`);
-        assert.equal(await idle.locator('#view-tag .ring-layer:not(.ring-overflow):not(.ring-idle)').count(), price === 0 ? 0 : 23, `Tag, Schichten Runde 1 bei ${label}`);
-        await idle.click('.nav-item[data-screen="dashboard"]');
-        await idle.waitForSelector('#view-dashboard:not(.hidden)');
-        for (const id of ['#overall-progress-ring-2', '#overall-progress-ring-head']) {
-            assert.equal(await visibility(idle, id), 'hidden', `Paket, ${id} bei ${label}`);
-        }
-        await idle.context().close();
-    }
+    // 0 %: Bogen und Kappen unsichtbar.
+    const idle = await openRings(0);
+    let info = await ringInfo(idle, '#progress-ring');
+    assert.equal(info.angle, '0');
+    assert.ok(info.idle);
+    assert.equal(info.visibility, 'hidden');
+    assert.equal(info.cap, 'hidden');
+    await idle.click('.nav-item[data-screen="dashboard"]');
+    await idle.waitForSelector('#view-dashboard:not(.hidden)');
+    info = await ringInfo(idle, '#overall-progress-ring');
+    assert.equal(info.angle, '0');
+    assert.ok(info.idle);
+    assert.equal(info.visibility, 'hidden');
+    await idle.context().close();
 
-    // Je Betrag: [Preis, Badge, Anteil der zweiten Runde]. 230 % = Kopf bei 30 %, 150 % = 50 %, 200 % = volle Runde.
-    for (const [price, badge, fraction] of [[46, '230% erreicht', 0.3], [30, '150% erreicht', 0.5], [40, '200% erreicht', 1]]) {
+    // Je Betrag: [Preis, Badge, Winkel]. 100 % = 360°, 150 % = 540°, 230 % = 828°.
+    for (const [price, badge, angle] of [[20, '100% erreicht', 360], [30, '150% erreicht', 540], [46, '230% erreicht', 828]]) {
         const target = await openRings(price);
-        await target.waitForTimeout(1200);
-        near((await offsets(target, '#progress-ring')).offset, 0, `Tag, erste Runde bei ${badge}`);
-        assert.equal(await target.locator('#view-tag .ring-overflow.ring-layer:not(.ring-idle)').count(), 23, `Tag, Schichten Runde 2 bei ${badge}`);
-        await checkSecond(target, 'progress-ring', fraction, `Tag bei ${badge}`);
-        if (price === 46) assert.ok(!(await target.locator('#view-tag .ring-info').textContent()).includes('%'));
+        await settle(target);
+        info = await ringInfo(target, '#progress-ring');
+        assert.equal(info.angle, String(angle), `Tag bei ${badge}`);
+        assert.ok(Math.abs(info.a - angle) < 0.01, `Tag, --a ${info.a} bei ${badge}`);
+        assert.ok(!info.idle);
+        assert.equal(info.visibility, 'visible');
+        assert.equal(info.cap, 'visible');
+        assert.ok(!(await target.locator('#view-tag .ring-info').textContent()).includes('%'));
         await target.click('.nav-item[data-screen="dashboard"]');
         await target.waitForSelector('#view-dashboard:not(.hidden)');
         await expectText('#status-badge', badge, target);
-        assert.equal(await target.locator('#status-badge').getAttribute('class'), 'badge-blue');
-        await target.waitForTimeout(1200);
-        near((await offsets(target, '#overall-progress-ring')).offset, 0, `Paket, erste Runde bei ${badge}`);
-        await checkSecond(target, 'overall-progress-ring', fraction, `Paket bei ${badge}`);
+        assert.equal(await target.locator('#status-badge').getAttribute('class'), price >= 20 ? 'badge-blue' : 'badge-amber');
+        await settle(target);
+        info = await ringInfo(target, '#overall-progress-ring');
+        assert.equal(info.angle, String(angle), `Paket bei ${badge}`);
+        assert.ok(Math.abs(info.a - angle) < 0.01, `Paket, --a ${info.a} bei ${badge}`);
+        assert.equal(info.visibility, 'visible');
         await target.context().close();
     }
+});
+
+test('Ringe füllen sich animiert von 0; bei reduzierter Bewegung sofort', async () => {
+    const saved = {
+        profile: { name: 'Ring', nickname: 'Ring', duration: 1, packagePrice: 20 },
+        archive: [],
+        currentDay: { day: 1, total: 0, drinks: [{ id: 'G0001', name: 'APPLE CRUMBLE', price: 30, isAI: true }] },
+        companions: [],
+    };
+    const angleNow = (target) => target.locator('#overall-progress-ring').evaluate((el) => parseFloat(el.style.getPropertyValue('--a')));
+
+    const animated = await openApp(saved);
+    await animated.click('.nav-item[data-screen="dashboard"]');
+    await animated.waitForTimeout(300);
+    const mid = await angleNow(animated);
+    assert.ok(mid > 0 && mid < 540, `Zwischenwert ${mid}`);
+    await animated.waitForTimeout(1200);
+    assert.ok(Math.abs((await angleNow(animated)) - 540) < 0.01);
+    await animated.context().close();
+
+    const still = await openApp(saved);
+    await still.emulateMedia({ reducedMotion: 'reduce' });
+    await still.click('.nav-item[data-screen="dashboard"]');
+    await still.waitForSelector('#view-dashboard:not(.hidden)');
+    assert.ok(Math.abs((await angleNow(still)) - 540) < 0.01);
+    await still.context().close();
 });
 
 // Wartet, bis der Service Worker die Seite übernommen hat.

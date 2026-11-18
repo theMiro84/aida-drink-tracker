@@ -68,10 +68,12 @@
                     <div class="ring-container">
                         <svg class="nautical-ring" viewBox="0 0 176 176">
                             <circle class="ring-track" cx="88" cy="88" r="76"></circle>
-                            <circle id="progress-ring" class="ring-fill" cx="88" cy="88" r="76"></circle>
-                            <circle id="progress-ring-2" class="ring-fill ring-overflow" cx="88" cy="88" r="76"></circle>
-                            <circle id="progress-ring-head" class="ring-fill ring-head" cx="88" cy="88" r="76"></circle>
                         </svg>
+                        <div id="progress-ring" class="ring-arc ring-idle" data-status="error" data-angle="0" aria-hidden="true">
+                            <div class="ring-sweep"></div>
+                            <div class="ring-turn"><div class="ring-cap ring-cap-start"></div></div>
+                            <div class="ring-turn ring-turn-head"><div class="ring-cap ring-cap-head"></div></div>
+                        </div>
                         <div class="ring-info">
                             <span id="total-amount" class="display-lg">0,00 €</span>
                             <span class="label-xs">Heute ausgegeben</span>
@@ -120,10 +122,12 @@
                     <div class="ring-container-lg">
                         <svg class="nautical-ring" viewBox="0 0 256 256">
                             <circle class="ring-track" cx="128" cy="128" r="110"></circle>
-                            <circle id="overall-progress-ring" class="ring-fill" cx="128" cy="128" r="110"></circle>
-                            <circle id="overall-progress-ring-2" class="ring-fill ring-overflow" cx="128" cy="128" r="110"></circle>
-                            <circle id="overall-progress-ring-head" class="ring-fill ring-head" cx="128" cy="128" r="110"></circle>
                         </svg>
+                        <div id="overall-progress-ring" class="ring-arc ring-idle" data-status="error" data-angle="0" aria-hidden="true">
+                            <div class="ring-sweep"></div>
+                            <div class="ring-turn"><div class="ring-cap ring-cap-start"></div></div>
+                            <div class="ring-turn ring-turn-head"><div class="ring-cap ring-cap-head"></div></div>
+                        </div>
                         <div class="ring-info">
                             <span class="label-xs">Paket-Limit</span>
                             <span id="grand-total-display" class="display-xl">0 €</span>

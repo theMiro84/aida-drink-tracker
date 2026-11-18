@@ -59,9 +59,7 @@
     --radius-full: 9999px; /* Pills */
 
     /* ─── Nautical Ring ─────────────────────────────────────────── */
-    --ring-stroke: 8; /* px, unitlos für SVG stroke-width */
-    --ring-circumference-sm: 477; /* 2π × 76 ≈ 477  (Tag-Ring) */
-    --ring-circumference-lg: 691; /* 2π × 110 ≈ 691 (Dashboard-Ring) */
+    --ring-stroke: 8; /* SVG-Einheiten, unitlos */
 
     --shadow-float: 0 4px 12px rgba(28, 27, 27, 0.04);
 
@@ -414,6 +412,9 @@ main {
 ═══════════════════════════════════════════════════════════════ */
 
 .ring-container {
+    --ring-size: 180; /* px */
+    --ring-vb: 176; /* viewBox-Breite des SVG-Tracks */
+    --ring-r-units: 76; /* Radius in viewBox-Einheiten */
     position: relative;
     width: 180px;
     height: 180px;
@@ -424,6 +425,9 @@ main {
 }
 
 .ring-container-lg {
+    --ring-size: 256;
+    --ring-vb: 256;
+    --ring-r-units: 110;
     position: relative;
     width: 256px;
     height: 256px;
@@ -445,76 +449,89 @@ main {
     stroke-width: var(--ring-stroke);
 }
 
-/* Statusfarben des Verlaufs (data-status setzt app.js am SVG) */
-.nautical-ring {
+/* Fortschrittsbogen: ein Element mit einem Winkel-Verlauf (dunkel am Anfang, hell
+   an der Spitze). app.js schreibt nur --a (absoluter Winkel in Grad, ungedeckelt)
+   und data-status; Verlaufsstart, Bogenlänge und Kopfdrehung leitet CSS daraus ab.
+   Ab 360° läuft derselbe Bogen weiter, die Spitze überlappt den Anfang. */
+.ring-arc {
+    --a: 0;
     --ring-dark: var(--ring-safe-dark);
     --ring-light: var(--ring-safe-light);
+    --r: calc(var(--ring-size) * var(--ring-r-units) / var(--ring-vb) * 1px);
+    --w: calc(var(--ring-size) * var(--ring-stroke) / var(--ring-vb) * 1px);
+    --ring-inner: calc(var(--r) - var(--w) / 2);
+    --ring-outer: calc(var(--r) + var(--w) / 2);
+    display: none;
+    position: absolute;
+    inset: 0;
+    /* Klammer auf die Ringform: Der Schatten des Kopfes fällt nur auf den Ring */
+    -webkit-mask-image: radial-gradient(circle, transparent calc(var(--ring-inner) - 0.5px), #000 var(--ring-inner), #000 var(--ring-outer), transparent calc(var(--ring-outer) + 0.5px));
+    mask-image: radial-gradient(circle, transparent calc(var(--ring-inner) - 0.5px), #000 var(--ring-inner), #000 var(--ring-outer), transparent calc(var(--ring-outer) + 0.5px));
 }
 
-.nautical-ring[data-status="warning"] {
+.ring-arc[data-status="warning"] {
     --ring-dark: var(--ring-warning-dark);
     --ring-light: var(--ring-warning-light);
 }
 
-.nautical-ring[data-status="error"] {
+.ring-arc[data-status="error"] {
     --ring-dark: var(--ring-error-dark);
     --ring-light: var(--ring-error-light);
 }
 
-.ring-fill {
-    fill: none;
-    stroke: var(--ring-dark);
-    stroke-width: var(--ring-stroke);
-    stroke-linecap: round;
-    transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+/* Ohne conic-gradient/mask bleibt nur der graue Track, die Zahl genügt. */
+@supports (background: conic-gradient(red, blue)) and ((mask-image: radial-gradient(red, blue)) or (-webkit-mask-image: radial-gradient(red, blue))) {
+    .ring-arc {
+        display: block;
+    }
 }
 
-#progress-ring {
-    stroke-dasharray: var(--ring-circumference-sm);
-    stroke-dashoffset: var(--ring-circumference-sm);
+.ring-sweep {
+    position: absolute;
+    inset: 0;
+    background: conic-gradient(
+        from calc(max(0, var(--a) - 360) * 1deg),
+        var(--ring-dark) 0deg,
+        var(--ring-light) calc(min(var(--a), 360) * 1deg),
+        transparent calc(min(var(--a), 360) * 1deg)
+    );
+    -webkit-mask-image: radial-gradient(circle, transparent calc(var(--ring-inner) - 0.5px), #000 var(--ring-inner), #000 var(--ring-outer), transparent calc(var(--ring-outer) + 0.5px));
+    mask-image: radial-gradient(circle, transparent calc(var(--ring-inner) - 0.5px), #000 var(--ring-inner), #000 var(--ring-outer), transparent calc(var(--ring-outer) + 0.5px));
 }
 
-#overall-progress-ring {
-    stroke-dasharray: var(--ring-circumference-lg);
-    stroke-dashoffset: var(--ring-circumference-lg);
+/* Kappen liegen auf der Mittellinie des Rings, die Drehung um die Mitte setzt sie. */
+.ring-turn {
+    position: absolute;
+    inset: 0;
+    transform: rotate(calc(max(0, var(--a) - 360) * 1deg));
 }
 
-#progress-ring-2 {
-    stroke-dasharray: var(--ring-circumference-sm);
-    stroke-dashoffset: var(--ring-circumference-sm);
+.ring-turn-head {
+    transform: rotate(calc(var(--a) * 1deg));
+    /* Versatz in Laufrichtung (dreht mit dem Kopf); erst kurz vor dem Überlappen (ab ~330°) sichtbar */
+    filter: drop-shadow(3px 0 3px rgb(0 0 0 / calc(min(max(var(--a) - 330, 0) / 30, 1) * 0.7)));
 }
 
-#overall-progress-ring-2 {
-    stroke-dasharray: var(--ring-circumference-lg);
-    stroke-dashoffset: var(--ring-circumference-lg);
+.ring-cap {
+    position: absolute;
+    left: 50%;
+    top: calc(50% - var(--r));
+    width: var(--w);
+    height: var(--w);
+    margin: calc(var(--w) / -2) 0 0 calc(var(--w) / -2);
+    border-radius: 50%;
 }
 
-#progress-ring-head {
-    stroke-dasharray: 0.01 var(--ring-circumference-sm);
-    stroke-dashoffset: var(--ring-circumference-sm);
+.ring-cap-start {
+    background: var(--ring-dark);
 }
 
-#overall-progress-ring-head {
-    stroke-dasharray: 0.01 var(--ring-circumference-lg);
-    stroke-dashoffset: var(--ring-circumference-lg);
+.ring-cap-head {
+    background: var(--ring-light);
 }
 
-/* Deckschichten des Verlaufs (von app.js erzeugt): Länge und Start laufen mit dem Bogen. */
-.ring-layer {
-    transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1), stroke-dasharray 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Kopf der Überlauf-Runde: winziges Segment mit runden Enden am Bogenende;
-   nur es wirft Schatten, damit der Kopf über der ersten Runde zu liegen scheint. */
-.ring-head {
-    stroke: var(--ring-light);
-    filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.75));
-}
-
-/* Ohne Überlauf ganz ausblenden: runde Enden und Schatten ließen sonst einen Fleck am Bogenanfang stehen. */
-.ring-layer.ring-idle,
-.ring-overflow.ring-idle,
-.ring-head.ring-idle {
+/* Ohne Fortschritt ganz ausblenden: Kappen und Schatten ließen sonst einen Fleck stehen. */
+.ring-arc.ring-idle {
     visibility: hidden;
 }
 

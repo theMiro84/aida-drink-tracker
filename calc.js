@@ -87,25 +87,13 @@
     }
 
     // Ring im Stil der Aktivitätsringe: läuft über 100 % hinaus.
-    // percent ist ungedeckelt, first/second sind die Anteile (0..1) der ersten
-    // und der Überlauf-Runde: second ist der Nachkommaanteil des Verhältnisses
-    // (der Kopf wandert mit jeder Runde weiter), bei ganzen Vielfachen ab 200 %
-    // steht er auf voller Runde (1). Gleitkomma-Rauschen wird auf 9 Stellen
-    // geglättet. Rauschen knapp über 100 % wird bewusst nicht gesondert behandelt:
-    // Alle Beträge der App sind auf Cent gerundet, gleiche Cent-Werte ergeben
-    // dieselbe Gleitkommazahl, das Verhältnis ist dann exakt 1.
+    // percent und angle sind ungedeckelt; angle ist der absolute Winkel
+    // (Verhältnis × 360°, auf 0,01° gerundet). Ungültige Eingaben ergeben 0.
     function ringProgress(spent, limit) {
         const ratio = Math.max(safeRatio(spent, limit), 0);
-        let second = 0;
-        if (ratio > 1) {
-            // Gleitkomma-Rauschen (z. B. 2,3000000000000003) auf 9 Stellen glätten
-            second = Math.round((ratio - Math.floor(ratio)) * 1e9) / 1e9;
-            if (second === 0 || second === 1) second = 1;
-        }
         return {
             percent: Math.round(ratio * 100),
-            first: Math.min(ratio, 1),
-            second,
+            angle: Math.round(ratio * 360 * 100) / 100,
         };
     }
 
