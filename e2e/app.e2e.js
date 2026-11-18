@@ -435,6 +435,10 @@ test('Ringe laufen über 100 % hinaus: zweite Runde und ungedeckelter Prozentwer
         for (const id of ['#progress-ring-2', '#progress-ring-head']) {
             assert.equal(await visibility(idle, id), 'hidden', `Tag, ${id} bei ${label}`);
         }
+        // Verlaufsschichten: vorhanden (23 je Bogen), ohne Überlauf ausgeblendet.
+        assert.equal(await idle.locator('#view-tag .ring-layer').count(), 46, `Tag, Verlaufsschichten bei ${label}`);
+        assert.equal(await idle.locator('#view-tag .ring-overflow.ring-layer:not(.ring-idle)').count(), 0, `Tag, Schichten Runde 2 bei ${label}`);
+        assert.equal(await idle.locator('#view-tag .ring-layer:not(.ring-overflow):not(.ring-idle)').count(), price === 0 ? 0 : 23, `Tag, Schichten Runde 1 bei ${label}`);
         await idle.click('.nav-item[data-screen="dashboard"]');
         await idle.waitForSelector('#view-dashboard:not(.hidden)');
         for (const id of ['#overall-progress-ring-2', '#overall-progress-ring-head']) {
@@ -448,6 +452,7 @@ test('Ringe laufen über 100 % hinaus: zweite Runde und ungedeckelter Prozentwer
         const target = await openRings(price);
         await target.waitForTimeout(1200);
         near((await offsets(target, '#progress-ring')).offset, 0, `Tag, erste Runde bei ${badge}`);
+        assert.equal(await target.locator('#view-tag .ring-overflow.ring-layer:not(.ring-idle)').count(), 23, `Tag, Schichten Runde 2 bei ${badge}`);
         await checkSecond(target, 'progress-ring', fraction, `Tag bei ${badge}`);
         if (price === 46) assert.ok(!(await target.locator('#view-tag .ring-info').textContent()).includes('%'));
         await target.click('.nav-item[data-screen="dashboard"]');

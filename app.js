@@ -282,6 +282,45 @@ function switchScreen(screenId) {
     if (screenId === 'history') renderHistory();
 }
 
+// Verlauf der Ringe (dunkel am Anfang, hell an der Spitze): Zu jedem Basisbogen
+// gehören RING_LAYER_COUNT gestufte Deckschichten. Schicht k deckt den Bogen von
+// k/N bis zum Ende der tatsächlichen Länge ab; spätere Schichten sind heller und
+// liegen oben. So passt der Verlauf zur gezeigten Länge, ohne Nähte (Überlappung).
+const RING_LAYER_COUNT = 24;
+const RING_LAYERS = {};
+
+function buildRingLayers() {
+    for (const id of ['progress-ring', 'progress-ring-2', 'overall-progress-ring', 'overall-progress-ring-2']) {
+        const base = document.getElementById(id);
+        if (!base || RING_LAYERS[id]) continue;
+        const layers = [];
+        let anchor = base;
+        for (let k = 1; k < RING_LAYER_COUNT; k++) {
+            const layer = base.cloneNode(false);
+            layer.removeAttribute('id');
+            layer.classList.add('ring-layer', 'ring-idle');
+            const light = Math.round((k / (RING_LAYER_COUNT - 1)) * 100);
+            layer.style.stroke = `color-mix(in srgb, var(--ring-light) ${light}%, var(--ring-dark))`;
+            anchor.after(layer);
+            layers.push(layer);
+            anchor = layer;
+        }
+        RING_LAYERS[id] = layers;
+    }
+}
+
+// Setzt Länge (Anteil 0..1 eines Umlaufs) und Status der Deckschichten eines Rings.
+function setRingLayers(id, fraction, circumference) {
+    const layers = RING_LAYERS[id] || [];
+    layers.forEach((layer, index) => {
+        const start = ((index + 1) / RING_LAYER_COUNT) * fraction * circumference;
+        const length = fraction * circumference - start;
+        layer.style.strokeDasharray = `${length} ${2 * circumference}`;
+        layer.style.strokeDashoffset = -start;
+        layer.classList.toggle('ring-idle', fraction === 0);
+    });
+}
+
 function renderOverview() {
     const stats = getAggregatedStats();
 
@@ -306,22 +345,21 @@ function renderOverview() {
     if (ring) {
         const offset = circumference - percentage * circumference;
         ring.style.strokeDashoffset = offset;
-
-        ring.style.stroke = `var(--color-${overall.status})`;
+        ring.closest('svg').dataset.status = overall.status;
+        setRingLayers('overall-progress-ring', ringState.first, circumference);
     }
 
     const ring2 = document.getElementById('overall-progress-ring-2');
     if (ring2) {
         ring2.style.strokeDashoffset = circumference - ringState.second * circumference;
         ring2.classList.toggle('ring-idle', ringState.second === 0);
-        ring2.style.stroke = `var(--color-${overall.status})`;
+        setRingLayers('overall-progress-ring-2', ringState.second, circumference);
     }
 
     const head = document.getElementById('overall-progress-ring-head');
     if (head) {
         head.style.strokeDashoffset = circumference - ringState.second * circumference;
         head.classList.toggle('ring-idle', ringState.second === 0);
-        head.style.stroke = `var(--color-${overall.status})`;
     }
 
     const badge = document.getElementById('status-badge');
@@ -880,7 +918,8 @@ function updateUI() {
     if (ring) {
         const offset = 477 - percentage * 477;
         ring.style.strokeDashoffset = offset;
-        ring.style.stroke = `var(--color-${today.status})`;
+        ring.closest('svg').dataset.status = today.status;
+        setRingLayers('progress-ring', DrinkCalc.ringProgress(total, goal).first, 477);
     }
     const second = DrinkCalc.ringProgress(total, goal).second;
     for (const id of ['progress-ring-2', 'progress-ring-head']) {
@@ -888,8 +927,8 @@ function updateUI() {
         if (!el) continue;
         el.style.strokeDashoffset = 477 - second * 477;
         el.classList.toggle('ring-idle', second === 0);
-        el.style.stroke = `var(--color-${today.status})`;
     }
+    setRingLayers('progress-ring-2', second, 477);
 
     const remaining = today.remaining;
     const limitInfo = document.getElementById('limit-info');
@@ -1114,6 +1153,7 @@ async function init() {
     document.getElementById('tab-scan-qr')?.addEventListener('click', () => switchSyncTab('scan'));
     document.getElementById('toggle-scan-btn')?.addEventListener('click', toggleScanner);
 
+    buildRingLayers();
     renderDrinkList();
     updateUI();
 }

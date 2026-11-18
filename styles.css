@@ -24,6 +24,14 @@
     --color-warning: #e08c00; /* = tertiary-container */
     --color-safe: #004e8b; /* = primary-container */
 
+    /* Ring-Verlauf je Status: dunkler Anfang, heller Kopf */
+    --ring-safe-dark: #003866;
+    --ring-safe-light: #3d9bf0;
+    --ring-warning-dark: #a85f00;
+    --ring-warning-light: #ffc247;
+    --ring-error-dark: #85100f;
+    --ring-error-light: #ff6f61;
+
     /* ─── Typografie ────────────────────────────────────────────── */
     --font-display: 'Plus Jakarta Sans', sans-serif;
     --font-body: 'Inter', sans-serif;
@@ -437,9 +445,25 @@ main {
     stroke-width: var(--ring-stroke);
 }
 
+/* Statusfarben des Verlaufs (data-status setzt app.js am SVG) */
+.nautical-ring {
+    --ring-dark: var(--ring-safe-dark);
+    --ring-light: var(--ring-safe-light);
+}
+
+.nautical-ring[data-status="warning"] {
+    --ring-dark: var(--ring-warning-dark);
+    --ring-light: var(--ring-warning-light);
+}
+
+.nautical-ring[data-status="error"] {
+    --ring-dark: var(--ring-error-dark);
+    --ring-light: var(--ring-error-light);
+}
+
 .ring-fill {
     fill: none;
-    stroke: var(--primary);
+    stroke: var(--ring-dark);
     stroke-width: var(--ring-stroke);
     stroke-linecap: round;
     transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
@@ -475,18 +499,20 @@ main {
     stroke-dashoffset: var(--ring-circumference-lg);
 }
 
-/* Überlauf-Runde: etwas heller als die erste. */
-.ring-overflow {
-    filter: brightness(1.15);
+/* Deckschichten des Verlaufs (von app.js erzeugt): Länge und Start laufen mit dem Bogen. */
+.ring-layer {
+    transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1), stroke-dasharray 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Kopf der Überlauf-Runde: winziges Segment mit runden Enden am Bogenende;
    nur es wirft Schatten, damit der Kopf über der ersten Runde zu liegen scheint. */
 .ring-head {
-    filter: brightness(1.15) drop-shadow(0 0 3px rgba(0, 0, 0, 0.6));
+    stroke: var(--ring-light);
+    filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.75));
 }
 
 /* Ohne Überlauf ganz ausblenden: runde Enden und Schatten ließen sonst einen Fleck am Bogenanfang stehen. */
+.ring-layer.ring-idle,
 .ring-overflow.ring-idle,
 .ring-head.ring-idle {
     visibility: hidden;

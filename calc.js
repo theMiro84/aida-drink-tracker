@@ -90,7 +90,10 @@
     // percent ist ungedeckelt, first/second sind die Anteile (0..1) der ersten
     // und der Überlauf-Runde: second ist der Nachkommaanteil des Verhältnisses
     // (der Kopf wandert mit jeder Runde weiter), bei ganzen Vielfachen ab 200 %
-    // steht er auf voller Runde (1).
+    // steht er auf voller Runde (1). Gleitkomma-Rauschen wird auf 9 Stellen
+    // geglättet. Rauschen knapp über 100 % wird bewusst nicht gesondert behandelt:
+    // Alle Beträge der App sind auf Cent gerundet, gleiche Cent-Werte ergeben
+    // dieselbe Gleitkommazahl, das Verhältnis ist dann exakt 1.
     function ringProgress(spent, limit) {
         const ratio = Math.max(safeRatio(spent, limit), 0);
         let second = 0;
