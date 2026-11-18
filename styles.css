@@ -509,24 +509,35 @@ main {
 .ring-turn-head {
     transform: rotate(calc(var(--a) * 1deg));
     /* Versatz in Laufrichtung (dreht mit dem Kopf); erst kurz vor dem Überlappen (ab ~330°) sichtbar */
-    filter: drop-shadow(3px 0 3px rgb(0 0 0 / calc(min(max(var(--a) - 330, 0) / 30, 1) * 0.7)));
+    /* Nur die Hälfte vor der Kappenrückseite zeigen: Der Schatten darf hinten keine Kante erzeugen */
+    clip-path: inset(0 0 0 calc(50% - 1px));
+    filter: drop-shadow(4px 0 3px rgb(0 0 0 / calc(min(max(var(--a) - 330, 0) / 30, 1) * 0.8)));
 }
 
+/* Runde Enden als Halbscheiben (Durchmesser = Ringdicke, auf der Mittellinie): die Kopfkappe
+   deckt nur die vordere Hälfte in Laufrichtung, die Startkappe nur die hintere. Die Rückseite
+   der Kopfkappe liegt 1px über dem Verlaufsende (gleiche Farbe, keine Naht) und hat keinen Rand.
+   Die Startkappe liegt unter dem Verlauf, damit sie bei ~100 % und darüber nicht neben der Spitze
+   herausragt; der Kopf deckt sie dort ab. */
 .ring-cap {
     position: absolute;
     left: 50%;
     top: calc(50% - var(--r));
-    width: var(--w);
     height: var(--w);
-    margin: calc(var(--w) / -2) 0 0 calc(var(--w) / -2);
-    border-radius: 50%;
+    margin-top: calc(var(--w) / -2);
 }
 
 .ring-cap-start {
+    width: calc(var(--w) / 2);
+    margin-left: calc(var(--w) / -2);
+    border-radius: calc(var(--w) / 2) 0 0 calc(var(--w) / 2);
     background: var(--ring-dark);
 }
 
 .ring-cap-head {
+    width: calc(var(--w) / 2 + 1px);
+    margin-left: -1px;
+    border-radius: 0 calc(var(--w) / 2) calc(var(--w) / 2) 0;
     background: var(--ring-light);
 }
 
